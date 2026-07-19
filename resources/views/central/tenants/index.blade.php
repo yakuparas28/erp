@@ -35,7 +35,7 @@
                             </a>
                         </td>
                         <td class="py-2.5 px-3 text-sm text-default">
-                            {{ $tenant->accounting_mode === 'anglo_saxon' ? 'Anglo-Sakson' : 'Kıta Avrupası' }}
+                            {{ $tenant->accounting_mode === 'anglo_saxon' ? 'Anglo-Sakson' : 'Türkiye (Kıta Avrupası)' }}
                         </td>
                         <td class="py-2.5 px-3 text-sm text-default">
                             {{ $subscription?->licensePackage?->name ?? '—' }}
@@ -94,9 +94,10 @@
                 <div class="col-span-12">
                     <label class="text-sm font-semibold text-gray-900 mb-1 block">Muhasebe Modu</label>
                     <select name="accounting_mode" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
-                        <option value="continental">Kıta Avrupası (Continental)</option>
-                        <option value="anglo_saxon">Anglo-Sakson</option>
+                        <option value="continental">Türkiye — Kıta Avrupası (Tekdüzen Hesap Planı)</option>
+                        <option value="anglo_saxon">Anglo-Sakson (Uluslararası)</option>
                     </select>
+                    <p class="text-[11px] text-default mt-1 mb-0">Türkiye'de faaliyet gösteren firmalar için "Türkiye — Kıta Avrupası" seçilmelidir; KDV, Tekdüzen Hesap Planı ve e-Fatura uyumu bu modda çalışır.</p>
                 </div>
             </div>
             <div class="flex justify-end gap-2 p-4 border-t border-border-color">
@@ -129,8 +130,8 @@
                     <div class="col-span-12">
                         <label class="text-sm font-semibold text-gray-900 mb-1 block">Muhasebe Modu</label>
                         <select name="accounting_mode" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
-                            <option value="continental" @selected($tenant->accounting_mode === 'continental')>Kıta Avrupası (Continental)</option>
-                            <option value="anglo_saxon" @selected($tenant->accounting_mode === 'anglo_saxon')>Anglo-Sakson</option>
+                            <option value="continental" @selected($tenant->accounting_mode === 'continental')>Türkiye — Kıta Avrupası (Tekdüzen Hesap Planı)</option>
+                            <option value="anglo_saxon" @selected($tenant->accounting_mode === 'anglo_saxon')>Anglo-Sakson (Uluslararası)</option>
                         </select>
                     </div>
                 </div>

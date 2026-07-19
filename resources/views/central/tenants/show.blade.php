@@ -7,7 +7,7 @@
     <div>
         <h1 class="text-gray-900 text-xl font-bold mb-1">{{ $tenant->name }}</h1>
         <p class="text-sm text-default mb-0">
-            Muhasebe modu: {{ $tenant->accounting_mode === 'anglo_saxon' ? 'Anglo-Sakson' : 'Kıta Avrupası' }}
+            Muhasebe modu: {{ $tenant->accounting_mode === 'anglo_saxon' ? 'Anglo-Sakson' : 'Türkiye (Kıta Avrupası)' }}
             &middot; Kayıt: {{ $tenant->created_at->format('d.m.Y') }}
         </p>
     </div>
