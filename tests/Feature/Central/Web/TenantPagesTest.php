@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use App\Models\TenantModuleActivation;
 use Database\Seeders\LicensePackageSeeder;
 use Database\Seeders\ModuleSeeder;
+use Database\Seeders\NotificationTemplateSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -25,7 +26,7 @@ class TenantPagesTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed([ModuleSeeder::class, LicensePackageSeeder::class, RoleSeeder::class]);
+        $this->seed([ModuleSeeder::class, LicensePackageSeeder::class, RoleSeeder::class, NotificationTemplateSeeder::class]);
         $this->admin = SuperAdmin::factory()->create();
     }
 
