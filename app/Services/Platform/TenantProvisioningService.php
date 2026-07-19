@@ -2,18 +2,25 @@
 
 namespace App\Services\Platform;
 
-use App\Mail\TenantAdminInvitationMail;
+use App\Mail\TemplatedMail;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Mail\NotificationTemplateService;
+use App\Services\Mail\TenantMailer;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class TenantProvisioningService
 {
+    public function __construct(
+        private readonly NotificationTemplateService $templates,
+        private readonly TenantMailer $mailer,
+    ) {}
+
     /**
      * Tenant'ı firma bilgileriyle oluşturur, Tenant Admin kullanıcısını açar
-     * ve giriş bilgilerini e-posta ile gönderir.
+     * ve giriş bilgilerini (platform SMTP ayarı + düzenlenebilir şablonla)
+     * e-posta ile gönderir.
      *
      * @param  array<string, mixed>  $companyData
      */
@@ -38,7 +45,15 @@ class TenantProvisioningService
             return [$tenant, $adminUser, $password];
         });
 
-        Mail::to($adminUser->email)->send(new TenantAdminInvitationMail($tenant, $adminUser, $password));
+        $rendered = $this->templates->render('tenant_admin_invitation', null, [
+            'yonetici_adi' => $adminUser->name,
+            'yonetici_email' => $adminUser->email,
+            'firma_adi' => $tenant->name,
+            'gecici_sifre' => $password,
+            'uygulama_adi' => config('app.name'),
+        ]);
+
+        $this->mailer->send(null, $adminUser->email, new TemplatedMail($rendered['subject'], $rendered['body']));
 
         return $tenant;
     }

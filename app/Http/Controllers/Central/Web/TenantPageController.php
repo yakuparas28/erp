@@ -7,6 +7,7 @@ use App\Http\Requests\Central\ProvisionTenantRequest;
 use App\Http\Requests\Central\StoreSubscriptionRequest;
 use App\Http\Requests\Central\StoreTenantRequest;
 use App\Models\LicensePackage;
+use App\Models\MailSetting;
 use App\Models\Module;
 use App\Models\Tenant;
 use App\Models\TenantModuleActivation;
@@ -65,6 +66,7 @@ class TenantPageController extends Controller
             'packages' => LicensePackage::orderBy('monthly_price')->get(),
             'modules' => Module::orderByDesc('is_core')->orderBy('name')->get(),
             'activations' => $activations,
+            'mailSetting' => MailSetting::where('tenant_id', $tenant->id)->first(),
             'activities' => Activity::where(function ($query) use ($tenant): void {
                 $query->where('subject_type', 'tenant')->where('subject_id', $tenant->id);
             })->latest()->limit(10)->get(),

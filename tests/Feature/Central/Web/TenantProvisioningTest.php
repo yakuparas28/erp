@@ -2,12 +2,13 @@
 
 namespace Tests\Feature\Central\Web;
 
-use App\Mail\TenantAdminInvitationMail;
+use App\Mail\TemplatedMail;
 use App\Models\SuperAdmin;
 use App\Models\Tenant;
 use App\Models\User;
 use Database\Seeders\LicensePackageSeeder;
 use Database\Seeders\ModuleSeeder;
+use Database\Seeders\NotificationTemplateSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
@@ -23,7 +24,7 @@ class TenantProvisioningTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed([ModuleSeeder::class, LicensePackageSeeder::class, RoleSeeder::class]);
+        $this->seed([ModuleSeeder::class, LicensePackageSeeder::class, RoleSeeder::class, NotificationTemplateSeeder::class]);
         $this->admin = SuperAdmin::factory()->create();
     }
 
@@ -52,8 +53,10 @@ class TenantProvisioningTest extends TestCase
         setPermissionsTeamId($tenant->id);
         $this->assertTrue($adminUser->hasRole('Tenant Admin'));
 
-        Mail::assertSent(TenantAdminInvitationMail::class, function (TenantAdminInvitationMail $mail) {
-            return $mail->hasTo('ali@provizyon.test');
+        Mail::assertSent(TemplatedMail::class, function (TemplatedMail $mail) {
+            return $mail->hasTo('ali@provizyon.test')
+                && str_contains($mail->subjectLine, 'Provizyon AŞ')
+                && str_contains($mail->bodyMarkdown, 'Ali Yönetici');
         });
     }
 

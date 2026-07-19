@@ -25,6 +25,17 @@
                         <i class="ph-duotone ph-buildings"></i><span>Tenant'lar</span>
                     </a>
                 </li>
+                <li class="menu-title" aria-disabled="true"><span>Ayarlar</span></li>
+                <li>
+                    <a href="{{ route('central.web.settings.mail') }}" class="{{ request()->routeIs('central.web.settings.mail*') ? 'active' : '' }}">
+                        <i class="ph-duotone ph-envelope-simple"></i><span>E-posta Ayarları</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('central.web.settings.templates') }}" class="{{ request()->routeIs('central.web.settings.templates*') ? 'active' : '' }}">
+                        <i class="ph-duotone ph-file-text"></i><span>Bildirim Şablonları</span>
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

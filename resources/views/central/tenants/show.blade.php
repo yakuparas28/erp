@@ -86,6 +86,19 @@
         </div>
 
         <div class="bg-white border border-border-color rounded-md p-4 mt-4">
+            <h2 class="text-base font-bold text-title mb-1">E-posta (SMTP) Ayarları</h2>
+            <p class="text-[11px] text-default mb-3">Bu tenant'ın bildirimleri kendi SMTP sunucusundan gönderilir; tanımlanmazsa platform ayarı kullanılır.</p>
+            <form method="POST" action="{{ route('central.web.tenants.mail-settings.update', $tenant) }}">
+                @csrf
+                @method('PUT')
+                @include('central.settings._mail-form', ['setting' => $mailSetting, 'formId' => 'tenant'])
+                <div class="mt-3">
+                    <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover cursor-pointer">SMTP Ayarını Kaydet</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="bg-white border border-border-color rounded-md p-4 mt-4">
             <h2 class="text-base font-bold text-title mb-3">Son İşlemler</h2>
             <ul class="space-y-2">
                 @forelse ($activities as $activity)

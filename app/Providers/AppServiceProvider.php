@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\LicensePackage;
+use App\Models\MailSetting;
 use App\Models\Module;
+use App\Models\NotificationTemplate;
 use App\Models\SuperAdmin;
 use App\Models\Tenant;
 use App\Models\TenantModuleActivation;
@@ -44,6 +46,8 @@ class AppServiceProvider extends ServiceProvider
             'license_package' => LicensePackage::class,
             'tenant_subscription' => TenantSubscription::class,
             'tenant_module_activation' => TenantModuleActivation::class,
+            'mail_setting' => MailSetting::class,
+            'notification_template' => NotificationTemplate::class,
         ]);
     }
 }

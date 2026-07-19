@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             ModuleSeeder::class,
             LicensePackageSeeder::class,
             RoleSeeder::class,
+            NotificationTemplateSeeder::class,
         ]);
 
         SuperAdmin::firstOrCreate(
