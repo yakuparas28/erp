@@ -27,6 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
             return $request->expectsJson() ? null : route('central.web.login');
         });
 
+        $middleware->redirectUsersTo(fn (): string => route('central.web.tenants.index'));
+
         $middleware->alias([
             'module' => EnsureModuleActive::class,
         ]);

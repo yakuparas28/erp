@@ -58,4 +58,18 @@ class LoginTest extends TestCase
     {
         $this->get('/central/tenants')->assertRedirect('/central/login');
     }
+
+    public function test_authenticated_super_admin_visiting_login_is_sent_to_the_panel(): void
+    {
+        $admin = SuperAdmin::factory()->create();
+
+        $this->actingAs($admin, 'central_web')
+            ->get('/central/login')
+            ->assertRedirect('/central/tenants');
+    }
+
+    public function test_home_page_redirects_to_central_login(): void
+    {
+        $this->get('/')->assertRedirect('/central/login');
+    }
 }
