@@ -20,6 +20,12 @@ class ModuleActivationService
     public function syncFromPackage(TenantSubscription $subscription): void
     {
         DB::transaction(function () use ($subscription): void {
+            if (! $this->subscriptionGrantsAccess($subscription)) {
+                $this->deactivatePackageActivations($subscription->tenant_id);
+
+                return;
+            }
+
             $packageModuleIds = $subscription->licensePackage()
                 ->firstOrFail()
                 ->modules()
@@ -47,6 +53,30 @@ class ModuleActivationService
                     'deactivated_at' => now(),
                 ]));
         });
+    }
+
+    /**
+     * Abonelik erişim veriyor mu: durum trial/active VE süresi dolmamış olmalı.
+     */
+    public function subscriptionGrantsAccess(TenantSubscription $subscription): bool
+    {
+        if (! in_array($subscription->status, ['trial', 'active'], true)) {
+            return false;
+        }
+
+        return $subscription->ends_at === null || ! $subscription->ends_at->isPast();
+    }
+
+    private function deactivatePackageActivations(int $tenantId): void
+    {
+        TenantModuleActivation::where('tenant_id', $tenantId)
+            ->where('source', 'package')
+            ->where('is_active', true)
+            ->get()
+            ->each(fn (TenantModuleActivation $activation) => $activation->update([
+                'is_active' => false,
+                'deactivated_at' => now(),
+            ]));
     }
 
     /**

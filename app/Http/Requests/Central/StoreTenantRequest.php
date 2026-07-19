@@ -20,6 +20,11 @@ class StoreTenantRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'accounting_mode' => ['sometimes', Rule::in(['anglo_saxon', 'continental'])],
+            'tax_number' => ['nullable', 'string', 'max:20'],
+            'tax_office' => ['nullable', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'address' => ['nullable', 'string', 'max:500'],
         ];
     }
 }

@@ -99,6 +99,45 @@
                     </select>
                     <p class="text-[11px] text-default mt-1 mb-0">Türkiye'de faaliyet gösteren firmalar için "Türkiye — Kıta Avrupası" seçilmelidir; KDV, Tekdüzen Hesap Planı ve e-Fatura uyumu bu modda çalışır.</p>
                 </div>
+                <div class="col-span-12 sm:col-span-6">
+                    <label class="text-sm font-semibold text-gray-900 mb-1 block">Vergi Numarası</label>
+                    <input type="text" name="tax_number" value="{{ old('tax_number') }}"
+                           class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                </div>
+                <div class="col-span-12 sm:col-span-6">
+                    <label class="text-sm font-semibold text-gray-900 mb-1 block">Vergi Dairesi</label>
+                    <input type="text" name="tax_office" value="{{ old('tax_office') }}"
+                           class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                </div>
+                <div class="col-span-12 sm:col-span-6">
+                    <label class="text-sm font-semibold text-gray-900 mb-1 block">Firma E-postası</label>
+                    <input type="email" name="email" value="{{ old('email') }}"
+                           class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                </div>
+                <div class="col-span-12 sm:col-span-6">
+                    <label class="text-sm font-semibold text-gray-900 mb-1 block">Telefon</label>
+                    <input type="text" name="phone" value="{{ old('phone') }}"
+                           class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                </div>
+                <div class="col-span-12">
+                    <label class="text-sm font-semibold text-gray-900 mb-1 block">Adres</label>
+                    <input type="text" name="address" value="{{ old('address') }}"
+                           class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                </div>
+                <div class="col-span-12 border-t border-border-color pt-3 mt-1">
+                    <h3 class="text-sm font-bold text-title mb-2">Tenant Yöneticisi</h3>
+                    <p class="text-[11px] text-default mb-2">Firma için bir yönetici hesabı oluşturulur; giriş bilgileri e-posta ile gönderilir.</p>
+                </div>
+                <div class="col-span-12 sm:col-span-6">
+                    <label class="text-sm font-semibold text-gray-900 mb-1 block">Yönetici Adı <span class="text-danger">*</span></label>
+                    <input type="text" name="admin_name" required value="{{ old('admin_name') }}"
+                           class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                </div>
+                <div class="col-span-12 sm:col-span-6">
+                    <label class="text-sm font-semibold text-gray-900 mb-1 block">Yönetici E-postası <span class="text-danger">*</span></label>
+                    <input type="email" name="admin_email" required value="{{ old('admin_email') }}"
+                           class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                </div>
             </div>
             <div class="flex justify-end gap-2 p-4 border-t border-border-color">
                 <button type="button" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light cursor-pointer" data-hs-overlay="#add-tenant-modal">Vazgeç</button>

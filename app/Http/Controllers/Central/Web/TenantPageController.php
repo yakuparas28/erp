@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Central\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Central\ProvisionTenantRequest;
 use App\Http\Requests\Central\StoreSubscriptionRequest;
 use App\Http\Requests\Central\StoreTenantRequest;
 use App\Models\LicensePackage;
@@ -11,6 +12,7 @@ use App\Models\Tenant;
 use App\Models\TenantModuleActivation;
 use App\Models\TenantSubscription;
 use App\Services\Platform\ModuleActivationService;
+use App\Services\Platform\TenantProvisioningService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -19,7 +21,10 @@ use Spatie\Activitylog\Models\Activity;
 
 class TenantPageController extends Controller
 {
-    public function __construct(private readonly ModuleActivationService $activations) {}
+    public function __construct(
+        private readonly ModuleActivationService $activations,
+        private readonly TenantProvisioningService $provisioning,
+    ) {}
 
     public function index(): View
     {
@@ -29,18 +34,25 @@ class TenantPageController extends Controller
         ]);
     }
 
-    public function store(StoreTenantRequest $request): RedirectResponse
+    public function store(ProvisionTenantRequest $request): RedirectResponse
     {
-        $tenant = Tenant::create($request->validated());
+        $validated = $request->validated();
+
+        $tenant = $this->provisioning->createWithAdmin(
+            collect($validated)->except(['admin_name', 'admin_email'])->all(),
+            $validated['admin_name'],
+            $validated['admin_email'],
+        );
 
         activity()
             ->causedBy($request->user('central_web'))
             ->performedOn($tenant)
+            ->withProperties(['admin_email' => $validated['admin_email']])
             ->log('tenant.created');
 
         return redirect()
             ->route('central.web.tenants.index')
-            ->with('status', "{$tenant->name} oluşturuldu.");
+            ->with('status', "{$tenant->name} oluşturuldu; yönetici bilgileri {$validated['admin_email']} adresine gönderildi.");
     }
 
     public function show(Tenant $tenant): View

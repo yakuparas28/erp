@@ -16,7 +16,7 @@ class TenantSubscriptionObserver
 
     public function updated(TenantSubscription $subscription): void
     {
-        if ($subscription->wasChanged('license_package_id')) {
+        if ($subscription->wasChanged(['license_package_id', 'status', 'ends_at'])) {
             $this->activations->syncFromPackage($subscription);
         }
     }

@@ -16,6 +16,17 @@
     </a>
 </div>
 
+<div class="bg-white border border-border-color rounded-md p-4 mb-4">
+    <h2 class="text-base font-bold text-title mb-3">Firma Bilgileri</h2>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+        <div><p class="text-[11px] text-default mb-0.5">Vergi No</p><p class="text-title mb-0">{{ $tenant->tax_number ?? '—' }}</p></div>
+        <div><p class="text-[11px] text-default mb-0.5">Vergi Dairesi</p><p class="text-title mb-0">{{ $tenant->tax_office ?? '—' }}</p></div>
+        <div><p class="text-[11px] text-default mb-0.5">E-posta</p><p class="text-title mb-0">{{ $tenant->email ?? '—' }}</p></div>
+        <div><p class="text-[11px] text-default mb-0.5">Telefon</p><p class="text-title mb-0">{{ $tenant->phone ?? '—' }}</p></div>
+        <div><p class="text-[11px] text-default mb-0.5">Adres</p><p class="text-title mb-0">{{ $tenant->address ?? '—' }}</p></div>
+    </div>
+</div>
+
 <div class="grid grid-cols-12 gap-4">
     {{-- Abonelik --}}
     <div class="col-span-12 lg:col-span-5">
@@ -24,6 +35,11 @@
             @if ($subscription)
                 <p class="text-sm text-default mb-3">
                     Mevcut: <span class="font-semibold text-title">{{ $subscription->licensePackage->name }}</span>
+                    @if ($subscription->ends_at)
+                        <span class="text-[11px] {{ $subscription->ends_at->isPast() ? 'bg-danger-transparent text-danger' : 'bg-info-transparent text-info' }} px-2 py-0.5 rounded ms-1">
+                            {{ $subscription->ends_at->isPast() ? 'Süresi doldu: ' : 'Bitiş: ' }}{{ $subscription->ends_at->format('d.m.Y') }}
+                        </span>
+                    @endif
                     <span class="text-[11px] {{ $subscription->status === 'active' ? 'bg-success-transparent text-success' : 'bg-warning-transparent text-warning' }} px-2 py-0.5 rounded ms-1">
                         {{ ['trial' => 'Deneme', 'active' => 'Aktif', 'past_due' => 'Gecikmiş', 'cancelled' => 'İptal'][$subscription->status] }}
                     </span>
@@ -56,6 +72,12 @@
                         <input type="date" name="starts_at" required value="{{ $subscription?->starts_at?->toDateString() ?? now()->toDateString() }}"
                                class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
                     </div>
+                </div>
+                <div>
+                    <label class="text-sm font-semibold text-gray-900 mb-1 block">Bitiş Tarihi</label>
+                    <input type="date" name="ends_at" value="{{ $subscription?->ends_at?->toDateString() }}"
+                           class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                    <p class="text-[11px] text-default mt-1 mb-0">Boş bırakılırsa süresizdir. Süresi dolan aboneliğin paket modülleri her gece otomatik pasifleştirilir.</p>
                 </div>
                 <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover cursor-pointer">
                     Aboneliği Kaydet

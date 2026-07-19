@@ -9,7 +9,9 @@ use App\Models\Tenant;
 use App\Models\TenantModuleActivation;
 use Database\Seeders\LicensePackageSeeder;
 use Database\Seeders\ModuleSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
@@ -23,7 +25,7 @@ class TenantPagesTest extends TestCase
     {
         parent::setUp();
 
-        $this->seed([ModuleSeeder::class, LicensePackageSeeder::class]);
+        $this->seed([ModuleSeeder::class, LicensePackageSeeder::class, RoleSeeder::class]);
         $this->admin = SuperAdmin::factory()->create();
     }
 
@@ -39,9 +41,13 @@ class TenantPagesTest extends TestCase
 
     public function test_tenant_can_be_created_from_the_panel(): void
     {
+        Mail::fake();
+
         $response = $this->actingAs($this->admin, 'central_web')->post('/central/tenants', [
             'name' => 'Panel Firması',
             'accounting_mode' => 'anglo_saxon',
+            'admin_name' => 'Panel Yöneticisi',
+            'admin_email' => 'panel@ornek.test',
         ]);
 
         $response->assertRedirect();
