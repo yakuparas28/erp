@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureModuleActive;
 use App\Http\Middleware\SetPermissionsTeamId;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,6 +21,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(append: [
             SetPermissionsTeamId::class,
+        ]);
+
+        $middleware->alias([
+            'module' => EnsureModuleActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
