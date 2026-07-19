@@ -1,0 +1,14 @@
+{
+    "name": "Sales",
+    "alias": "sales",
+    "description": "Satış (Order-to-Cash): siparişler, rezervasyon, teslimat",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Sales\\Providers\\SalesServiceProvider"
+    ],
+    "files": [],
+    "requires": [
+        "Inventory"
+    ]
+}

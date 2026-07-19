@@ -1,0 +1,12 @@
+{
+    "name": "Inventory",
+    "alias": "inventory",
+    "description": "Envanter çekirdeği: depo/lokasyon, UoM, lot, stok hareketleri, sayım, maliyetlendirme",
+    "keywords": [],
+    "priority": 1,
+    "providers": [
+        "Modules\\Inventory\\Providers\\InventoryServiceProvider"
+    ],
+    "files": [],
+    "requires": []
+}

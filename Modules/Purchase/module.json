@@ -1,0 +1,14 @@
+{
+    "name": "Purchase",
+    "alias": "purchase",
+    "description": "Satınalma (Procure-to-Pay): RFQ/PO, mal kabul, yeniden sipariş",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Purchase\\Providers\\PurchaseServiceProvider"
+    ],
+    "files": [],
+    "requires": [
+        "Inventory"
+    ]
+}

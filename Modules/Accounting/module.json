@@ -1,0 +1,14 @@
+{
+    "name": "Accounting",
+    "alias": "accounting",
+    "description": "Muhasebe: hesap planı, yevmiye, fatura, ödeme, çoklu para birimi, TR uyum",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Accounting\\Providers\\AccountingServiceProvider"
+    ],
+    "files": [],
+    "requires": [
+        "Inventory"
+    ]
+}
