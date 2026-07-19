@@ -24,10 +24,14 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->redirectGuestsTo(function (Request $request): ?string {
-            return $request->expectsJson() ? null : route('central.web.login');
+            return $request->expectsJson() ? null : route('login');
         });
 
-        $middleware->redirectUsersTo(fn (): string => route('central.web.tenants.index'));
+        $middleware->redirectUsersTo(function (Request $request): string {
+            return auth('central_web')->check()
+                ? route('central.web.tenants.index')
+                : route('app.dashboard');
+        });
 
         $middleware->alias([
             'module' => EnsureModuleActive::class,

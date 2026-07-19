@@ -4,7 +4,6 @@ use App\Http\Controllers\Central\AuthController;
 use App\Http\Controllers\Central\ModuleActivationController;
 use App\Http\Controllers\Central\SubscriptionController;
 use App\Http\Controllers\Central\TenantController;
-use App\Http\Controllers\Central\Web\LoginController;
 use App\Http\Controllers\Central\Web\MailSettingController;
 use App\Http\Controllers\Central\Web\NotificationTemplateController;
 use App\Http\Controllers\Central\Web\TenantPageController;
@@ -40,13 +39,9 @@ Route::middleware('api')->prefix('api/central')->name('central.')->group(functio
 });
 
 Route::middleware('web')->prefix('central')->name('central.web.')->group(function (): void {
-    Route::middleware('guest:central_web')->group(function (): void {
-        Route::get('/login', [LoginController::class, 'create'])->name('login');
-        Route::post('/login', [LoginController::class, 'store'])->name('login.store');
-    });
+    Route::get('/login', fn () => redirect()->route('login'))->name('login');
 
     Route::middleware('auth:central_web')->group(function (): void {
-        Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 
         Route::get('/tenants', [TenantPageController::class, 'index'])->name('tenants.index');
         Route::post('/tenants', [TenantPageController::class, 'store'])->name('tenants.store');

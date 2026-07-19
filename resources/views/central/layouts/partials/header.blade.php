@@ -30,7 +30,7 @@
                 </button>
                 <div class="hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-50 bg-white border border-border-color shadow rounded-md mt-2 z-10 p-2 space-y-1" role="menu">
                     <p class="px-2 py-1.5 text-sm font-semibold text-title mb-0">{{ auth('central_web')->user()?->name }}</p>
-                    <form method="POST" action="{{ route('central.web.logout') }}">
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="w-full text-start flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-danger hover:bg-light cursor-pointer">
                             <i class="ph ph-sign-out"></i> Çıkış Yap

@@ -5,10 +5,10 @@
 @section('content')
 <div class="bg-white border border-border-color rounded-md shadow-sm w-full max-w-md sm:p-8 p-5">
     <div class="text-center mb-6">
-        <h1 class="text-xl font-bold text-title mb-1">Yönetim Paneline Giriş</h1>
-        <p class="text-sm text-default mb-0">Süper Admin hesabınızla oturum açın</p>
+        <h1 class="text-xl font-bold text-title mb-1">ERP'ye Giriş</h1>
+        <p class="text-sm text-default mb-0">Hesabınızla oturum açın; yetkinize göre panele yönlendirilirsiniz.</p>
     </div>
-    <form class="space-y-4" method="POST" action="{{ route('central.web.login.store') }}">
+    <form class="space-y-4" method="POST" action="{{ route('login.store') }}">
         @csrf
         <div>
             <label for="email" class="text-sm font-semibold text-gray-900 mb-1 block">E-posta Adresi</label>
