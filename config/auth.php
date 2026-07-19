@@ -48,6 +48,11 @@ return [
             'driver' => 'sanctum',
             'provider' => 'super_admins',
         ],
+
+        'central_web' => [
+            'driver' => 'session',
+            'provider' => 'super_admins',
+        ],
     ],
 
     /*

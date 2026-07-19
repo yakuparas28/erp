@@ -13,7 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
         then: function (): void {
-            Route::middleware('api')->group(base_path('routes/central.php'));
+            Route::group([], base_path('routes/central.php'));
         },
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
@@ -22,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(append: [
             SetPermissionsTeamId::class,
         ]);
+
+        $middleware->redirectGuestsTo(function (Request $request): ?string {
+            return $request->expectsJson() ? null : route('central.web.login');
+        });
 
         $middleware->alias([
             'module' => EnsureModuleActive::class,
