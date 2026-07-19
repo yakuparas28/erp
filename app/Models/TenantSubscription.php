@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Observers\TenantSubscriptionObserver;
 use Database\Factories\TenantSubscriptionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * sorgular explicit tenant_id ile yapılır (Süper Admin bağlamı).
  */
 #[Fillable(['tenant_id', 'license_package_id', 'status', 'starts_at', 'ends_at'])]
+#[ObservedBy([TenantSubscriptionObserver::class])]
 class TenantSubscription extends Model
 {
     /** @use HasFactory<TenantSubscriptionFactory> */
