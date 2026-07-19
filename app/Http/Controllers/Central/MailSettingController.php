@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Central\Web;
+namespace App\Http\Controllers\Central;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Central\StoreMailSettingRequest;
