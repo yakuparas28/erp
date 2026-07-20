@@ -51,6 +51,14 @@ class AppServiceProvider extends ServiceProvider
             'mail_setting' => MailSetting::class,
             'notification_template' => NotificationTemplate::class,
             'role' => Role::class,
+            'warehouse' => \Modules\Inventory\Models\Warehouse::class,
+            'location' => \Modules\Inventory\Models\Location::class,
+            'product' => \Modules\Inventory\Models\Product::class,
+            'product_lot' => \Modules\Inventory\Models\ProductLot::class,
+            'stock_move' => \Modules\Inventory\Models\StockMove::class,
+            'stock_quant' => \Modules\Inventory\Models\StockQuant::class,
+            'inventory_adjustment' => \Modules\Inventory\Models\InventoryAdjustment::class,
+            'warehouse_transfer' => \Modules\Inventory\Models\WarehouseTransfer::class,
             'permission' => Permission::class,
         ]);
     }
