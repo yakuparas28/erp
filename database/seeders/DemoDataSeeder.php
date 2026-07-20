@@ -97,5 +97,7 @@ class DemoDataSeeder extends Seeder
             Module::where('key', 'accounting')->firstOrFail(),
             SuperAdmin::firstOrFail(),
         );
+
+        $this->call(InventoryDemoSeeder::class);
     }
 }
