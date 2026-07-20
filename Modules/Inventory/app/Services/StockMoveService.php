@@ -19,7 +19,10 @@ use Modules\Inventory\Models\Uom;
  */
 class StockMoveService
 {
-    public function __construct(private readonly UomConversionService $uomConversion) {}
+    public function __construct(
+        private readonly UomConversionService $uomConversion,
+        private readonly RemovalStrategyService $removalStrategy,
+    ) {}
 
     public function move(
         int $tenantId,
@@ -34,11 +37,20 @@ class StockMoveService
         ?int $bypassLockForAdjustmentId = null,
     ): StockMove {
         abort_if($product->product_type === 'service', 422, __('Service products cannot have stock movements.'));
-        abort_if($product->track_by !== 'none' && $lotId === null, 422, __('This product requires lot/serial tracking.'));
 
         $referenceQty = $this->signedToReference($qty, $uom);
 
         abort_if(bccomp($referenceQty, '0', 4) === 0, 422, __('Quantity cannot be zero.'));
+
+        $isOutbound = bccomp($referenceQty, '0', 4) < 0;
+
+        if ($product->track_by !== 'none' && $lotId === null) {
+            if ($isOutbound && $fromLocationId !== null) {
+                $lotId = $this->removalStrategy->selectLot($product, $fromLocationId);
+            }
+
+            abort_if($lotId === null, 422, __('This product requires lot/serial tracking.'));
+        }
 
         $this->assertLocationsNotLocked($tenantId, [$fromLocationId, $toLocationId], $referenceType, $referenceId, $bypassLockForAdjustmentId);
 
