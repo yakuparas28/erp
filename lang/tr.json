@@ -146,6 +146,7 @@
     "Invalid JSON was returned from the route.": "Yoldan geçersiz JSON döndürüldü.",
     "Invalid SSL Certificate": "Geçersiz SSL Sertifikası",
     "Invalid filename.": "Geçersiz dosya adı.",
+    "Language": "Dil",
     "Leave empty for unlimited. Package modules of expired subscriptions are deactivated automatically every night.": "Boş bırakılırsa süresizdir. Süresi dolan aboneliğin paket modülleri her gece otomatik pasifleştirilir.",
     "Length Required": "Uzunluk Gerekli",
     "License Package": "Lisans Paketi",
