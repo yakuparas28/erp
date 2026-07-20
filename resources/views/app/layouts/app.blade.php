@@ -35,7 +35,7 @@
                         <i class="ph-duotone ph-arrow-left"></i>
                     </button>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 ms-auto">
                     <div class="header-item">
                         <button class="topbar-link items-center justify-center light-dark-mode" type="button" aria-label="tema">
                             <i class="ph-duotone ph-moon"></i>
