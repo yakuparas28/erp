@@ -14,16 +14,20 @@ class ProductController extends Controller
 {
     public function index(): View
     {
+        $products = Product::with(['uom', 'category', 'kitComponents.componentProduct'])->orderBy('name')->get();
+
         return view('inventory::products.index', [
-            'products' => Product::with(['uom', 'category'])->orderBy('name')->get(),
+            'products' => $products,
             'categories' => ProductCategory::orderBy('name')->get(),
             'uoms' => Uom::where('is_reference', true)->orderBy('name')->get(),
+            'nonKitProducts' => $products->where('is_kit', false),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $this->validated($request);
+        $validated['is_kit'] = $request->boolean('is_kit');
 
         $product = Product::create($validated);
 
@@ -36,7 +40,10 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product): RedirectResponse
     {
-        $product->update($this->validated($request));
+        $validated = $this->validated($request);
+        $validated['is_kit'] = $request->boolean('is_kit');
+
+        $product->update($validated);
 
         activity()->causedBy($request->user())->performedOn($product)->log('product.updated');
 
@@ -66,6 +73,7 @@ class ProductController extends Controller
             'uom_id' => ['required', 'exists:uoms,id'],
             'product_type' => ['required', 'in:stockable,consumable,service'],
             'track_by' => ['required', 'in:none,lot,serial'],
+            'is_kit' => ['sometimes', 'boolean'],
         ]);
     }
 }

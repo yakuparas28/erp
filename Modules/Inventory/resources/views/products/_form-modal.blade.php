@@ -49,6 +49,11 @@
                         <option value="serial" @selected($product?->track_by === 'serial')>{{ __('Serial') }}</option>
                     </select>
                 </div>
+                <div class="col-span-12 flex items-center gap-2">
+                    <input type="hidden" name="is_kit" value="0">
+                    <input type="checkbox" id="is_kit_{{ $id }}" name="is_kit" value="1" class="size-4 rounded border-border-color" @checked($product?->is_kit)>
+                    <label for="is_kit_{{ $id }}" class="text-sm text-default">{{ __('This is a kit/bundle (components are managed separately after saving)') }}</label>
+                </div>
             </div>
             <div class="flex justify-end gap-2 p-4 border-t border-border-color">
                 <button type="button" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light cursor-pointer" data-hs-overlay="#{{ $id }}">{{ __('Cancel') }}</button>

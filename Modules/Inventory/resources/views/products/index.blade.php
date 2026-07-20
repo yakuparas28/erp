@@ -6,6 +6,9 @@
 <div class="flex flex-wrap items-center justify-between gap-3 mb-3 lg:mb-6">
     <h1 class="text-gray-900 text-xl font-bold mb-0">{{ __('Products') }}</h1>
     <div class="flex items-center gap-2">
+        <a href="{{ route('app.inventory.templates.index') }}" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light">
+            <i class="ph ph-stack"></i> {{ __('Variant Templates') }}
+        </a>
         <button type="button" data-hs-overlay="#add-category-modal" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light cursor-pointer">
             <i class="ph ph-tag"></i> {{ __('New Category') }}
         </button>
@@ -32,7 +35,12 @@
             <tbody>
                 @forelse ($products as $product)
                     <tr class="border-b border-border-color">
-                        <td class="py-2.5 px-3 text-sm font-semibold text-title">{{ $product->name }}</td>
+                        <td class="py-2.5 px-3 text-sm font-semibold text-title">
+                            {{ $product->name }}
+                            @if ($product->is_kit)
+                                <span class="text-[11px] bg-info-transparent text-info px-2 py-0.5 rounded ms-1">{{ __('Kit') }}</span>
+                            @endif
+                        </td>
                         <td class="py-2.5 px-3 text-sm text-default">{{ $product->sku ?? '—' }}</td>
                         <td class="py-2.5 px-3 text-sm text-default">{{ $product->category?->name ?? '—' }}</td>
                         <td class="py-2.5 px-3 text-sm text-default">{{ $product->uom->name }}</td>
@@ -45,9 +53,16 @@
                             @endif
                         </td>
                         <td class="py-2.5 px-3">
-                            <button type="button" data-hs-overlay="#edit-product-modal-{{ $product->id }}" class="size-7 rounded-md border border-border-color flex items-center justify-center text-default hover:bg-light cursor-pointer" title="{{ __('Edit') }}">
-                                <i class="ph ph-pencil-simple-line"></i>
-                            </button>
+                            <div class="flex items-center gap-2">
+                                <button type="button" data-hs-overlay="#edit-product-modal-{{ $product->id }}" class="size-7 rounded-md border border-border-color flex items-center justify-center text-default hover:bg-light cursor-pointer" title="{{ __('Edit') }}">
+                                    <i class="ph ph-pencil-simple-line"></i>
+                                </button>
+                                @if ($product->is_kit)
+                                    <button type="button" data-hs-overlay="#kit-components-modal-{{ $product->id }}" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-1 hover:bg-light cursor-pointer">
+                                        <i class="ph ph-stack-simple"></i> {{ __('Components') }}
+                                    </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty
@@ -61,6 +76,9 @@
 @include('inventory::products._form-modal', ['id' => 'add-product-modal', 'action' => route('app.inventory.products.store'), 'method' => 'POST', 'title' => __('New Product'), 'product' => null])
 @foreach ($products as $product)
     @include('inventory::products._form-modal', ['id' => 'edit-product-modal-'.$product->id, 'action' => route('app.inventory.products.update', $product), 'method' => 'PUT', 'title' => __('Edit Product'), 'product' => $product])
+    @if ($product->is_kit)
+        @include('inventory::products._kit-components-modal', ['product' => $product, 'nonKitProducts' => $nonKitProducts])
+    @endif
 @endforeach
 
 <div id="add-category-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">

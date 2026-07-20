@@ -2,7 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Inventory\Http\Controllers\AdjustmentController;
+use Modules\Inventory\Http\Controllers\KitComponentController;
 use Modules\Inventory\Http\Controllers\ProductController;
+use Modules\Inventory\Http\Controllers\ProductTemplateController;
 use Modules\Inventory\Http\Controllers\StockController;
 use Modules\Inventory\Http\Controllers\TransferController;
 use Modules\Inventory\Http\Controllers\WarehouseController;
@@ -13,6 +15,15 @@ Route::middleware(['auth:web'])->prefix('app/inventory')->name('app.inventory.')
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');
         Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
         Route::post('/product-categories', [ProductController::class, 'storeCategory'])->name('categories.store');
+        Route::post('/products/{product}/kit-components', [KitComponentController::class, 'store'])->name('kit-components.store');
+        Route::delete('/kit-components/{component}', [KitComponentController::class, 'destroy'])->name('kit-components.destroy');
+
+        Route::get('/templates', [ProductTemplateController::class, 'index'])->name('templates.index');
+        Route::post('/templates', [ProductTemplateController::class, 'store'])->name('templates.store');
+        Route::get('/templates/{template}', [ProductTemplateController::class, 'show'])->name('templates.show');
+        Route::post('/attributes', [ProductTemplateController::class, 'storeAttribute'])->name('attributes.store');
+        Route::post('/attributes/{attribute}/values', [ProductTemplateController::class, 'storeAttributeValue'])->name('attributes.values.store');
+        Route::post('/templates/{template}/attributes', [ProductTemplateController::class, 'attachAttribute'])->name('templates.attributes.attach');
     });
 
     Route::middleware('permission:manage warehouses,web')->group(function (): void {

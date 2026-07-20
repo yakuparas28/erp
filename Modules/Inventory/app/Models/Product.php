@@ -44,6 +44,21 @@ class Product extends Model
         return ProductFactory::new();
     }
 
+    /**
+     * Hizmet ürünlerde cost_method yalnızca 'standard' olabilir (PRD 3.17):
+     * FIFO/AVCO'nun dayandığı parti/katman kavramı hizmette anlamsızdır.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $product): void {
+            abort_if(
+                $product->product_type === 'service' && $product->cost_method !== 'standard',
+                422,
+                __('Service products can only use the standard cost method.'),
+            );
+        });
+    }
+
     public function uom(): BelongsTo
     {
         return $this->belongsTo(Uom::class);
@@ -67,5 +82,10 @@ class Product extends Model
     public function quants(): HasMany
     {
         return $this->hasMany(StockQuant::class);
+    }
+
+    public function kitComponents(): HasMany
+    {
+        return $this->hasMany(ProductKitComponent::class, 'kit_product_id');
     }
 }
