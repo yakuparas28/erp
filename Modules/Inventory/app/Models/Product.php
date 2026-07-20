@@ -56,6 +56,18 @@ class Product extends Model
                 422,
                 __('Service products can only use the standard cost method.'),
             );
+
+            if ($product->exists && $product->isDirty('cost_method')) {
+                $hasValuationHistory = StockValuationLayer::withoutGlobalScopes()
+                    ->where('product_id', $product->id)
+                    ->exists();
+
+                abort_if(
+                    $hasValuationHistory,
+                    422,
+                    __('The cost method cannot be changed after the first stock valuation.'),
+                );
+            }
         });
     }
 
