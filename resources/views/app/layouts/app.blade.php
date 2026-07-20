@@ -101,6 +101,44 @@
                                 <i class="ph-duotone ph-squares-four"></i><span>{{ __('Dashboard') }}</span>
                             </a>
                         </li>
+                        @if (auth()->user()?->can('view stock') || auth()->user()?->can('manage products') || auth()->user()?->can('manage warehouses') || auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers'))
+                            <li class="menu-title" aria-disabled="true"><span>{{ __('Inventory') }}</span></li>
+                            @can('manage products')
+                                <li>
+                                    <a href="{{ route('app.inventory.products.index') }}" class="{{ request()->routeIs('app.inventory.products.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-package"></i><span>{{ __('Products') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('manage warehouses')
+                                <li>
+                                    <a href="{{ route('app.inventory.warehouses.index') }}" class="{{ request()->routeIs('app.inventory.warehouses.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-warehouse"></i><span>{{ __('Warehouses') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('view stock')
+                                <li>
+                                    <a href="{{ route('app.inventory.stock.index') }}" class="{{ request()->routeIs('app.inventory.stock.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-stack"></i><span>{{ __('Stock') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('perform stock counts')
+                                <li>
+                                    <a href="{{ route('app.inventory.adjustments.index') }}" class="{{ request()->routeIs('app.inventory.adjustments.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-clipboard-text"></i><span>{{ __('Stock Counts') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('manage warehouse transfers')
+                                <li>
+                                    <a href="{{ route('app.inventory.transfers.index') }}" class="{{ request()->routeIs('app.inventory.transfers.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-arrows-left-right"></i><span>{{ __('Transfers') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                        @endif
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>
                             @can('manage users')

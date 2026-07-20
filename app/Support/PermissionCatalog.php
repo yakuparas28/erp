@@ -25,6 +25,7 @@ final class PermissionCatalog
             ],
             'inventory' => [
                 'view stock',
+                'manage warehouses',
                 'manage products',
                 'perform stock counts',
                 'approve inventory adjustments',
