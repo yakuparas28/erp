@@ -4,6 +4,7 @@ use App\Http\Controllers\Central\Api\AuthController as ApiAuthController;
 use App\Http\Controllers\Central\Api\ModuleActivationController as ApiModuleActivationController;
 use App\Http\Controllers\Central\Api\SubscriptionController as ApiSubscriptionController;
 use App\Http\Controllers\Central\Api\TenantController as ApiTenantController;
+use App\Http\Controllers\Central\ImpersonationController;
 use App\Http\Controllers\Central\MailSettingController;
 use App\Http\Controllers\Central\NotificationTemplateController;
 use App\Http\Controllers\Central\TenantController;
@@ -54,6 +55,7 @@ Route::middleware('web')->prefix('central')->name('central.web.')->group(functio
         Route::post('/tenants/{tenant}/modules/{module:key}', [TenantController::class, 'activateModule'])->withoutScopedBindings()->name('tenants.modules.activate');
         Route::delete('/tenants/{tenant}/modules/{module:key}', [TenantController::class, 'deactivateModule'])->withoutScopedBindings()->name('tenants.modules.deactivate');
         Route::put('/tenants/{tenant}/mail-settings', [MailSettingController::class, 'updateForTenant'])->name('tenants.mail-settings.update');
+        Route::post('/tenants/{tenant}/users/{user}/impersonate', [ImpersonationController::class, 'store'])->withoutScopedBindings()->name('tenants.users.impersonate');
 
         Route::get('/settings/mail', [MailSettingController::class, 'edit'])->name('settings.mail');
         Route::put('/settings/mail', [MailSettingController::class, 'update'])->name('settings.mail.update');

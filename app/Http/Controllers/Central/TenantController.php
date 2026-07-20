@@ -60,6 +60,8 @@ class TenantController extends Controller
     {
         $activations = TenantModuleActivation::where('tenant_id', $tenant->id)->get()->keyBy('module_id');
 
+        setPermissionsTeamId($tenant->id);
+
         return view('central.tenants.show', [
             'tenant' => $tenant,
             'subscription' => TenantSubscription::with('licensePackage')->where('tenant_id', $tenant->id)->first(),
@@ -67,6 +69,7 @@ class TenantController extends Controller
             'modules' => Module::orderByDesc('is_core')->orderBy('name')->get(),
             'activations' => $activations,
             'mailSetting' => MailSetting::where('tenant_id', $tenant->id)->first(),
+            'users' => $tenant->users()->with('roles')->orderBy('name')->get(),
             'activities' => Activity::where(function ($query) use ($tenant): void {
                 $query->where('subject_type', 'tenant')->where('subject_id', $tenant->id);
             })->latest()->limit(10)->get(),

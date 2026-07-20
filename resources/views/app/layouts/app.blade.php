@@ -94,6 +94,17 @@
         <div class="page-wrapper">
             <main>
                 <div class="p-3 lg:py-6 lg:px-0">
+                    @if (auth('central_web')->check())
+                        <div class="bg-warning-transparent text-warning border border-warning rounded-md px-4 py-3 text-sm mb-4 flex items-center justify-between gap-3">
+                            <span><i class="ph ph-eye me-1"></i> Süper Admin olarak <strong>{{ auth()->user()?->name }}</strong> hesabını görüntülüyorsunuz.</span>
+                            <form method="POST" action="{{ route('impersonation.leave') }}">
+                                @csrf
+                                <button type="submit" class="btn-sm bg-white border border-warning text-warning hover:bg-warning hover:text-white cursor-pointer">
+                                    Yönetici Paneline Dön
+                                </button>
+                            </form>
+                        </div>
+                    @endif
                     @if (session('status'))
                         <div class="bg-success-transparent text-success border border-success rounded-md px-4 py-3 text-sm mb-4">
                             {{ session('status') }}

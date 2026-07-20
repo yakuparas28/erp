@@ -178,6 +178,41 @@
                 </table>
             </div>
         </div>
+
+        <div class="bg-white border border-border-color rounded-md p-4 mt-4">
+            <h2 class="text-base font-bold text-title mb-3">Kullanıcılar</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-sm text-default border-b border-border-color">
+                            <th class="text-left py-2 px-2 font-semibold text-gray-900">Ad</th>
+                            <th class="text-left py-2 px-2 font-semibold text-gray-900">E-posta</th>
+                            <th class="text-left py-2 px-2 font-semibold text-gray-900">Rol</th>
+                            <th class="text-left py-2 px-2 font-semibold text-gray-900">İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($users as $user)
+                            <tr class="border-b border-border-color">
+                                <td class="py-2.5 px-2 text-sm font-semibold text-title">{{ $user->name }}</td>
+                                <td class="py-2.5 px-2 text-sm text-default">{{ $user->email }}</td>
+                                <td class="py-2.5 px-2 text-sm text-default">{{ $user->getRoleNames()->join(', ') ?: '—' }}</td>
+                                <td class="py-2.5 px-2">
+                                    <form method="POST" action="{{ route('central.web.tenants.users.impersonate', [$tenant, $user]) }}">
+                                        @csrf
+                                        <button type="submit" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light cursor-pointer">
+                                            <i class="ph ph-sign-in"></i> Bu kullanıcı olarak gir
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="4" class="py-6 text-center text-sm text-default">Kullanıcı yok.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 @endsection
