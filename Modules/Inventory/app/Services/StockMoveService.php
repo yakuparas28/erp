@@ -22,6 +22,7 @@ class StockMoveService
     public function __construct(
         private readonly UomConversionService $uomConversion,
         private readonly RemovalStrategyService $removalStrategy,
+        private readonly ReorderingService $reordering,
     ) {}
 
     public function move(
@@ -104,6 +105,7 @@ class StockMoveService
                 : $quant->decrement('qty', bcmul($referenceQty, '-1', 4));
 
             $this->refreshCurrentStock($tenantId, $product);
+            $this->reordering->evaluate($product, $affectedLocationId);
 
             return $move;
         });
