@@ -6,6 +6,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Inventory\Models\InventoryAdjustment;
+use Modules\Inventory\Models\Location;
 
 /**
  * @extends Factory<InventoryAdjustment>

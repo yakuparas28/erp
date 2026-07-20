@@ -4,7 +4,9 @@ namespace Modules\Inventory\Database\Factories;
 
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Inventory\Models\InventoryAdjustment;
 use Modules\Inventory\Models\InventoryAdjustmentLine;
+use Modules\Inventory\Models\Product;
 
 /**
  * @extends Factory<InventoryAdjustmentLine>

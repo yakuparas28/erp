@@ -9,12 +9,14 @@ use App\Services\Mail\NotificationTemplateService;
 use App\Services\Mail\TenantMailer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Modules\Inventory\Services\InventoryDefaultsService;
 
 class TenantProvisioningService
 {
     public function __construct(
         private readonly NotificationTemplateService $templates,
         private readonly TenantMailer $mailer,
+        private readonly InventoryDefaultsService $inventoryDefaults,
     ) {}
 
     /**
@@ -41,6 +43,8 @@ class TenantProvisioningService
 
             setPermissionsTeamId($tenant->id);
             $adminUser->assignRole('Tenant Admin');
+
+            $this->inventoryDefaults->provision($tenant);
 
             return [$tenant, $adminUser, $password];
         });

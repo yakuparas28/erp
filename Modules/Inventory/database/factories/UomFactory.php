@@ -5,6 +5,7 @@ namespace Modules\Inventory\Database\Factories;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Modules\Inventory\Models\Uom;
+use Modules\Inventory\Models\UomCategory;
 
 /**
  * @extends Factory<Uom>

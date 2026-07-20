@@ -5,6 +5,7 @@ namespace Modules\Inventory\Database\Factories;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\WarehouseTransfer;
 
 /**
