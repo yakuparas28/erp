@@ -86,6 +86,19 @@
                                 <i class="ph-duotone ph-squares-four"></i><span>Kontrol Paneli</span>
                             </a>
                         </li>
+                        @if (auth()->user()?->hasRole('Tenant Admin'))
+                            <li class="menu-title" aria-disabled="true"><span>Ayarlar</span></li>
+                            <li>
+                                <a href="{{ route('app.settings.mail') }}" class="{{ request()->routeIs('app.settings.mail*') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-envelope-simple"></i><span>E-posta Ayarları</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('app.settings.templates') }}" class="{{ request()->routeIs('app.settings.templates*') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-file-text"></i><span>Bildirim Şablonları</span>
+                                </a>
+                            </li>
+                        @endif
                     </ul>
                 </div>
             </div>

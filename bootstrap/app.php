@@ -7,6 +7,8 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Spatie\Permission\Middleware\PermissionMiddleware;
+use Spatie\Permission\Middleware\RoleMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -23,6 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
             SetPermissionsTeamId::class,
         ]);
 
+        $middleware->web(append: [
+            SetPermissionsTeamId::class,
+        ]);
+
         $middleware->redirectGuestsTo(function (Request $request): ?string {
             return $request->expectsJson() ? null : route('login');
         });
@@ -35,6 +41,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'module' => EnsureModuleActive::class,
+            'role' => RoleMiddleware::class,
+            'permission' => PermissionMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
