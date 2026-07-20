@@ -52,7 +52,7 @@ return new class extends Migration
             $table->unsignedBigInteger('product_id');
             $table->unsignedBigInteger('uom_id');
             $table->unsignedBigInteger('lot_id')->nullable();
-            $table->decimal('qty', 15, 4); // pozitif, referans birimde saklanır
+            $table->decimal('qty', 15, 4); // pozitif, satırın biriminde; move() referansa çevirir
             $table->timestamps();
 
             $table->index(['tenant_id', 'warehouse_transfer_id'], 'wt_lines_tenant_transfer_idx');
