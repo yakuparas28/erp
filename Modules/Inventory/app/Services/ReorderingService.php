@@ -2,6 +2,7 @@
 
 namespace Modules\Inventory\Services;
 
+use App\Models\User;
 use Modules\Inventory\Events\ReplenishmentAcknowledged;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ReorderingRule;
@@ -49,10 +50,16 @@ class ReorderingService
         );
     }
 
-    public function acknowledge(ReplenishmentSuggestion $suggestion): void
+    /**
+     * $user, öneriyi onaylayan kişidir; olay üzerinden Satınalma
+     * modülüne taşınır ve otomatik oluşturulacak draft PO'nun
+     * created_by'ı olur (görev ayrılığı bu kullanıcı için de geçerli
+     * kalır: kendi onayladığı öneriden doğan PO'yu kendisi confirm edemez).
+     */
+    public function acknowledge(ReplenishmentSuggestion $suggestion, User $user): void
     {
         $suggestion->update(['status' => 'acknowledged']);
 
-        ReplenishmentAcknowledged::dispatch($suggestion);
+        ReplenishmentAcknowledged::dispatch($suggestion, $user);
     }
 }

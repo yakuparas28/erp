@@ -113,7 +113,7 @@ class ReorderingServiceTest extends TenantTestCase
         $this->stock('1');
 
         $suggestion = ReplenishmentSuggestion::firstOrFail();
-        app(ReorderingService::class)->acknowledge($suggestion);
+        app(ReorderingService::class)->acknowledge($suggestion, $this->tenantAdmin);
 
         $this->assertSame('acknowledged', $suggestion->fresh()->status);
         Event::assertDispatched(ReplenishmentAcknowledged::class);
