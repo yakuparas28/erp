@@ -35,9 +35,20 @@
                                 <td class="py-2.5 px-3 text-sm text-default">{{ $template->base_price }}</td>
                                 <td class="py-2.5 px-3 text-sm text-default">{{ $template->variants_count }}</td>
                                 <td class="py-2.5 px-3">
-                                    <a href="{{ route('app.inventory.templates.show', $template) }}" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light">
-                                        {{ __('Open') }}
-                                    </a>
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('app.inventory.templates.show', $template) }}" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light">
+                                            {{ __('Open') }}
+                                        </a>
+                                        @if ($template->variants_count === 0)
+                                            <form method="POST" action="{{ route('app.inventory.templates.destroy', $template) }}" onsubmit="return confirm('{{ __('Delete this template?') }}')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="size-7 rounded-md border border-border-color flex items-center justify-center text-danger hover:bg-light cursor-pointer" title="{{ __('Delete') }}">
+                                                    <i class="ph ph-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -57,7 +68,18 @@
                     <li class="border border-border-color rounded-md p-3">
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-sm font-semibold text-title">{{ $attribute->name }}</span>
-                            <span class="text-[11px] bg-light text-default px-2 py-0.5 rounded">{{ __('creation-mode.'.$attribute->creation_mode) }}</span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] bg-light text-default px-2 py-0.5 rounded">{{ __('creation-mode.'.$attribute->creation_mode) }}</span>
+                                @unless (in_array($attribute->id, $attachedAttributeIds, true))
+                                    <form method="POST" action="{{ route('app.inventory.attributes.destroy', $attribute) }}" onsubmit="return confirm('{{ __('Delete this attribute?') }}')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-danger cursor-pointer" title="{{ __('Delete') }}">
+                                            <i class="ph ph-trash"></i>
+                                        </button>
+                                    </form>
+                                @endunless
+                            </div>
                         </div>
                         <div class="flex flex-wrap gap-1 mb-2">
                             @foreach ($attribute->values as $value)

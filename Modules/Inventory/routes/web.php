@@ -21,7 +21,9 @@ Route::middleware(['auth:web'])->prefix('app/inventory')->name('app.inventory.')
         Route::get('/templates', [ProductTemplateController::class, 'index'])->name('templates.index');
         Route::post('/templates', [ProductTemplateController::class, 'store'])->name('templates.store');
         Route::get('/templates/{template}', [ProductTemplateController::class, 'show'])->name('templates.show');
+        Route::delete('/templates/{template}', [ProductTemplateController::class, 'destroy'])->name('templates.destroy');
         Route::post('/attributes', [ProductTemplateController::class, 'storeAttribute'])->name('attributes.store');
+        Route::delete('/attributes/{attribute}', [ProductTemplateController::class, 'destroyAttribute'])->name('attributes.destroy');
         Route::post('/attributes/{attribute}/values', [ProductTemplateController::class, 'storeAttributeValue'])->name('attributes.values.store');
         Route::post('/templates/{template}/attributes', [ProductTemplateController::class, 'attachAttribute'])->name('templates.attributes.attach');
     });

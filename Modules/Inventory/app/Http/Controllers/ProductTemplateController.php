@@ -9,6 +9,7 @@ use Illuminate\View\View;
 use Modules\Inventory\Models\ProductAttribute;
 use Modules\Inventory\Models\ProductAttributeValue;
 use Modules\Inventory\Models\ProductTemplate;
+use Modules\Inventory\Models\ProductTemplateAttributeLine;
 use Modules\Inventory\Services\VariantGeneratorService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -21,6 +22,7 @@ class ProductTemplateController extends Controller
         return view('inventory::templates.index', [
             'templates' => ProductTemplate::withCount('variants')->orderBy('name')->get(),
             'attributes' => ProductAttribute::with('values')->orderBy('name')->get(),
+            'attachedAttributeIds' => ProductTemplateAttributeLine::pluck('product_attribute_id')->all(),
         ]);
     }
 
@@ -92,5 +94,39 @@ class ProductTemplateController extends Controller
         return redirect()
             ->route('app.inventory.templates.show', $template)
             ->with('status', __('Attribute attached; variants are being generated.'));
+    }
+
+    public function destroy(ProductTemplate $template): RedirectResponse
+    {
+        if ($template->variants()->exists()) {
+            return back()->withErrors([
+                'template' => __('This template has generated variants; remove them first before deleting the template.'),
+            ]);
+        }
+
+        $template->attributeLines()->delete();
+        $template->delete();
+
+        return redirect()
+            ->route('app.inventory.templates.index')
+            ->with('status', __('Template ":name" deleted.', ['name' => $template->name]));
+    }
+
+    public function destroyAttribute(ProductAttribute $attribute): RedirectResponse
+    {
+        $isAttached = ProductTemplateAttributeLine::where('product_attribute_id', $attribute->id)->exists();
+
+        if ($isAttached) {
+            return back()->withErrors([
+                'attribute' => __('This attribute is attached to a template and cannot be deleted.'),
+            ]);
+        }
+
+        ProductAttributeValue::where('product_attribute_id', $attribute->id)->delete();
+        $attribute->delete();
+
+        return redirect()
+            ->route('app.inventory.templates.index')
+            ->with('status', __('Attribute ":name" deleted.', ['name' => $attribute->name]));
     }
 }
