@@ -10,9 +10,13 @@ use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductCategory;
 use Modules\Inventory\Models\ProductTemplate;
 use Modules\Inventory\Models\Uom;
+use Modules\Inventory\Services\ProductDeletionService;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ProductController extends Controller
 {
+    public function __construct(private readonly ProductDeletionService $deletions) {}
+
     public function index(): View
     {
         $products = Product::with(['uom', 'category', 'kitComponents.componentProduct'])->orderBy('name')->get();
@@ -53,6 +57,19 @@ class ProductController extends Controller
         return redirect()
             ->route('app.inventory.products.index')
             ->with('status', __(':name updated.', ['name' => $product->name]));
+    }
+
+    public function destroy(Product $product): RedirectResponse
+    {
+        try {
+            $this->deletions->delete($product);
+        } catch (HttpException $e) {
+            return back()->withErrors(['product' => $e->getMessage()]);
+        }
+
+        return redirect()
+            ->route('app.inventory.products.index')
+            ->with('status', __(':name deleted.', ['name' => $product->name]));
     }
 
     public function storeCategory(Request $request): RedirectResponse

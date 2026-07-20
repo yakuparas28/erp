@@ -62,6 +62,13 @@
                                         <i class="ph ph-stack-simple"></i> {{ __('Components') }}
                                     </button>
                                 @endif
+                                <form method="POST" action="{{ route('app.inventory.products.destroy', $product) }}" onsubmit="return confirm('{{ __('Delete this product?') }}')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="size-7 rounded-md border border-border-color flex items-center justify-center text-danger hover:bg-light cursor-pointer" title="{{ __('Delete') }}">
+                                        <i class="ph ph-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>
@@ -80,9 +87,18 @@
                         <td class="py-2.5 px-3 text-sm text-default">{{ __('product-type.stockable') }}</td>
                         <td class="py-2.5 px-3 text-sm text-default">{{ rtrim(rtrim((string) $template->variants->sum('current_stock'), '0'), '.') ?: '0' }}</td>
                         <td class="py-2.5 px-3">
-                            <a href="{{ route('app.inventory.templates.show', $template) }}" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light">
-                                {{ __('View Variants') }}
-                            </a>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('app.inventory.templates.show', $template) }}" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light">
+                                    {{ __('View Variants') }}
+                                </a>
+                                <form method="POST" action="{{ route('app.inventory.templates.destroy', $template) }}" onsubmit="return confirm('{{ __('Delete this template and all its variants?') }}')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="size-7 rounded-md border border-border-color flex items-center justify-center text-danger hover:bg-light cursor-pointer" title="{{ __('Delete') }}">
+                                        <i class="ph ph-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 @empty

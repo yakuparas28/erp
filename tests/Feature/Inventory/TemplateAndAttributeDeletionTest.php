@@ -3,12 +3,15 @@
 namespace Tests\Feature\Inventory;
 
 use Modules\Inventory\Jobs\GenerateInstantVariants;
+use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductAttribute;
 use Modules\Inventory\Models\ProductAttributeValue;
 use Modules\Inventory\Models\ProductTemplate;
 use Modules\Inventory\Models\Uom;
 use Modules\Inventory\Models\UomCategory;
+use Modules\Inventory\Models\Warehouse;
+use Modules\Inventory\Services\StockMoveService;
 use Modules\Inventory\Services\VariantGeneratorService;
 use Tests\TenantTestCase;
 
@@ -30,7 +33,7 @@ class TemplateAndAttributeDeletionTest extends TenantTestCase
         $this->assertDatabaseMissing('product_templates', ['id' => $template->id]);
     }
 
-    public function test_template_with_variants_cannot_be_deleted(): void
+    public function test_template_with_variants_and_no_stock_history_cascade_deletes(): void
     {
         $category = UomCategory::factory()->create(['tenant_id' => $this->tenant->id]);
         Uom::factory()->create(['tenant_id' => $this->tenant->id, 'uom_category_id' => $category->id, 'is_reference' => true]);
@@ -41,7 +44,37 @@ class TemplateAndAttributeDeletionTest extends TenantTestCase
         app(VariantGeneratorService::class)->attachAttribute($template, $attribute);
         (new GenerateInstantVariants($this->tenant->id, $template->id))->handle();
 
-        $this->assertGreaterThan(0, Product::where('product_template_id', $template->id)->count());
+        $variantIds = Product::where('product_template_id', $template->id)->pluck('id');
+        $this->assertGreaterThan(0, $variantIds->count());
+
+        $this->delete("/app/inventory/templates/{$template->id}")->assertRedirect();
+
+        $this->assertDatabaseMissing('product_templates', ['id' => $template->id]);
+        foreach ($variantIds as $variantId) {
+            $this->assertDatabaseMissing('products', ['id' => $variantId]);
+        }
+    }
+
+    public function test_template_with_a_variant_that_has_stock_moves_cannot_be_deleted(): void
+    {
+        $category = UomCategory::factory()->create(['tenant_id' => $this->tenant->id]);
+        $unit = Uom::factory()->create(['tenant_id' => $this->tenant->id, 'uom_category_id' => $category->id, 'is_reference' => true]);
+
+        $template = ProductTemplate::factory()->create(['tenant_id' => $this->tenant->id]);
+        $attribute = ProductAttribute::factory()->create(['tenant_id' => $this->tenant->id, 'creation_mode' => 'instant']);
+        ProductAttributeValue::factory()->create(['tenant_id' => $this->tenant->id, 'product_attribute_id' => $attribute->id]);
+        app(VariantGeneratorService::class)->attachAttribute($template, $attribute);
+        (new GenerateInstantVariants($this->tenant->id, $template->id))->handle();
+
+        $variant = Product::where('product_template_id', $template->id)->firstOrFail();
+        $warehouse = Warehouse::factory()->create(['tenant_id' => $this->tenant->id]);
+        $location = Location::factory()->create(['tenant_id' => $this->tenant->id, 'warehouse_id' => $warehouse->id]);
+        app(StockMoveService::class)->move(
+            tenantId: $this->tenant->id, product: $variant,
+            fromLocationId: null, toLocationId: $location->id,
+            qty: '5', uom: $unit,
+            referenceType: 'inventory_adjustment', referenceId: 1,
+        );
 
         $this->from('/app/inventory/templates')
             ->delete("/app/inventory/templates/{$template->id}")
@@ -49,6 +82,7 @@ class TemplateAndAttributeDeletionTest extends TenantTestCase
             ->assertSessionHasErrors('template');
 
         $this->assertDatabaseHas('product_templates', ['id' => $template->id]);
+        $this->assertDatabaseHas('products', ['id' => $variant->id]);
     }
 
     public function test_unattached_attribute_can_be_deleted_with_its_values(): void

@@ -11,12 +11,16 @@ use Modules\Inventory\Models\ProductAttributeValue;
 use Modules\Inventory\Models\ProductTemplate;
 use Modules\Inventory\Models\ProductTemplateAttributeLine;
 use Modules\Inventory\Models\ProductVariantAttributeValue;
+use Modules\Inventory\Services\ProductDeletionService;
 use Modules\Inventory\Services\VariantGeneratorService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ProductTemplateController extends Controller
 {
-    public function __construct(private readonly VariantGeneratorService $variants) {}
+    public function __construct(
+        private readonly VariantGeneratorService $variants,
+        private readonly ProductDeletionService $deletions,
+    ) {}
 
     public function index(): View
     {
@@ -99,18 +103,17 @@ class ProductTemplateController extends Controller
 
     public function destroy(ProductTemplate $template): RedirectResponse
     {
-        if ($template->variants()->exists()) {
-            return back()->withErrors([
-                'template' => __('This template has generated variants; remove them first before deleting the template.'),
-            ]);
-        }
+        $name = $template->name;
 
-        $template->attributeLines()->delete();
-        $template->delete();
+        try {
+            $this->deletions->deleteTemplate($template);
+        } catch (HttpException $e) {
+            return back()->withErrors(['template' => $e->getMessage()]);
+        }
 
         return redirect()
             ->route('app.inventory.templates.index')
-            ->with('status', __('Template ":name" deleted.', ['name' => $template->name]));
+            ->with('status', __('Template ":name" and its variants were deleted.', ['name' => $name]));
     }
 
     public function destroyAttribute(ProductAttribute $attribute): RedirectResponse

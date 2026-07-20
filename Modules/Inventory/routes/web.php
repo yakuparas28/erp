@@ -14,6 +14,7 @@ Route::middleware(['auth:web'])->prefix('app/inventory')->name('app.inventory.')
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');
         Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
+        Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
         Route::post('/product-categories', [ProductController::class, 'storeCategory'])->name('categories.store');
         Route::post('/products/{product}/kit-components', [KitComponentController::class, 'store'])->name('kit-components.store');
         Route::delete('/kit-components/{component}', [KitComponentController::class, 'destroy'])->name('kit-components.destroy');
