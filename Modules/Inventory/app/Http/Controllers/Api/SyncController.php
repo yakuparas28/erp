@@ -5,13 +5,18 @@ namespace Modules\Inventory\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Modules\Inventory\Models\InventoryAdjustment;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\Uom;
+use Modules\Inventory\Services\SyncBulkPushService;
 use Modules\Inventory\Services\SyncCursorService;
 
 class SyncController extends Controller
 {
-    public function __construct(private readonly SyncCursorService $cursors) {}
+    public function __construct(
+        private readonly SyncCursorService $cursors,
+        private readonly SyncBulkPushService $bulkPush,
+    ) {}
 
     /**
      * Full Local Catalog + Delta Sync (PRD 3.2–3.3): ilk indirmede tüm
@@ -59,5 +64,30 @@ class SyncController extends Controller
             'uoms' => Uom::where('tenant_id', $tenantId)->get(['id', 'uom_category_id', 'name', 'factor', 'is_reference']),
             'next_cursor' => $nextCursor,
         ]);
+    }
+
+    /**
+     * Bulk Push (PRD 3.2–3.3): en fazla 1000 satırlık bir sayım paketi,
+     * kendi batch_uuid'siyle gönderilir; sync_batches ile idempotent yazılır.
+     */
+    public function pushCounts(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'batch_uuid' => ['required', 'uuid'],
+            'inventory_adjustment_id' => ['required', 'integer'],
+            'lines' => ['required', 'array', 'max:1000'],
+            'lines.*.barcode' => ['required', 'string'],
+            'lines.*.qty' => ['required', 'numeric'],
+            'lines.*.lot_id' => ['nullable', 'integer'],
+        ]);
+
+        $tenantId = $request->user()->tenant_id;
+
+        $adjustment = InventoryAdjustment::where('tenant_id', $tenantId)
+            ->findOrFail($validated['inventory_adjustment_id']);
+
+        $this->bulkPush->push($tenantId, $validated['batch_uuid'], $adjustment, $validated['lines']);
+
+        return response()->json(['status' => 'ok']);
     }
 }
