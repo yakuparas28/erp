@@ -33,6 +33,6 @@ class NotificationTemplateController extends Controller
 
         return redirect()
             ->route('central.web.settings.templates')
-            ->with('status', "\"{$template->name}\" şablonu güncellendi.");
+            ->with('status', __('Template ":name" updated.', ['name' => $template->name]));
     }
 }

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureModuleActive;
+use App\Http\Middleware\SetLocale;
 use App\Http\Middleware\SetPermissionsTeamId;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -27,6 +28,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [
             SetPermissionsTeamId::class,
+            SetLocale::class,
         ]);
 
         $middleware->redirectGuestsTo(function (Request $request): ?string {

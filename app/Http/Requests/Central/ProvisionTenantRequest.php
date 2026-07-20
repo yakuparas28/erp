@@ -24,9 +24,9 @@ class ProvisionTenantRequest extends StoreTenantRequest
     public function attributes(): array
     {
         return [
-            'name' => 'firma adı',
-            'admin_name' => 'yönetici adı',
-            'admin_email' => 'yönetici e-postası',
+            'name' => __('company name'),
+            'admin_name' => __('administrator name'),
+            'admin_email' => __('administrator email'),
         ];
     }
 }

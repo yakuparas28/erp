@@ -1,11 +1,11 @@
 @extends('central.layouts.app')
 
-@section('title', 'Bildirim Şablonları')
+@section('title', __('Notification Templates'))
 
 @section('content')
 <div class="mb-3 lg:mb-6">
-    <h1 class="text-gray-900 text-xl font-bold mb-1">Bildirim Şablonları</h1>
-    <p class="text-sm text-default mb-0">E-posta konu ve içerikleri buradan düzenlenir. İçerik Markdown destekler; <code>@{{degisken}}</code> yer tutucuları gönderim sırasında gerçek değerlerle değiştirilir.</p>
+    <h1 class="text-gray-900 text-xl font-bold mb-1">{{ __('Notification Templates') }}</h1>
+    <p class="text-sm text-default mb-0">{{ __('Edit email subjects and bodies here. Markdown is supported;') }} <code>@{{degisken}}</code> {{ __('placeholders are replaced with real values on send.') }}</p>
 </div>
 
 @foreach ($templates as $template)
@@ -18,21 +18,21 @@
             @csrf
             @method('PUT')
             <div>
-                <label class="text-sm font-semibold text-gray-900 mb-1 block">Konu</label>
+                <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Subject') }}</label>
                 <input type="text" name="subject" required value="{{ $template->subject }}"
                        class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
             </div>
             <div>
-                <label class="text-sm font-semibold text-gray-900 mb-1 block">İçerik (Markdown)</label>
+                <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Body (Markdown)') }}</label>
                 <textarea name="body" rows="10" required
                           class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0 font-mono">{{ $template->body }}</textarea>
                 @if ($template->key === 'tenant_admin_invitation')
-                    <p class="text-[11px] text-default mt-1 mb-0">Kullanılabilir değişkenler:
+                    <p class="text-[11px] text-default mt-1 mb-0">{{ __('Available variables:') }}
                         <code>@{{yonetici_adi}}</code>, <code>@{{yonetici_email}}</code>, <code>@{{firma_adi}}</code>, <code>@{{gecici_sifre}}</code>, <code>@{{uygulama_adi}}</code>
                     </p>
                 @endif
             </div>
-            <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover cursor-pointer">Şablonu Kaydet</button>
+            <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover cursor-pointer">{{ __('Save Template') }}</button>
         </form>
     </div>
 @endforeach

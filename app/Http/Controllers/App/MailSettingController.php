@@ -38,6 +38,6 @@ class MailSettingController extends Controller
             ->withProperties(['tenant_id' => $request->user()->tenant_id])
             ->log('mail_settings.updated');
 
-        return redirect()->route('app.settings.mail')->with('status', 'E-posta ayarları kaydedildi.');
+        return redirect()->route('app.settings.mail')->with('status', __('Email settings saved.'));
     }
 }

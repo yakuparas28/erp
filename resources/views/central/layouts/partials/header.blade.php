@@ -19,6 +19,14 @@
         </div>
 
         <div class="flex items-center gap-2 ms-auto">
+            <div class="header-item flex items-center gap-1">
+                @foreach (['tr' => 'TR', 'en' => 'EN'] as $code => $label)
+                    <form method="POST" action="{{ route('locale.update', $code) }}">
+                        @csrf
+                        <button type="submit" class="btn-sm border {{ app()->getLocale() === $code ? 'bg-dark text-white border-dark' : 'bg-white text-gray-900 border-border-color hover:bg-light' }} cursor-pointer">{{ $label }}</button>
+                    </form>
+                @endforeach
+            </div>
             <div class="header-item">
                 <button class="topbar-link items-center justify-center light-dark-mode" type="button" aria-label="tema">
                     <i class="ph-duotone ph-moon"></i>
@@ -33,7 +41,7 @@
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit" class="w-full text-start flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-danger hover:bg-light cursor-pointer">
-                            <i class="ph ph-sign-out"></i> Çıkış Yap
+                            <i class="ph ph-sign-out"></i> {{ __('Log Out') }}
                         </button>
                     </form>
                 </div>

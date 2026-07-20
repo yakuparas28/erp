@@ -19,21 +19,21 @@
     <div class="sidebar-inner" data-simplebar="">
         <div id="sidebar-menu" class="sidebar-menu">
             <ul role="menu" aria-label="Ana menü">
-                <li class="menu-title" aria-disabled="true"><span>Platform</span></li>
+                <li class="menu-title" aria-disabled="true"><span>{{ __('Platform') }}</span></li>
                 <li>
                     <a href="{{ route('central.web.tenants.index') }}" class="{{ request()->routeIs('central.web.tenants.*') ? 'active' : '' }}">
-                        <i class="ph-duotone ph-buildings"></i><span>Tenant'lar</span>
+                        <i class="ph-duotone ph-buildings"></i><span>{{ __('Tenants') }}</span>
                     </a>
                 </li>
-                <li class="menu-title" aria-disabled="true"><span>Ayarlar</span></li>
+                <li class="menu-title" aria-disabled="true"><span>{{ __('Settings') }}</span></li>
                 <li>
                     <a href="{{ route('central.web.settings.mail') }}" class="{{ request()->routeIs('central.web.settings.mail*') ? 'active' : '' }}">
-                        <i class="ph-duotone ph-envelope-simple"></i><span>E-posta Ayarları</span>
+                        <i class="ph-duotone ph-envelope-simple"></i><span>{{ __('Email Settings') }}</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ route('central.web.settings.templates') }}" class="{{ request()->routeIs('central.web.settings.templates*') ? 'active' : '' }}">
-                        <i class="ph-duotone ph-file-text"></i><span>Bildirim Şablonları</span>
+                        <i class="ph-duotone ph-file-text"></i><span>{{ __('Notification Templates') }}</span>
                     </a>
                 </li>
             </ul>

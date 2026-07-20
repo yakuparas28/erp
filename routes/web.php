@@ -5,6 +5,7 @@ use App\Http\Controllers\App\MailSettingController;
 use App\Http\Controllers\App\NotificationTemplateController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Central\ImpersonationController;
+use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('login'))->name('home');
@@ -15,6 +16,7 @@ Route::middleware('guest:central_web,web')->group(function (): void {
 });
 
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('locale.update');
 Route::post('/impersonation/leave', [ImpersonationController::class, 'destroy'])->name('impersonation.leave');
 
 Route::middleware('auth:web')->prefix('app')->name('app.')->group(function (): void {

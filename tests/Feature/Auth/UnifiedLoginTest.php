@@ -16,7 +16,7 @@ class UnifiedLoginTest extends TestCase
     {
         $this->get('/login')
             ->assertOk()
-            ->assertSee("ERP'ye Giriş", false);
+            ->assertSee("ERP'ye Giriş");
     }
 
     public function test_super_admin_logs_in_and_lands_on_central_panel(): void

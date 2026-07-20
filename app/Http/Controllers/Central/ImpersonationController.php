@@ -30,7 +30,7 @@ class ImpersonationController extends Controller
 
         return redirect()
             ->route('app.dashboard')
-            ->with('status', "{$user->name} hesabını görüntülüyorsunuz.");
+            ->with('status', __("You are viewing :name's account.", ['name' => $user->name]));
     }
 
     /**

@@ -22,7 +22,7 @@ class MailSettingController extends Controller
     {
         $this->save(null, $request);
 
-        return redirect()->route('central.web.settings.mail')->with('status', 'Platform e-posta ayarları kaydedildi.');
+        return redirect()->route('central.web.settings.mail')->with('status', __('Platform email settings saved.'));
     }
 
     public function updateForTenant(StoreMailSettingRequest $request, Tenant $tenant): RedirectResponse
@@ -31,7 +31,7 @@ class MailSettingController extends Controller
 
         return redirect()
             ->route('central.web.tenants.show', $tenant)
-            ->with('status', "{$tenant->name} e-posta ayarları kaydedildi.");
+            ->with('status', __(':name email settings saved.', ['name' => $tenant->name]));
     }
 
     private function save(?int $tenantId, StoreMailSettingRequest $request): void

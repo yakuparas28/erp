@@ -53,7 +53,7 @@ class TenantController extends Controller
 
         return redirect()
             ->route('central.web.tenants.index')
-            ->with('status', "{$tenant->name} oluşturuldu; yönetici bilgileri {$validated['admin_email']} adresine gönderildi.");
+            ->with('status', __(':name created; administrator credentials were sent to :email.', ['name' => $tenant->name, 'email' => $validated['admin_email']]));
     }
 
     public function show(Tenant $tenant): View
@@ -87,7 +87,7 @@ class TenantController extends Controller
 
         return redirect()
             ->route('central.web.tenants.index')
-            ->with('status', "{$tenant->name} güncellendi.");
+            ->with('status', __(':name updated.', ['name' => $tenant->name]));
     }
 
     public function storeSubscription(StoreSubscriptionRequest $request, Tenant $tenant): RedirectResponse
@@ -105,7 +105,7 @@ class TenantController extends Controller
 
         return redirect()
             ->route('central.web.tenants.show', $tenant)
-            ->with('status', 'Abonelik güncellendi, modüller senkronlandı.');
+            ->with('status', __('Subscription saved; modules were synced.'));
     }
 
     public function activateModule(Request $request, Tenant $tenant, Module $module): RedirectResponse
@@ -120,7 +120,7 @@ class TenantController extends Controller
 
         return redirect()
             ->route('central.web.tenants.show', $tenant)
-            ->with('status', "{$module->name} modülü aktive edildi.");
+            ->with('status', __(':name module activated.', ['name' => $module->name]));
     }
 
     public function deactivateModule(Request $request, Tenant $tenant, Module $module): RedirectResponse
@@ -140,6 +140,6 @@ class TenantController extends Controller
 
         return redirect()
             ->route('central.web.tenants.show', $tenant)
-            ->with('status', "{$module->name} modülü devre dışı bırakıldı.");
+            ->with('status', __(':name module deactivated.', ['name' => $module->name]));
     }
 }

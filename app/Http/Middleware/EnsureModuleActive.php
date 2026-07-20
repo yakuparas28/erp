@@ -33,7 +33,7 @@ class EnsureModuleActive
             ->where('is_active', true)
             ->exists();
 
-        abort_unless($isActive, 403, 'Bu modül paketinizde aktif değil');
+        abort_unless($isActive, 403, __('This module is not active in your package'));
 
         return $next($request);
     }

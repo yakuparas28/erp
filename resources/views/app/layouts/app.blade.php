@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="utf-8">
-    <title>@yield('title', 'Kontrol Paneli') | {{ auth()->user()?->tenant?->name ?? 'ERP' }}</title>
+    <title>@yield('title', __('Dashboard')) | {{ auth()->user()?->tenant?->name ?? 'ERP' }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('template/v1/assets/img/favicon.png') }}">
@@ -36,6 +36,14 @@
                     </button>
                 </div>
                 <div class="flex items-center gap-2 ms-auto">
+                    <div class="header-item flex items-center gap-1">
+                        @foreach (['tr' => 'TR', 'en' => 'EN'] as $code => $label)
+                            <form method="POST" action="{{ route('locale.update', $code) }}">
+                                @csrf
+                                <button type="submit" class="btn-sm border {{ app()->getLocale() === $code ? 'bg-dark text-white border-dark' : 'bg-white text-gray-900 border-border-color hover:bg-light' }} cursor-pointer">{{ $label }}</button>
+                            </form>
+                        @endforeach
+                    </div>
                     <div class="header-item">
                         <button class="topbar-link items-center justify-center light-dark-mode" type="button" aria-label="tema">
                             <i class="ph-duotone ph-moon"></i>
@@ -51,7 +59,7 @@
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
                                 <button type="submit" class="w-full text-start flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-danger hover:bg-light cursor-pointer">
-                                    <i class="ph ph-sign-out"></i> Çıkış Yap
+                                    <i class="ph ph-sign-out"></i> {{ __('Log Out') }}
                                 </button>
                             </form>
                         </div>
@@ -83,19 +91,19 @@
                         <li class="menu-title" aria-disabled="true"><span>{{ auth()->user()?->tenant?->name }}</span></li>
                         <li>
                             <a href="{{ route('app.dashboard') }}" class="{{ request()->routeIs('app.dashboard') ? 'active' : '' }}">
-                                <i class="ph-duotone ph-squares-four"></i><span>Kontrol Paneli</span>
+                                <i class="ph-duotone ph-squares-four"></i><span>{{ __('Dashboard') }}</span>
                             </a>
                         </li>
                         @if (auth()->user()?->hasRole('Tenant Admin'))
-                            <li class="menu-title" aria-disabled="true"><span>Ayarlar</span></li>
+                            <li class="menu-title" aria-disabled="true"><span>{{ __('Settings') }}</span></li>
                             <li>
                                 <a href="{{ route('app.settings.mail') }}" class="{{ request()->routeIs('app.settings.mail*') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-envelope-simple"></i><span>E-posta Ayarları</span>
+                                    <i class="ph-duotone ph-envelope-simple"></i><span>{{ __('Email Settings') }}</span>
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ route('app.settings.templates') }}" class="{{ request()->routeIs('app.settings.templates*') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-file-text"></i><span>Bildirim Şablonları</span>
+                                    <i class="ph-duotone ph-file-text"></i><span>{{ __('Notification Templates') }}</span>
                                 </a>
                             </li>
                         @endif
@@ -109,11 +117,11 @@
                 <div class="p-3 lg:py-6 lg:px-0">
                     @if (auth('central_web')->check())
                         <div class="bg-warning-transparent text-warning border border-warning rounded-md px-4 py-3 text-sm mb-4 flex items-center justify-between gap-3">
-                            <span><i class="ph ph-eye me-1"></i> Süper Admin olarak <strong>{{ auth()->user()?->name }}</strong> hesabını görüntülüyorsunuz.</span>
+                            <span><i class="ph ph-eye me-1"></i> {{ __("You are viewing :name's account as Super Admin.", ['name' => auth()->user()?->name]) }}</span>
                             <form method="POST" action="{{ route('impersonation.leave') }}">
                                 @csrf
                                 <button type="submit" class="btn-sm bg-white border border-warning text-warning hover:bg-warning hover:text-white cursor-pointer">
-                                    Yönetici Paneline Dön
+                                    {{ __('Back to Admin Panel') }}
                                 </button>
                             </form>
                         </div>

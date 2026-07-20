@@ -1,17 +1,17 @@
 @extends('central.layouts.guest')
 
-@section('title', 'Giriş')
+@section('title', __('Login'))
 
 @section('content')
 <div class="bg-white border border-border-color rounded-md shadow-sm w-full max-w-md sm:p-8 p-5">
     <div class="text-center mb-6">
-        <h1 class="text-xl font-bold text-title mb-1">ERP'ye Giriş</h1>
-        <p class="text-sm text-default mb-0">Hesabınızla oturum açın; yetkinize göre panele yönlendirilirsiniz.</p>
+        <h1 class="text-xl font-bold text-title mb-1">{{ __('Sign in to ERP') }}</h1>
+        <p class="text-sm text-default mb-0">{{ __('Sign in with your account; you will be routed to the right panel.') }}</p>
     </div>
     <form class="space-y-4" method="POST" action="{{ route('login.store') }}">
         @csrf
         <div>
-            <label for="email" class="text-sm font-semibold text-gray-900 mb-1 block">E-posta Adresi</label>
+            <label for="email" class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Email Address') }}</label>
             <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus
                    class="w-full px-3 py-2.5 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0"
                    placeholder="admin@ornek.com">
@@ -20,7 +20,7 @@
             @enderror
         </div>
         <div>
-            <label for="password" class="text-sm text-gray-900 mb-1 block">Şifre</label>
+            <label for="password" class="text-sm text-gray-900 mb-1 block">{{ __('Password') }}</label>
             <div class="relative">
                 <input id="password" name="password" type="password" required
                        class="form-input form-input-icon w-full px-3 py-2.5 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:border-border-color focus:ring-0 h-10"
@@ -30,9 +30,9 @@
         </div>
         <div class="flex items-center gap-2">
             <input type="checkbox" class="size-4 rounded border-border-color" id="remember" name="remember" value="1">
-            <label for="remember" class="text-sm text-default">Beni hatırla</label>
+            <label for="remember" class="text-sm text-default">{{ __('Remember me') }}</label>
         </div>
-        <button type="submit" class="w-full bg-dark text-white py-2.5 rounded-md text-sm font-semibold hover:bg-primary-hover cursor-pointer">Giriş Yap</button>
+        <button type="submit" class="w-full bg-dark text-white py-2.5 rounded-md text-sm font-semibold hover:bg-primary-hover cursor-pointer">{{ __('Sign In') }}</button>
     </form>
 </div>
 @endsection

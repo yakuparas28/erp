@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="utf-8">
-    <title>@yield('title', 'Yönetim Paneli') | ERP Merkez</title>
+    <title>@yield('title', __('Admin Panel')) | ERP Merkez</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('template/v1/assets/img/favicon.png') }}">
@@ -42,7 +42,7 @@
             </main>
 
             <footer class="footer px-6 pb-3 flex items-center justify-center gap-2">
-                <p>{{ date('Y') }} &copy; ERP Merkez Yönetim Paneli</p>
+                <p>{{ date('Y') }} &copy; {{ __('ERP Central Admin Panel') }}</p>
             </footer>
         </div>
     </div>

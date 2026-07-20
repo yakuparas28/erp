@@ -46,7 +46,7 @@ class NotificationTemplateController extends Controller
 
         return redirect()
             ->route('app.settings.templates')
-            ->with('status', "\"{$default->name}\" şablonu firmanıza özel olarak kaydedildi.");
+            ->with('status', __('Template ":name" saved as your company override.', ['name' => $default->name]));
     }
 
     public function destroy(Request $request, string $key): RedirectResponse
@@ -57,6 +57,6 @@ class NotificationTemplateController extends Controller
 
         return redirect()
             ->route('app.settings.templates')
-            ->with('status', 'Şablon platform varsayılanına döndürüldü.');
+            ->with('status', __('Template reset to the platform default.'));
     }
 }

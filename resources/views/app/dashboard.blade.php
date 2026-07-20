@@ -1,16 +1,16 @@
 @extends('app.layouts.app')
 
-@section('title', 'Kontrol Paneli')
+@section('title', __('Dashboard'))
 
 @section('content')
 <div class="mb-3 lg:mb-6">
-    <h1 class="text-gray-900 text-xl font-bold mb-1">Hoş geldiniz, {{ auth()->user()->name }}</h1>
+    <h1 class="text-gray-900 text-xl font-bold mb-1">{{ __('Welcome, :name', ['name' => auth()->user()->name]) }}</h1>
     <p class="text-sm text-default mb-0">
         {{ $tenant->name }}
         @if ($subscription)
-            &middot; {{ $subscription->licensePackage->name }} paketi
+            &middot; {{ __(':name package', ['name' => $subscription->licensePackage->name]) }}
             @if ($subscription->ends_at)
-                &middot; Bitiş: {{ $subscription->ends_at->format('d.m.Y') }}
+                &middot; {{ __('Ends') }}: {{ $subscription->ends_at->format('d.m.Y') }}
             @endif
         @endif
     </p>
@@ -23,7 +23,7 @@
                 <div class="flex items-center justify-between mb-2">
                     <i class="ph-duotone {{ ['inventory' => 'ph-package', 'sales' => 'ph-shopping-cart', 'purchase' => 'ph-truck', 'accounting' => 'ph-calculator'][$item['module']->key] ?? 'ph-cube' }} text-2xl text-title"></i>
                     <span class="text-[11px] {{ $item['isActive'] ? 'bg-success-transparent text-success' : 'bg-light text-default' }} px-2 py-0.5 rounded">
-                        {{ $item['isActive'] ? 'Aktif' : 'Pakete dahil değil' }}
+                        {{ $item['isActive'] ? __('Active') : __('Not in your package') }}
                     </span>
                 </div>
                 <h2 class="text-sm font-bold text-title mb-1">{{ $item['module']->name }}</h2>
