@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductCategory;
+use Modules\Inventory\Models\ProductTemplate;
 use Modules\Inventory\Models\Uom;
 
 class ProductController extends Controller
@@ -17,7 +18,9 @@ class ProductController extends Controller
         $products = Product::with(['uom', 'category', 'kitComponents.componentProduct'])->orderBy('name')->get();
 
         return view('inventory::products.index', [
-            'products' => $products,
+            // Varyantlı ürünler tek tek değil, şablonları altında gruplanmış tek satır olarak listelenir.
+            'standaloneProducts' => $products->whereNull('product_template_id')->values(),
+            'templates' => ProductTemplate::withCount('variants')->has('variants')->with('variants.uom')->orderBy('name')->get(),
             'categories' => ProductCategory::orderBy('name')->get(),
             'uoms' => Uom::where('is_reference', true)->orderBy('name')->get(),
             'nonKitProducts' => $products->where('is_kit', false),

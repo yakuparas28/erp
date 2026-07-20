@@ -102,6 +102,25 @@ class VariantAndKitScreensTest extends TenantTestCase
             ->assertSee('T-Shirt Mavi');
     }
 
+    public function test_products_index_groups_variants_under_their_template_instead_of_listing_each_row(): void
+    {
+        $template = ProductTemplate::factory()->create(['tenant_id' => $this->tenant->id, 'name' => 'Pamuklu Tişört']);
+        $attribute = ProductAttribute::factory()->create(['tenant_id' => $this->tenant->id, 'name' => 'Renk', 'creation_mode' => 'instant']);
+        ProductAttributeValue::factory()->create(['tenant_id' => $this->tenant->id, 'product_attribute_id' => $attribute->id, 'value' => 'Kırmızı']);
+        ProductAttributeValue::factory()->create(['tenant_id' => $this->tenant->id, 'product_attribute_id' => $attribute->id, 'value' => 'Mavi']);
+
+        $this->post("/app/inventory/templates/{$template->id}/attributes", [
+            'product_attribute_id' => $attribute->id,
+        ])->assertRedirect();
+
+        $response = $this->get('/app/inventory/products')->assertOk();
+
+        $response->assertSee('Pamuklu Tişört');
+        $response->assertSee(route('app.inventory.templates.show', $template), false);
+        $response->assertDontSee('Pamuklu Tişört Kırmızı');
+        $response->assertDontSee('Pamuklu Tişört Mavi');
+    }
+
     public function test_operator_without_permission_cannot_manage_products(): void
     {
         auth('web')->logout();

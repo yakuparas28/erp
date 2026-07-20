@@ -33,7 +33,7 @@
                 </tr>
             </thead>
             <tbody>
-                @forelse ($products as $product)
+                @forelse ($standaloneProducts as $product)
                     <tr class="border-b border-border-color">
                         <td class="py-2.5 px-3 text-sm font-semibold text-title">
                             {{ $product->name }}
@@ -66,15 +66,38 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="py-8 text-center text-sm text-default">{{ __('No products yet.') }}</td></tr>
                 @endforelse
+
+                @forelse ($templates as $template)
+                    <tr class="border-b border-border-color">
+                        <td class="py-2.5 px-3 text-sm font-semibold text-title">
+                            <a href="{{ route('app.inventory.templates.show', $template) }}" class="hover:underline">{{ $template->name }}</a>
+                            <span class="text-[11px] bg-info-transparent text-info px-2 py-0.5 rounded ms-1">{{ __('Variants') }}: {{ $template->variants_count }}</span>
+                        </td>
+                        <td class="py-2.5 px-3 text-sm text-default">—</td>
+                        <td class="py-2.5 px-3 text-sm text-default">—</td>
+                        <td class="py-2.5 px-3 text-sm text-default">{{ $template->variants->first()?->uom?->name ?? '—' }}</td>
+                        <td class="py-2.5 px-3 text-sm text-default">{{ __('product-type.stockable') }}</td>
+                        <td class="py-2.5 px-3 text-sm text-default">{{ rtrim(rtrim((string) $template->variants->sum('current_stock'), '0'), '.') ?: '0' }}</td>
+                        <td class="py-2.5 px-3">
+                            <a href="{{ route('app.inventory.templates.show', $template) }}" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light">
+                                {{ __('View Variants') }}
+                            </a>
+                        </td>
+                    </tr>
+                @empty
+                @endforelse
+
+                @if ($standaloneProducts->isEmpty() && $templates->isEmpty())
+                    <tr><td colspan="7" class="py-8 text-center text-sm text-default">{{ __('No products yet.') }}</td></tr>
+                @endif
             </tbody>
         </table>
     </div>
 </div>
 
 @include('inventory::products._form-modal', ['id' => 'add-product-modal', 'action' => route('app.inventory.products.store'), 'method' => 'POST', 'title' => __('New Product'), 'product' => null])
-@foreach ($products as $product)
+@foreach ($standaloneProducts as $product)
     @include('inventory::products._form-modal', ['id' => 'edit-product-modal-'.$product->id, 'action' => route('app.inventory.products.update', $product), 'method' => 'PUT', 'title' => __('Edit Product'), 'product' => $product])
     @if ($product->is_kit)
         @include('inventory::products._kit-components-modal', ['product' => $product, 'nonKitProducts' => $nonKitProducts])
