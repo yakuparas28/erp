@@ -3,6 +3,8 @@
 use App\Http\Controllers\App\DashboardController;
 use App\Http\Controllers\App\MailSettingController;
 use App\Http\Controllers\App\NotificationTemplateController;
+use App\Http\Controllers\App\RoleController;
+use App\Http\Controllers\App\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Central\ImpersonationController;
 use App\Http\Controllers\LocaleController;
@@ -21,6 +23,21 @@ Route::post('/impersonation/leave', [ImpersonationController::class, 'destroy'])
 
 Route::middleware('auth:web')->prefix('app')->name('app.')->group(function (): void {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::middleware('permission:manage users,web')->group(function (): void {
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+    });
+
+    Route::middleware('permission:manage roles,web')->group(function (): void {
+        Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+        Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
+        Route::put('/roles/{role}/permissions', [RoleController::class, 'syncPermissions'])->name('roles.permissions.update');
+        Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+    });
 
     Route::middleware('role:Tenant Admin,web')->group(function (): void {
         Route::get('/settings/mail', [MailSettingController::class, 'edit'])->name('settings.mail');

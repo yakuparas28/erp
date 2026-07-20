@@ -88,6 +88,19 @@ Faz 8,9 ──► Faz 12 (Partner Portal Girişi)
 
 ---
 
+### Faz 1c: Tenant Kullanıcı & Rol Yönetimi (kullanıcı talebiyle eklendi, 2026-07-20)
+
+**Amaç:** Tenant Admin'in kendi kullanıcılarını ve rollerini panelden yönetmesi. Şablon kalıbı: `roles-permissions.html` (rol tablosu + aksiyon dropdown + izin matrisi modalı) ve `user-management.html`.
+
+**İşler:**
+- [x] İzin kataloğu (`App\Support\PermissionCatalog`): modül anahtarına göre gruplu izinler (core: manage users/roles/settings; inventory: PRD izinleri; sales/purchase/accounting: PRD izinleri). Her faz kendi izinlerini kataloğa ekler.
+- [x] `PermissionSeeder`: katalogdaki izinleri oluşturur; Tenant Admin → tümü, Warehouse Operator → view stock + perform stock counts. RoleSeeder'dan zincirlenir.
+- [x] `/app/roles`: sistem rolleri (global, salt-okunur) + tenant'a özel roller (oluştur/yeniden adlandır/sil — kullanıcısı yoksa); izin matrisi modalı yalnız özel rollerde düzenlenebilir (global rol izni TÜM tenant'ları etkileyeceği için kilitli). Yetki: `permission:manage roles`.
+- [x] `/app/users`: listele, davet et (geçici şifre + 'user_invitation' bildirim şablonu + tenant SMTP), ad/rol düzenle, sil. Korumalar: kendini silememe, son Tenant Admin'i silememe/rolünü düşürememe. Yetki: `permission:manage users`.
+- [x] İzin modalı yalnız tenant'ın aktif modüllerinin gruplarını gösterir (core daima).
+
+**Kabul kriteri:** Özel rol oluşturup izin atanabilir; davet edilen kullanıcı e-posta alır ve atanan rolle giriş yapar; son admin korunur.
+
 ### Faz 2: Envanter Çekirdeği (PRD 3.1, 3.4, 4.1.1–4.1.2)
 
 **Modül:** `Modules/Inventory`. **Tablolar:** `warehouses`, `locations` (self-referencing ağaç, type enum, counting_lock, removal_strategy kolonu Faz 6'da işlev kazanır), `uom_categories`, `uoms`, `product_categories`, `products` (basit hali: name, sku, barcode ilişkisi, track_by, product_type/cost_method kolonları burada açılır ama işlevleri Faz 3/5'te), `product_barcodes` (unique tenant+barcode, nullable uom_id), `product_lots`, `stock_quants` (unique tenant+product+location+lot), `stock_moves` (işaretli qty, morphs reference), `inventory_adjustments`, `inventory_adjustment_lines` (sayılan miktarlar — additive birleştirme burada), `warehouse_transfers`.

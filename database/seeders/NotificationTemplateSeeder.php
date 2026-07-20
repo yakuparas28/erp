@@ -30,6 +30,26 @@ Teşekkürler,
 {{uygulama_adi}}
 MD,
             ],
+            [
+                'key' => 'user_invitation',
+                'name' => 'Kullanıcı Davet E-postası',
+                'subject' => '{{firma_adi}} — ERP Hesabınız Oluşturuldu',
+                'body' => <<<'MD'
+# Merhaba {{kullanici_adi}}
+
+**{{firma_adi}}** bünyesinde sizin için bir ERP hesabı oluşturuldu.
+
+**Giriş bilgileriniz:**
+
+- E-posta: {{kullanici_email}}
+- Geçici şifre: `{{gecici_sifre}}`
+
+İlk girişinizden sonra şifrenizi değiştirmenizi öneririz.
+
+Teşekkürler,
+{{uygulama_adi}}
+MD,
+            ],
         ];
 
         foreach ($templates as $attributes) {

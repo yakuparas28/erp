@@ -13,6 +13,8 @@ use App\Models\TenantSubscription;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -48,6 +50,8 @@ class AppServiceProvider extends ServiceProvider
             'tenant_module_activation' => TenantModuleActivation::class,
             'mail_setting' => MailSetting::class,
             'notification_template' => NotificationTemplate::class,
+            'role' => Role::class,
+            'permission' => Permission::class,
         ]);
     }
 }

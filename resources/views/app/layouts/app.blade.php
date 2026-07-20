@@ -101,6 +101,23 @@
                                 <i class="ph-duotone ph-squares-four"></i><span>{{ __('Dashboard') }}</span>
                             </a>
                         </li>
+                        @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
+                            <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>
+                            @can('manage users')
+                                <li>
+                                    <a href="{{ route('app.users.index') }}" class="{{ request()->routeIs('app.users.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-users"></i><span>{{ __('Users') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('manage roles')
+                                <li>
+                                    <a href="{{ route('app.roles.index') }}" class="{{ request()->routeIs('app.roles.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-shield-check"></i><span>{{ __('Roles & Permissions') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                        @endif
                         @if (auth()->user()?->hasRole('Tenant Admin'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Settings') }}</span></li>
                             <li>
