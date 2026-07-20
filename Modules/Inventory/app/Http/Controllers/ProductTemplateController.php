@@ -10,6 +10,7 @@ use Modules\Inventory\Models\ProductAttribute;
 use Modules\Inventory\Models\ProductAttributeValue;
 use Modules\Inventory\Models\ProductTemplate;
 use Modules\Inventory\Models\ProductTemplateAttributeLine;
+use Modules\Inventory\Models\ProductVariantAttributeValue;
 use Modules\Inventory\Services\VariantGeneratorService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -128,5 +129,22 @@ class ProductTemplateController extends Controller
         return redirect()
             ->route('app.inventory.templates.index')
             ->with('status', __('Attribute ":name" deleted.', ['name' => $attribute->name]));
+    }
+
+    public function destroyAttributeValue(ProductAttributeValue $value): RedirectResponse
+    {
+        $isUsedByVariant = ProductVariantAttributeValue::where('product_attribute_value_id', $value->id)->exists();
+
+        if ($isUsedByVariant) {
+            return back()->withErrors([
+                'value' => __('This value is used by a generated variant and cannot be deleted.'),
+            ]);
+        }
+
+        $value->delete();
+
+        return redirect()
+            ->route('app.inventory.templates.index')
+            ->with('status', __('Value ":name" deleted.', ['name' => $value->value]));
     }
 }

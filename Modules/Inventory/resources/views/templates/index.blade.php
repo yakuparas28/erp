@@ -83,7 +83,16 @@
                         </div>
                         <div class="flex flex-wrap gap-1 mb-2">
                             @foreach ($attribute->values as $value)
-                                <span class="text-[11px] bg-light text-default px-2 py-0.5 rounded">{{ $value->value }} @if ((float) $value->price_extra !== 0.0) (+{{ $value->price_extra }}) @endif</span>
+                                <span class="inline-flex items-center gap-1 text-[11px] bg-light text-default px-2 py-0.5 rounded">
+                                    {{ $value->value }} @if ((float) $value->price_extra !== 0.0) (+{{ $value->price_extra }}) @endif
+                                    <form method="POST" action="{{ route('app.inventory.attribute-values.destroy', $value) }}" onsubmit="return confirm('{{ __('Delete this value?') }}')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-danger cursor-pointer leading-none" title="{{ __('Delete') }}">
+                                            <i class="ph ph-x"></i>
+                                        </button>
+                                    </form>
+                                </span>
                             @endforeach
                         </div>
                         <form method="POST" action="{{ route('app.inventory.attributes.values.store', $attribute) }}" class="flex flex-wrap items-end gap-2">

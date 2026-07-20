@@ -62,6 +62,35 @@ class TemplateAndAttributeDeletionTest extends TenantTestCase
         $this->assertDatabaseMissing('product_attribute_values', ['id' => $value->id]);
     }
 
+    public function test_unused_attribute_value_can_be_deleted(): void
+    {
+        $attribute = ProductAttribute::factory()->create(['tenant_id' => $this->tenant->id]);
+        $value = ProductAttributeValue::factory()->create(['tenant_id' => $this->tenant->id, 'product_attribute_id' => $attribute->id, 'value' => 'gg']);
+
+        $this->delete("/app/inventory/attribute-values/{$value->id}")->assertRedirect();
+
+        $this->assertDatabaseMissing('product_attribute_values', ['id' => $value->id]);
+    }
+
+    public function test_attribute_value_used_by_a_variant_cannot_be_deleted(): void
+    {
+        $category = UomCategory::factory()->create(['tenant_id' => $this->tenant->id]);
+        Uom::factory()->create(['tenant_id' => $this->tenant->id, 'uom_category_id' => $category->id, 'is_reference' => true]);
+
+        $template = ProductTemplate::factory()->create(['tenant_id' => $this->tenant->id]);
+        $attribute = ProductAttribute::factory()->create(['tenant_id' => $this->tenant->id, 'creation_mode' => 'instant']);
+        $value = ProductAttributeValue::factory()->create(['tenant_id' => $this->tenant->id, 'product_attribute_id' => $attribute->id]);
+        app(VariantGeneratorService::class)->attachAttribute($template, $attribute);
+        (new GenerateInstantVariants($this->tenant->id, $template->id))->handle();
+
+        $this->from('/app/inventory/templates')
+            ->delete("/app/inventory/attribute-values/{$value->id}")
+            ->assertRedirect('/app/inventory/templates')
+            ->assertSessionHasErrors('value');
+
+        $this->assertDatabaseHas('product_attribute_values', ['id' => $value->id]);
+    }
+
     public function test_attribute_attached_to_a_template_cannot_be_deleted(): void
     {
         $template = ProductTemplate::factory()->create(['tenant_id' => $this->tenant->id]);
