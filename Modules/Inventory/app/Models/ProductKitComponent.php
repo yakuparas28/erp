@@ -32,6 +32,23 @@ class ProductKitComponent extends Model
         return ProductKitComponentFactory::new();
     }
 
+    /**
+     * İç içe kit yasağı (PRD 3.17): bir bileşen kendisi is_kit=true olamaz.
+     * Explode anında da ayrıca doğrulanır; bu, hatalı satırın en baştan
+     * oluşmasını engeller.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (self $component): void {
+            $isNestedKit = Product::withoutGlobalScopes()
+                ->whereKey($component->component_product_id)
+                ->where('is_kit', true)
+                ->exists();
+
+            abort_if($isNestedKit, 422, __('A kit component cannot itself be a kit.'));
+        });
+    }
+
     public function kitProduct(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'kit_product_id');
