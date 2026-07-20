@@ -22,6 +22,7 @@ final class PermissionCatalog
                 'manage users',
                 'manage roles',
                 'manage settings',
+                'manage partners',
             ],
             'inventory' => [
                 'view stock',
@@ -64,5 +65,13 @@ final class PermissionCatalog
     public static function warehouseOperatorDefaults(): array
     {
         return ['view stock', 'perform stock counts'];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function purchasingOfficerDefaults(): array
+    {
+        return ['create purchase orders', 'manage partners'];
     }
 }

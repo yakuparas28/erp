@@ -17,6 +17,7 @@ class Product extends Model
     protected $fillable = [
         'tenant_id',
         'product_category_id',
+        'default_supplier_id',
         'uom_id',
         'product_template_id',
         'name',
