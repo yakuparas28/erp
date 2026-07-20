@@ -13,6 +13,15 @@ use App\Models\TenantSubscription;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
+use Modules\Inventory\Models\InventoryAdjustment;
+use Modules\Inventory\Models\Location;
+use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\ProductLot;
+use Modules\Inventory\Models\RouteRule;
+use Modules\Inventory\Models\StockMove;
+use Modules\Inventory\Models\StockQuant;
+use Modules\Inventory\Models\Warehouse;
+use Modules\Inventory\Models\WarehouseTransfer;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -51,14 +60,15 @@ class AppServiceProvider extends ServiceProvider
             'mail_setting' => MailSetting::class,
             'notification_template' => NotificationTemplate::class,
             'role' => Role::class,
-            'warehouse' => \Modules\Inventory\Models\Warehouse::class,
-            'location' => \Modules\Inventory\Models\Location::class,
-            'product' => \Modules\Inventory\Models\Product::class,
-            'product_lot' => \Modules\Inventory\Models\ProductLot::class,
-            'stock_move' => \Modules\Inventory\Models\StockMove::class,
-            'stock_quant' => \Modules\Inventory\Models\StockQuant::class,
-            'inventory_adjustment' => \Modules\Inventory\Models\InventoryAdjustment::class,
-            'warehouse_transfer' => \Modules\Inventory\Models\WarehouseTransfer::class,
+            'warehouse' => Warehouse::class,
+            'location' => Location::class,
+            'product' => Product::class,
+            'product_lot' => ProductLot::class,
+            'stock_move' => StockMove::class,
+            'stock_quant' => StockQuant::class,
+            'inventory_adjustment' => InventoryAdjustment::class,
+            'warehouse_transfer' => WarehouseTransfer::class,
+            'route_rule' => RouteRule::class,
             'permission' => Permission::class,
         ]);
     }
