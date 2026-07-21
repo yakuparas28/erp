@@ -111,56 +111,61 @@ class SalesOrderService
 
         abort_unless($so->status === 'confirmed', 422, __('Only a confirmed sales order can be delivered.'));
 
-        $remaining = bcsub($line->qty, $line->delivered_qty, 4);
+        $remaining = bcsub($line->qty, $line->delivered_qty ?? '0', 4);
         abort_if(bccomp($qty, $remaining, 4) > 0, 422, __('Delivered quantity cannot exceed the remaining ordered quantity.'));
 
         $product = Product::withoutGlobalScopes()->findOrFail($line->product_id);
 
-        if ($product->product_type === 'service') {
-            $line->increment('delivered_qty', $qty);
-            $this->markDoneIfFullyDelivered($so);
+        DB::transaction(function () use ($so, $line, $qty, $product): void {
+            if ($product->product_type === 'service') {
+                $this->increaseDeliveredQty($so, $line, $qty);
 
-            return;
-        }
+                return;
+            }
 
-        if ($product->is_kit) {
-            $moves = $this->kitExplosion->explode(
-                kit: $product,
-                kitQty: $qty,
+            if ($product->is_kit) {
+                $moves = $this->kitExplosion->explode(
+                    kit: $product,
+                    kitQty: $qty,
+                    fromLocationId: $so->location_id,
+                    toLocationId: null,
+                    referenceType: 'sales_order_line',
+                    referenceId: $line->id,
+                );
+
+                foreach ($moves as $move) {
+                    $moveProduct = Product::withoutGlobalScopes()->findOrFail($move->product_id);
+                    $this->costing->consumeOutbound($moveProduct, $move, bcmul($move->qty, '-1', 4));
+                }
+
+                $this->increaseDeliveredQty($so, $line, $qty);
+
+                return;
+            }
+
+            if ($this->isReservable($product)) {
+                $this->releaseReservation($so, $line, $qty);
+            }
+
+            $move = $this->stockMoves->move(
+                tenantId: $so->tenant_id,
+                product: $product,
                 fromLocationId: $so->location_id,
                 toLocationId: null,
+                qty: bcmul($qty, '-1', 4),
+                uom: $line->uom,
                 referenceType: 'sales_order_line',
                 referenceId: $line->id,
             );
 
-            foreach ($moves as $move) {
-                $moveProduct = Product::withoutGlobalScopes()->findOrFail($move->product_id);
-                $this->costing->consumeOutbound($moveProduct, $move, bcmul($move->qty, '-1', 4));
-            }
+            $this->costing->consumeOutbound($product, $move, $qty);
 
-            $line->increment('delivered_qty', $qty);
-            $this->markDoneIfFullyDelivered($so);
+            $this->increaseDeliveredQty($so, $line, $qty);
+        });
+    }
 
-            return;
-        }
-
-        $move = $this->stockMoves->move(
-            tenantId: $so->tenant_id,
-            product: $product,
-            fromLocationId: $so->location_id,
-            toLocationId: null,
-            qty: bcmul($qty, '-1', 4),
-            uom: $line->uom,
-            referenceType: 'sales_order_line',
-            referenceId: $line->id,
-        );
-
-        $this->costing->consumeOutbound($product, $move, $qty);
-
-        if ($this->isReservable($product)) {
-            $this->releaseReservation($so, $line, $qty);
-        }
-
+    private function increaseDeliveredQty(SalesOrder $so, SalesOrderLine $line, string $qty): void
+    {
         $line->increment('delivered_qty', $qty);
         $this->markDoneIfFullyDelivered($so);
     }

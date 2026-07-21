@@ -101,6 +101,31 @@ class SalesOrderDeliveryTest extends TenantTestCase
         $this->assertSame('done', $so->fresh()->status);
     }
 
+    public function test_delivering_the_full_reserved_stock_succeeds_when_stock_exactly_matches_the_reservation(): void
+    {
+        $product = Product::factory()->create(['tenant_id' => $this->tenant->id, 'uom_id' => $this->unit->id, 'cost_method' => 'fifo']);
+        $this->stockIn($product, '20', '5.0000');
+
+        $so = $this->newOrder();
+        $line = $this->service()->addLine($so, $product->id, $this->unit->id, '20', '7.0000');
+        $this->service()->sendQuotation($so);
+        $this->service()->confirm($so->fresh(), $this->tenantAdmin);
+
+        $quant = StockQuant::withoutGlobalScopes()
+            ->where('product_id', $product->id)
+            ->where('location_id', $this->location->id)
+            ->firstOrFail();
+        $this->assertSame('20.0000', $quant->qty);
+        $this->assertSame('20.0000', $quant->reserved_qty);
+
+        $this->service()->deliver($line, '20');
+
+        $this->assertSame('0.0000', $quant->fresh()->reserved_qty);
+        $this->assertSame('0.0000', $quant->fresh()->qty);
+        $this->assertSame('20.0000', $line->fresh()->delivered_qty);
+        $this->assertSame('done', $so->fresh()->status);
+    }
+
     public function test_delivering_a_kit_line_explodes_into_components_without_moving_the_kit_itself(): void
     {
         $componentA = Product::factory()->create(['tenant_id' => $this->tenant->id, 'uom_id' => $this->unit->id, 'cost_method' => 'fifo']);
