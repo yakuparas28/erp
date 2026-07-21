@@ -6,6 +6,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\StockQuant;
+use Modules\Inventory\Services\CostingService;
+use Modules\Inventory\Services\KitExplosionService;
+use Modules\Inventory\Services\StockMoveService;
 use Modules\Sales\Models\SalesOrder;
 use Modules\Sales\Models\SalesOrderLine;
 
@@ -17,6 +20,12 @@ use Modules\Sales\Models\SalesOrderLine;
  */
 class SalesOrderService
 {
+    public function __construct(
+        private readonly StockMoveService $stockMoves,
+        private readonly CostingService $costing,
+        private readonly KitExplosionService $kitExplosion,
+    ) {}
+
     public function create(int $tenantId, int $partnerId, int $locationId, User $creator): SalesOrder
     {
         $so = new SalesOrder([
@@ -87,6 +96,84 @@ class SalesOrderService
 
             $so->update(['status' => 'cancelled']);
         });
+    }
+
+    /**
+     * Fiili teslimat (PRD 3.11): hizmet satırı hiçbir şey üretmez; kit
+     * satırı bileşenlere patlar (kit'in kendisi asla move'a girmez);
+     * normal satır tek bir çıkış hareketi + COGS üretir ve (rezerve
+     * edilmişse) rezervi serbest bırakır. Tüm satırlar tam teslim
+     * edilince SO 'done' durumuna geçer.
+     */
+    public function deliver(SalesOrderLine $line, string $qty): void
+    {
+        $so = $line->salesOrder;
+
+        abort_unless($so->status === 'confirmed', 422, __('Only a confirmed sales order can be delivered.'));
+
+        $remaining = bcsub($line->qty, $line->delivered_qty, 4);
+        abort_if(bccomp($qty, $remaining, 4) > 0, 422, __('Delivered quantity cannot exceed the remaining ordered quantity.'));
+
+        $product = Product::withoutGlobalScopes()->findOrFail($line->product_id);
+
+        if ($product->product_type === 'service') {
+            $line->increment('delivered_qty', $qty);
+            $this->markDoneIfFullyDelivered($so);
+
+            return;
+        }
+
+        if ($product->is_kit) {
+            $moves = $this->kitExplosion->explode(
+                kit: $product,
+                kitQty: $qty,
+                fromLocationId: $so->location_id,
+                toLocationId: null,
+                referenceType: 'sales_order_line',
+                referenceId: $line->id,
+            );
+
+            foreach ($moves as $move) {
+                $moveProduct = Product::withoutGlobalScopes()->findOrFail($move->product_id);
+                $this->costing->consumeOutbound($moveProduct, $move, bcmul($move->qty, '-1', 4));
+            }
+
+            $line->increment('delivered_qty', $qty);
+            $this->markDoneIfFullyDelivered($so);
+
+            return;
+        }
+
+        $move = $this->stockMoves->move(
+            tenantId: $so->tenant_id,
+            product: $product,
+            fromLocationId: $so->location_id,
+            toLocationId: null,
+            qty: bcmul($qty, '-1', 4),
+            uom: $line->uom,
+            referenceType: 'sales_order_line',
+            referenceId: $line->id,
+        );
+
+        $this->costing->consumeOutbound($product, $move, $qty);
+
+        if ($this->isReservable($product)) {
+            $this->releaseReservation($so, $line, $qty);
+        }
+
+        $line->increment('delivered_qty', $qty);
+        $this->markDoneIfFullyDelivered($so);
+    }
+
+    private function markDoneIfFullyDelivered(SalesOrder $so): void
+    {
+        $so->refresh();
+
+        $fullyDelivered = $so->lines->every(fn (SalesOrderLine $line) => bccomp($line->fresh()->delivered_qty, $line->qty, 4) === 0);
+
+        if ($fullyDelivered) {
+            $so->update(['status' => 'done']);
+        }
     }
 
     private function reserveLine(SalesOrder $so, SalesOrderLine $line): void
