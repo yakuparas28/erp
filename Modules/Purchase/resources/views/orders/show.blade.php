@@ -6,16 +6,7 @@
 <div class="flex flex-wrap items-center justify-between gap-3 mb-3 lg:mb-6">
     <div>
         <h1 class="text-gray-900 text-xl font-bold mb-1">{{ __('Purchase Order') }} — {{ $po->partner->name }}</h1>
-        <span class="text-[11px] {{ match ($po->status) {
-            'draft' => 'bg-light text-default',
-            'rfq_sent' => 'bg-warning-transparent text-warning',
-            'confirmed' => 'bg-info-transparent text-info',
-            'done' => 'bg-success-transparent text-success',
-            'cancelled' => 'bg-danger-transparent text-danger',
-            default => 'bg-light text-default',
-        } }} px-2 py-0.5 rounded">
-            {{ __('po-status.'.$po->status) }}
-        </span>
+        @include('purchase::orders._status-badge', ['status' => $po->status])
     </div>
     <a href="{{ route('app.purchase.orders.index') }}" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light">
         <i class="ph ph-arrow-left"></i> {{ __('Back to List') }}
@@ -32,17 +23,17 @@
             @csrf
             <div class="flex-1 min-w-40">
                 <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Product') }}</label>
-                <select name="product_id" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                <select id="line-product-select" name="product_id" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
                     @foreach ($products as $product)
-                        <option value="{{ $product->id }}" data-uom-id="{{ $product->uom_id }}">{{ $product->name }}</option>
+                        <option value="{{ $product->id }}" data-uom-id="{{ $product->uom_id }}" data-uom-category-id="{{ $product->uom?->uom_category_id }}">{{ $product->name }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="w-32">
                 <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Unit') }}</label>
-                <select name="uom_id" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                <select id="line-uom-select" name="uom_id" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
                     @foreach ($uomOptions as $uom)
-                        <option value="{{ $uom->id }}">{{ $uom->name }}</option>
+                        <option value="{{ $uom->id }}" data-category-id="{{ $uom->uom_category_id }}">{{ $uom->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -60,6 +51,51 @@
             <p class="text-[11px] text-danger mt-2 mb-0">{{ $message }}</p>
         @enderror
     </div>
+    <script>
+        (function () {
+            var productSelect = document.getElementById('line-product-select');
+            var uomSelect = document.getElementById('line-uom-select');
+
+            if (!productSelect || !uomSelect) {
+                return;
+            }
+
+            function syncUomOptions() {
+                var selectedProduct = productSelect.options[productSelect.selectedIndex];
+                var categoryId = selectedProduct ? selectedProduct.getAttribute('data-uom-category-id') : null;
+                var preferredUomId = selectedProduct ? selectedProduct.getAttribute('data-uom-id') : null;
+                var firstVisibleOption = null;
+                var currentOptionStillVisible = false;
+
+                Array.prototype.forEach.call(uomSelect.options, function (option) {
+                    var matches = !categoryId || option.getAttribute('data-category-id') === categoryId;
+                    option.hidden = !matches;
+                    option.disabled = !matches;
+
+                    if (matches && !firstVisibleOption) {
+                        firstVisibleOption = option;
+                    }
+
+                    if (matches && option.selected) {
+                        currentOptionStillVisible = true;
+                    }
+                });
+
+                if (!currentOptionStillVisible) {
+                    var preferredOption = preferredUomId
+                        ? Array.prototype.find.call(uomSelect.options, function (option) {
+                            return option.value === preferredUomId;
+                        })
+                        : null;
+
+                    uomSelect.value = preferredOption ? preferredOption.value : (firstVisibleOption ? firstVisibleOption.value : '');
+                }
+            }
+
+            productSelect.addEventListener('change', syncUomOptions);
+            syncUomOptions();
+        })();
+    </script>
 @endif
 
 @error('po')

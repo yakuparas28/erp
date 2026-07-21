@@ -27,16 +27,7 @@
                     <tr class="border-b border-border-color">
                         <td class="py-2.5 px-3 text-sm font-semibold text-title">{{ $order->partner->name }}</td>
                         <td class="py-2.5 px-3">
-                            <span class="text-[11px] {{ match ($order->status) {
-                                'draft' => 'bg-light text-default',
-                                'rfq_sent' => 'bg-warning-transparent text-warning',
-                                'confirmed' => 'bg-info-transparent text-info',
-                                'done' => 'bg-success-transparent text-success',
-                                'cancelled' => 'bg-danger-transparent text-danger',
-                                default => 'bg-light text-default',
-                            } }} px-2 py-0.5 rounded">
-                                {{ __('po-status.'.$order->status) }}
-                            </span>
+                            @include('purchase::orders._status-badge', ['status' => $order->status])
                         </td>
                         <td class="py-2.5 px-3 text-sm text-default">{{ $order->lines->count() }}</td>
                         <td class="py-2.5 px-3 text-sm text-default">{{ $order->creator->name }}</td>

@@ -21,7 +21,7 @@ class PurchaseOrderController extends Controller
     public function index(): View
     {
         return view('purchase::orders.index', [
-            'orders' => PurchaseOrder::with(['partner', 'lines'])->latest()->get(),
+            'orders' => PurchaseOrder::with(['partner', 'lines', 'creator'])->latest()->get(),
             'suppliers' => Partner::where('is_supplier', true)->orderBy('name')->get(),
         ]);
     }
@@ -39,7 +39,7 @@ class PurchaseOrderController extends Controller
     {
         return view('purchase::orders.show', [
             'po' => $po->load(['partner', 'lines.product', 'lines.uom', 'creator']),
-            'products' => Product::where('product_type', '!=', 'service')->orderBy('name')->get(),
+            'products' => Product::with('uom')->where('product_type', '!=', 'service')->orderBy('name')->get(),
             'locations' => Location::where('type', 'internal')->orderBy('name')->get(),
             'canConfirm' => $po->created_by !== auth()->id() && auth()->user()->can('confirm purchase orders'),
         ]);
