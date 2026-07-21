@@ -7,6 +7,7 @@ use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Partner;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductKitComponent;
+use Modules\Inventory\Models\ProductLot;
 use Modules\Inventory\Models\StockMove;
 use Modules\Inventory\Models\StockQuant;
 use Modules\Inventory\Models\StockValuationLayer;
@@ -66,6 +67,31 @@ class SalesOrderDeliveryTest extends TenantTestCase
         );
 
         app(CostingService::class)->recordInbound($product, $move, $qty, $unitCost);
+    }
+
+    private function stockInLot(Product $product, string $lotNumber, string $qty, string $unitCost): ProductLot
+    {
+        $lot = ProductLot::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'product_id' => $product->id,
+            'lot_number' => $lotNumber,
+        ]);
+
+        $move = app(StockMoveService::class)->move(
+            tenantId: $this->tenant->id,
+            product: $product,
+            fromLocationId: null,
+            toLocationId: $this->location->id,
+            qty: $qty,
+            uom: $this->unit,
+            lotId: $lot->id,
+            referenceType: 'inventory_adjustment',
+            referenceId: 1,
+        );
+
+        app(CostingService::class)->recordInbound($product, $move, $qty, $unitCost);
+
+        return $lot;
     }
 
     private function newOrder(): SalesOrder
@@ -249,5 +275,43 @@ class SalesOrderDeliveryTest extends TenantTestCase
         } catch (HttpException $e) {
             $this->assertSame(422, $e->getStatusCode());
         }
+    }
+
+    public function test_delivering_a_lot_tracked_product_auto_selects_a_lot_and_is_not_reserved_on_confirm(): void
+    {
+        $product = Product::factory()->create([
+            'tenant_id' => $this->tenant->id, 'uom_id' => $this->unit->id,
+            'cost_method' => 'fifo', 'track_by' => 'lot',
+        ]);
+        $lot = $this->stockInLot($product, 'LOT-A', '10', '5.0000');
+
+        $so = $this->newOrder();
+        $line = $this->service()->addLine($so, $product->id, $this->unit->id, '4', '7.0000');
+        $this->service()->sendQuotation($so);
+        $this->service()->confirm($so->fresh(), $this->tenantAdmin);
+
+        // track_by='lot' ürünler reservable değildir (isReservable), bu yüzden
+        // confirm hiçbir reserved_qty değiştirmemeli.
+        $quant = StockQuant::withoutGlobalScopes()
+            ->where('product_id', $product->id)
+            ->where('location_id', $this->location->id)
+            ->where('lot_id', $lot->id)
+            ->firstOrFail();
+        $this->assertSame('0.0000', $quant->reserved_qty);
+
+        $this->service()->deliver($line, '4');
+
+        $move = StockMove::where('reference_type', 'sales_order_line')->where('reference_id', $line->id)->firstOrFail();
+        $this->assertSame('-4.0000', $move->qty);
+        $this->assertSame($lot->id, $move->lot_id);
+
+        $this->assertSame('6.0000', $quant->fresh()->qty);
+        $this->assertSame('0.0000', $quant->fresh()->reserved_qty);
+
+        $layer = StockValuationLayer::where('product_id', $product->id)->firstOrFail();
+        $this->assertSame('30.0000', $layer->remaining_value); // (10-4) * 5
+
+        $this->assertSame('4.0000', $line->fresh()->delivered_qty);
+        $this->assertSame('done', $so->fresh()->status);
     }
 }

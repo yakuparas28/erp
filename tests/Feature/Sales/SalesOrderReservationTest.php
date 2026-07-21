@@ -9,6 +9,8 @@ use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\StockQuant;
 use Modules\Inventory\Models\Uom;
 use Modules\Inventory\Models\UomCategory;
+use Modules\Inventory\Services\CostingService;
+use Modules\Inventory\Services\StockMoveService;
 use Modules\Sales\Services\SalesOrderService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TenantTestCase;
@@ -42,6 +44,22 @@ class SalesOrderReservationTest extends TenantTestCase
     private function service(): SalesOrderService
     {
         return app(SalesOrderService::class);
+    }
+
+    private function stockIn(Product $product, string $qty, string $unitCost): void
+    {
+        $move = app(StockMoveService::class)->move(
+            tenantId: $this->tenant->id,
+            product: $product,
+            fromLocationId: null,
+            toLocationId: $this->location->id,
+            qty: $qty,
+            uom: $this->unit,
+            referenceType: 'inventory_adjustment',
+            referenceId: 1,
+        );
+
+        app(CostingService::class)->recordInbound($product, $move, $qty, $unitCost);
     }
 
     public function test_confirming_reserves_stock_for_trackable_product(): void
@@ -179,5 +197,34 @@ class SalesOrderReservationTest extends TenantTestCase
             ->first();
 
         $this->assertSame('0.0000', $quant->reserved_qty);
+    }
+
+    public function test_cancelling_after_a_partial_delivery_releases_only_the_remaining_reservation(): void
+    {
+        $product = Product::factory()->create(['tenant_id' => $this->tenant->id, 'uom_id' => $this->unit->id, 'cost_method' => 'fifo']);
+        $this->stockIn($product, '50', '5.0000');
+
+        $so = $this->service()->create($this->tenant->id, $this->customer->id, $this->location->id, $this->rep);
+        $line = $this->service()->addLine($so, $product->id, $this->unit->id, '20', '7.0000');
+        $this->service()->sendQuotation($so);
+        $this->service()->confirm($so->fresh(), $this->tenantAdmin);
+
+        $quant = StockQuant::withoutGlobalScopes()
+            ->where('product_id', $product->id)
+            ->where('location_id', $this->location->id)
+            ->firstOrFail();
+        $this->assertSame('20.0000', $quant->reserved_qty);
+
+        $this->service()->deliver($line, '8');
+
+        $this->assertSame('12.0000', $quant->fresh()->reserved_qty);
+        $this->assertSame('8.0000', $line->fresh()->delivered_qty);
+
+        $this->service()->cancel($so->fresh());
+
+        $this->assertSame('cancelled', $so->fresh()->status);
+        $this->assertSame('0.0000', $quant->fresh()->reserved_qty);
+        $this->assertSame('42.0000', $quant->fresh()->qty);
+        $this->assertSame('8.0000', $line->fresh()->delivered_qty);
     }
 }
