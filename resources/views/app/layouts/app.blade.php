@@ -146,6 +146,14 @@
                                 </li>
                             @endcan
                         @endif
+                        @if (auth()->user()?->can('create purchase orders') || auth()->user()?->can('confirm purchase orders'))
+                            <li class="menu-title" aria-disabled="true"><span>{{ __('Purchasing') }}</span></li>
+                            <li>
+                                <a href="{{ route('app.purchase.orders.index') }}" class="{{ request()->routeIs('app.purchase.orders.*') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-shopping-cart"></i><span>{{ __('Purchase Orders') }}</span>
+                                </a>
+                            </li>
+                        @endif
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>
                             @can('manage users')
