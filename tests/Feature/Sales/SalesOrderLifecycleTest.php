@@ -143,4 +143,22 @@ class SalesOrderLifecycleTest extends TenantTestCase
             $this->assertSame(422, $e->getStatusCode());
         }
     }
+
+    public function test_cancelling_an_already_done_order_fails(): void
+    {
+        $so = $this->service()->create($this->tenant->id, $this->customer->id, $this->location->id, $this->rep);
+        $this->service()->addLine($so, $this->product->id, $this->unit->id, '10', '5.0000');
+        $this->service()->sendQuotation($so);
+        $this->service()->confirm($so->fresh(), $this->tenantAdmin);
+
+        // No delivery-based path to 'done' exists yet (bkz. Task 4), bu yüzden durumu doğrudan model üzerinden ayarlıyoruz.
+        $so->update(['status' => 'done']);
+
+        try {
+            $this->service()->cancel($so->fresh());
+            $this->fail('422 bekleniyordu');
+        } catch (HttpException $e) {
+            $this->assertSame(422, $e->getStatusCode());
+        }
+    }
 }
