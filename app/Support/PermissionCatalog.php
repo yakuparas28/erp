@@ -74,4 +74,12 @@ final class PermissionCatalog
     {
         return ['create purchase orders', 'manage partners'];
     }
+
+    /**
+     * @return list<string>
+     */
+    public static function salesRepresentativeDefaults(): array
+    {
+        return ['create sales orders', 'manage partners'];
+    }
 }

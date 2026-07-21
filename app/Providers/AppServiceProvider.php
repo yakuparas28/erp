@@ -23,6 +23,7 @@ use Modules\Inventory\Models\StockQuant;
 use Modules\Inventory\Models\Warehouse;
 use Modules\Inventory\Models\WarehouseTransfer;
 use Modules\Purchase\Models\PurchaseOrderLine;
+use Modules\Sales\Models\SalesOrderLine;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -71,6 +72,7 @@ class AppServiceProvider extends ServiceProvider
             'warehouse_transfer' => WarehouseTransfer::class,
             'route_rule' => RouteRule::class,
             'purchase_order_line' => PurchaseOrderLine::class,
+            'sales_order_line' => SalesOrderLine::class,
             'permission' => Permission::class,
         ]);
     }

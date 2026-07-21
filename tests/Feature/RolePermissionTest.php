@@ -51,4 +51,17 @@ class RolePermissionTest extends TestCase
 
         $this->assertSame($tenant->id, getPermissionsTeamId());
     }
+
+    public function test_sales_representative_has_create_and_partner_permissions_but_not_confirm(): void
+    {
+        $tenant = Tenant::factory()->create();
+        $user = User::factory()->for($tenant)->create();
+
+        setPermissionsTeamId($tenant->id);
+        $user->assignRole('Sales Representative');
+
+        $this->assertTrue($user->hasPermissionTo('create sales orders'));
+        $this->assertTrue($user->hasPermissionTo('manage partners'));
+        $this->assertFalse($user->hasPermissionTo('confirm sales orders'));
+    }
 }
