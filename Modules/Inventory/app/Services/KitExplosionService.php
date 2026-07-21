@@ -5,6 +5,7 @@ namespace Modules\Inventory\Services;
 use Illuminate\Support\Facades\DB;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductKitComponent;
+use Modules\Inventory\Models\StockMove;
 
 /**
  * Kit patlaması (PRD 3.17/6.0). Kit ürünün kendisi ASLA stok hareketine
@@ -16,6 +17,9 @@ class KitExplosionService
 {
     public function __construct(private readonly StockMoveService $stockMoves) {}
 
+    /**
+     * @return array<int, StockMove>
+     */
     public function explode(
         Product $kit,
         string $kitQty,
@@ -23,7 +27,7 @@ class KitExplosionService
         ?int $toLocationId,
         string $referenceType,
         int $referenceId,
-    ): void {
+    ): array {
         abort_unless($kit->is_kit, 422, __('This product is not a kit.'));
 
         $components = ProductKitComponent::where('kit_product_id', $kit->id)->with('componentProduct')->get();
@@ -32,11 +36,13 @@ class KitExplosionService
             abort_if($component->componentProduct->is_kit, 422, __('A kit component cannot itself be a kit.'));
         }
 
-        DB::transaction(function () use ($components, $kitQty, $fromLocationId, $toLocationId, $referenceType, $referenceId): void {
+        return DB::transaction(function () use ($components, $kitQty, $fromLocationId, $toLocationId, $referenceType, $referenceId): array {
+            $moves = [];
+
             foreach ($components as $component) {
                 $requiredQty = bcmul($component->qty, $kitQty, 4);
 
-                $this->stockMoves->move(
+                $moves[] = $this->stockMoves->move(
                     tenantId: $component->tenant_id,
                     product: $component->componentProduct,
                     fromLocationId: $fromLocationId,
@@ -47,6 +53,8 @@ class KitExplosionService
                     referenceId: $referenceId,
                 );
             }
+
+            return $moves;
         });
     }
 }
