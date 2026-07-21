@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Inventory\Http\Controllers\AdjustmentController;
 use Modules\Inventory\Http\Controllers\KitComponentController;
+use Modules\Inventory\Http\Controllers\PartnerController;
 use Modules\Inventory\Http\Controllers\ProductController;
 use Modules\Inventory\Http\Controllers\ProductTemplateController;
 use Modules\Inventory\Http\Controllers\StockController;
@@ -58,5 +59,11 @@ Route::middleware(['auth:web'])->prefix('app/inventory')->name('app.inventory.')
         Route::get('/transfers', [TransferController::class, 'index'])->name('transfers.index');
         Route::post('/transfers', [TransferController::class, 'store'])->name('transfers.store');
         Route::post('/transfers/{transfer}/complete', [TransferController::class, 'complete'])->name('transfers.complete');
+    });
+
+    Route::middleware('permission:manage partners,web')->group(function (): void {
+        Route::get('/partners', [PartnerController::class, 'index'])->name('partners.index');
+        Route::post('/partners', [PartnerController::class, 'store'])->name('partners.store');
+        Route::put('/partners/{partner}', [PartnerController::class, 'update'])->name('partners.update');
     });
 });

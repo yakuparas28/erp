@@ -101,7 +101,7 @@
                                 <i class="ph-duotone ph-squares-four"></i><span>{{ __('Dashboard') }}</span>
                             </a>
                         </li>
-                        @if (auth()->user()?->can('view stock') || auth()->user()?->can('manage products') || auth()->user()?->can('manage warehouses') || auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers'))
+                        @if (auth()->user()?->can('view stock') || auth()->user()?->can('manage products') || auth()->user()?->can('manage warehouses') || auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers') || auth()->user()?->can('manage partners'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Inventory') }}</span></li>
                             @can('manage products')
                                 <li>
@@ -135,6 +135,13 @@
                                 <li>
                                     <a href="{{ route('app.inventory.transfers.index') }}" class="{{ request()->routeIs('app.inventory.transfers.*') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-arrows-left-right"></i><span>{{ __('Transfers') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('manage partners')
+                                <li>
+                                    <a href="{{ route('app.inventory.partners.index') }}" class="{{ request()->routeIs('app.inventory.partners.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-handshake"></i><span>{{ __('Partners') }}</span>
                                     </a>
                                 </li>
                             @endcan
