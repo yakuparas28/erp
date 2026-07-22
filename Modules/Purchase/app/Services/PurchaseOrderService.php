@@ -4,6 +4,7 @@ namespace Modules\Purchase\Services;
 
 use App\Models\User;
 use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\Uom;
 use Modules\Inventory\Services\CostingService;
 use Modules\Inventory\Services\PutawayService;
 use Modules\Inventory\Services\StockMoveService;
@@ -42,6 +43,15 @@ class PurchaseOrderService
     public function addLine(PurchaseOrder $po, int $productId, int $uomId, string $qty, string $unitPrice): PurchaseOrderLine
     {
         abort_unless($po->status === 'draft', 422, __('Lines can only be added to a draft purchase order.'));
+
+        $product = Product::withoutGlobalScopes()->findOrFail($productId);
+        $uom = Uom::withoutGlobalScopes()->findOrFail($uomId);
+
+        abort_if(
+            $uom->uom_category_id !== $product->uom->uom_category_id,
+            422,
+            __('The selected unit does not belong to this product\'s unit category.'),
+        );
 
         $line = new PurchaseOrderLine([
             'purchase_order_id' => $po->id,

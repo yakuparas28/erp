@@ -114,4 +114,19 @@ class PurchaseOrderLifecycleTest extends TenantTestCase
             $this->assertSame(422, $e->getStatusCode());
         }
     }
+
+    public function test_line_cannot_be_added_with_a_uom_from_a_different_category(): void
+    {
+        $otherCategory = UomCategory::factory()->create(['tenant_id' => $this->tenant->id]);
+        $mismatchedUnit = Uom::factory()->create(['tenant_id' => $this->tenant->id, 'uom_category_id' => $otherCategory->id]);
+
+        $po = $this->service()->create($this->tenant->id, $this->supplier->id, $this->officer);
+
+        try {
+            $this->service()->addLine($po, $this->product->id, $mismatchedUnit->id, '10', '5.0000');
+            $this->fail('422 bekleniyordu');
+        } catch (HttpException $e) {
+            $this->assertSame(422, $e->getStatusCode());
+        }
+    }
 }
