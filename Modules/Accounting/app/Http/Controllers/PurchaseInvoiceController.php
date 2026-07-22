@@ -19,7 +19,7 @@ class PurchaseInvoiceController extends Controller
     public function index(): View
     {
         return view('accounting::purchase-invoices.index', [
-            'invoices' => Invoice::with(['partner', 'lines'])->where('type', 'purchase')->latest()->get(),
+            'invoices' => Invoice::with(['partner', 'lines.taxRate'])->where('type', 'purchase')->latest()->get(),
         ]);
     }
 

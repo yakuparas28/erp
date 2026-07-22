@@ -99,14 +99,18 @@ class PurchaseInvoiceScreensTest extends TenantTestCase
 
     public function test_index_page_lists_purchase_invoices(): void
     {
-        $invoice = app(InvoiceService::class)
-            ->create($this->tenant->id, $this->supplier->id, 'purchase', $this->po);
+        $invoiceService = app(InvoiceService::class);
+        $invoice = $invoiceService->create($this->tenant->id, $this->supplier->id, 'purchase', $this->po);
+        // Add a line with tax rate to verify the eager-loading prevents N+1
+        $invoiceService->addLine($invoice, $this->product->id, '10', '5.0000', $this->purchaseTaxRate()->id);
 
         $response = $this->actingAs($this->accountant)->get(route('app.accounting.purchase-invoices.index'));
 
         $response->assertOk();
         $response->assertSee($this->supplier->name);
         $response->assertSee(route('app.accounting.purchase-invoices.show', $invoice), false);
+        // Verify total is rendered (this exercises the total() method which depends on taxRate being loaded)
+        $response->assertSee('50'); // 10 qty * 5.00 unit_price
     }
 
     public function test_show_page_offers_line_selection_from_the_purchase_orders_own_lines(): void
