@@ -3,6 +3,7 @@
 namespace Tests\Feature\Accounting;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\JournalEntry;
 use Modules\Accounting\Models\TaxRate;
@@ -111,6 +112,62 @@ class PurchaseInvoiceScreensTest extends TenantTestCase
         $response->assertSee(route('app.accounting.purchase-invoices.show', $invoice), false);
         // Verify total is rendered (this exercises the total() method which depends on taxRate being loaded)
         $response->assertSee('50'); // 10 qty * 5.00 unit_price
+    }
+
+    public function test_index_page_does_not_n_plus_one_when_loading_invoice_lines_and_tax_rates(): void
+    {
+        $invoiceService = app(InvoiceService::class);
+        $taxRateId = $this->purchaseTaxRate()->id;
+
+        $invoiceOne = $invoiceService->create($this->tenant->id, $this->supplier->id, 'purchase', $this->po);
+        $invoiceService->addLine($invoiceOne, $this->product->id, '10', '5.0000', $taxRateId);
+
+        // Warm up the permission/role cache with an untracked request first,
+        // so the one-off Spatie permission queries (which only fire on the
+        // very first authorization check in the process) don't pollute the
+        // query counts we are about to compare.
+        $this->actingAs($this->accountant)->get(route('app.accounting.purchase-invoices.index'))->assertOk();
+
+        DB::enableQueryLog();
+        $this->actingAs($this->accountant)->get(route('app.accounting.purchase-invoices.index'))->assertOk();
+        $queryCountForOneInvoice = count(DB::getQueryLog());
+        DB::disableQueryLog();
+        DB::flushQueryLog();
+
+        // A second supplier/PO/product/line combination avoids the "same
+        // invoice line" relation cache masking a real per-invoice N+1.
+        $supplierTwo = Partner::factory()->supplier()->create(['tenant_id' => $this->tenant->id]);
+        $uomCategoryTwo = UomCategory::factory()->create(['tenant_id' => $this->tenant->id]);
+        $unitTwo = Uom::factory()->create(['tenant_id' => $this->tenant->id, 'uom_category_id' => $uomCategoryTwo->id]);
+        $productTwo = Product::factory()->create(['tenant_id' => $this->tenant->id, 'uom_id' => $unitTwo->id]);
+        $poTwo = PurchaseOrder::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'partner_id' => $supplierTwo->id,
+            'status' => 'confirmed',
+            'bill_control_policy' => 'ordered_qty',
+        ]);
+        PurchaseOrderLine::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'purchase_order_id' => $poTwo->id,
+            'product_id' => $productTwo->id,
+            'uom_id' => $productTwo->uom_id,
+            'qty' => '10',
+            'unit_price' => '5.0000',
+        ]);
+        $invoiceTwo = $invoiceService->create($this->tenant->id, $supplierTwo->id, 'purchase', $poTwo);
+        $invoiceService->addLine($invoiceTwo, $productTwo->id, '10', '5.0000', $taxRateId);
+
+        DB::enableQueryLog();
+        $this->actingAs($this->accountant)->get(route('app.accounting.purchase-invoices.index'))->assertOk();
+        $queryCountForTwoInvoices = count(DB::getQueryLog());
+        DB::disableQueryLog();
+        DB::flushQueryLog();
+
+        // If `lines.taxRate` were lazy-loaded instead of eager-loaded, adding
+        // a second invoice with its own line/tax rate would add extra
+        // queries. Eager-loading keeps the count constant regardless of how
+        // many invoices/lines are rendered.
+        $this->assertSame($queryCountForOneInvoice, $queryCountForTwoInvoices);
     }
 
     public function test_show_page_offers_line_selection_from_the_purchase_orders_own_lines(): void
