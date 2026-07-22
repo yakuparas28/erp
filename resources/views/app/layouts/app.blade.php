@@ -247,16 +247,6 @@
                             {{ session('status') }}
                         </div>
                     @endif
-                    @if ($errors->any())
-                        <div class="bg-danger-transparent text-danger border border-danger rounded-md px-4 py-3 text-sm mb-4">
-                            <ul class="mb-0 list-disc list-inside">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
                     @yield('content')
                 </div>
             </main>

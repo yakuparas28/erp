@@ -10,6 +10,10 @@
     </button>
 </div>
 
+@error('account')
+    <div class="bg-danger-transparent text-danger border border-danger rounded-md px-4 py-3 text-sm mb-4">{{ $message }}</div>
+@enderror
+
 <div class="bg-white border border-border-color rounded-md">
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
