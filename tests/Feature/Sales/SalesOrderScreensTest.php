@@ -191,6 +191,13 @@ class SalesOrderScreensTest extends TenantTestCase
         $this->service()->sendQuotation($so);
         $this->service()->confirm($so->fresh(), $this->tenantAdmin);
 
+        // Assert that reservation is held after confirmation
+        $this->assertDatabaseHas('stock_quants', [
+            'product_id' => $this->product->id,
+            'location_id' => $this->location->id,
+            'reserved_qty' => '10.0000',
+        ]);
+
         $this->actingAs($this->rep);
         $response = $this->post(route('app.sales.lines.deliver', $line), ['qty' => '10']);
 
@@ -202,6 +209,13 @@ class SalesOrderScreensTest extends TenantTestCase
         ]);
         $this->assertSame('10.0000', $line->fresh()->delivered_qty);
         $this->assertSame('done', $so->fresh()->status);
+
+        // Assert that reservation is released after delivery
+        $this->assertDatabaseHas('stock_quants', [
+            'product_id' => $this->product->id,
+            'location_id' => $this->location->id,
+            'reserved_qty' => '0.0000',
+        ]);
     }
 
     public function test_sales_order_can_be_cancelled(): void
