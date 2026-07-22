@@ -407,6 +407,7 @@
     "SMTP Server": "SMTP Sunucusu",
     "SMTP server used for Super Admin notifications (e.g. tenant administrator invitations). Each tenant can define its own SMTP settings on the tenant detail page; otherwise this setting is used.": "Süper Admin bildirimlerinde (ör. tenant yöneticisi davetleri) kullanılacak SMTP sunucusu. Her tenant kendi SMTP ayarını tenant detay sayfasından tanımlayabilir; tanımlamazsa bu ayar kullanılır.",
     "SSL Handshake Failed": "SSL El Sıkışma Başarısız",
+    "Sales": "Satış",
     "Sales Order": "Satış Siparişi",
     "Sales Orders": "Satış Siparişleri",
     "Sales order cancelled.": "Satış siparişi iptal edildi.",
