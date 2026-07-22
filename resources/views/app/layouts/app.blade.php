@@ -192,6 +192,13 @@
                                     </a>
                                 </li>
                             @endcan
+                            @can('manage chart of accounts')
+                                <li>
+                                    <a href="{{ route('app.accounting.journal-entries.index') }}" class="{{ request()->routeIs('app.accounting.journal-entries.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-notebook"></i><span>{{ __('Journal Entries') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
                         @endif
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>
