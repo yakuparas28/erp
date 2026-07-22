@@ -101,7 +101,7 @@
                                 <i class="ph-duotone ph-squares-four"></i><span>{{ __('Dashboard') }}</span>
                             </a>
                         </li>
-                        @if (auth()->user()?->can('view stock') || auth()->user()?->can('manage products') || auth()->user()?->can('manage warehouses') || auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers') || auth()->user()?->can('manage partners'))
+                        @if (auth()->user()?->can('view stock') || auth()->user()?->can('manage products') || auth()->user()?->can('manage warehouses') || auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers') || auth()->user()?->can('manage partners') || auth()->user()?->can('manage routes'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Inventory') }}</span></li>
                             @can('manage products')
                                 <li>
@@ -142,6 +142,13 @@
                                 <li>
                                     <a href="{{ route('app.inventory.partners.index') }}" class="{{ request()->routeIs('app.inventory.partners.*') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-handshake"></i><span>{{ __('Partners') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('manage routes')
+                                <li>
+                                    <a href="{{ route('app.inventory.putaway.index') }}" class="{{ request()->routeIs('app.inventory.putaway.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-map-pin-line"></i><span>{{ __('Putaway Rules') }}</span>
                                     </a>
                                 </li>
                             @endcan

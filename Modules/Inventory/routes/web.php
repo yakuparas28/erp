@@ -6,6 +6,7 @@ use Modules\Inventory\Http\Controllers\KitComponentController;
 use Modules\Inventory\Http\Controllers\PartnerController;
 use Modules\Inventory\Http\Controllers\ProductController;
 use Modules\Inventory\Http\Controllers\ProductTemplateController;
+use Modules\Inventory\Http\Controllers\PutawayRuleController;
 use Modules\Inventory\Http\Controllers\StockController;
 use Modules\Inventory\Http\Controllers\TransferController;
 use Modules\Inventory\Http\Controllers\WarehouseController;
@@ -65,5 +66,11 @@ Route::middleware(['auth:web'])->prefix('app/inventory')->name('app.inventory.')
         Route::get('/partners', [PartnerController::class, 'index'])->name('partners.index');
         Route::post('/partners', [PartnerController::class, 'store'])->name('partners.store');
         Route::put('/partners/{partner}', [PartnerController::class, 'update'])->name('partners.update');
+    });
+
+    Route::middleware('permission:manage routes,web')->group(function (): void {
+        Route::get('/putaway', [PutawayRuleController::class, 'index'])->name('putaway.index');
+        Route::post('/putaway', [PutawayRuleController::class, 'store'])->name('putaway.store');
+        Route::delete('/putaway/{rule}', [PutawayRuleController::class, 'destroy'])->name('putaway.destroy');
     });
 });
