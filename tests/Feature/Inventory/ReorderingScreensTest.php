@@ -89,6 +89,30 @@ class ReorderingScreensTest extends TenantTestCase
         ]);
     }
 
+    public function test_duplicate_product_location_combination_returns_validation_error(): void
+    {
+        // Create first rule
+        ReorderingRule::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'product_id' => $this->product->id,
+            'location_id' => $this->location->id,
+            'min_qty' => '10.0000',
+            'max_qty' => '50.0000',
+        ]);
+
+        // Try to create duplicate
+        $this->actingAs($this->tenantAdmin)->post('/app/inventory/reordering', [
+            'product_id' => $this->product->id,
+            'location_id' => $this->location->id,
+            'min_qty' => 5,
+            'max_qty' => 25,
+            'trigger_type' => 'auto',
+        ])->assertSessionHasErrors('product_id');
+
+        // Verify only one rule exists for this product/location
+        $this->assertDatabaseCount('reordering_rules', 1);
+    }
+
     public function test_rule_can_be_deleted(): void
     {
         $rule = ReorderingRule::factory()->create([

@@ -5,6 +5,7 @@ namespace Modules\Inventory\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Product;
@@ -29,13 +30,20 @@ class ReorderingRuleController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
+            'product_id' => [
+                'required',
+                'exists:products,id',
+                Rule::unique('reordering_rules', 'product_id')
+                    ->where('tenant_id', auth()->user()->tenant_id)
+                    ->where('location_id', $request->input('location_id')),
+            ],
             'location_id' => ['required', 'exists:locations,id'],
             'min_qty' => ['required', 'numeric', 'min:0'],
             'max_qty' => ['required', 'numeric', 'gt:min_qty'],
             'trigger_type' => ['required', 'in:auto,manual'],
         ]);
 
+        $validated['tenant_id'] = auth()->user()->tenant_id;
         ReorderingRule::create($validated);
 
         return redirect()->route('app.inventory.reordering.index')->with('status', __('Reordering rule added.'));
