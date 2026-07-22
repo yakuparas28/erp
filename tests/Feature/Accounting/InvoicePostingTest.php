@@ -8,11 +8,16 @@ use Modules\Accounting\Models\JournalEntryLine;
 use Modules\Accounting\Models\TaxRate;
 use Modules\Accounting\Services\AccountingDefaultsService;
 use Modules\Accounting\Services\InvoiceService;
+use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Partner;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductCategory;
+use Modules\Inventory\Models\Uom;
+use Modules\Inventory\Models\UomCategory;
+use Modules\Inventory\Models\Warehouse;
 use Modules\Purchase\Models\PurchaseOrder;
 use Modules\Purchase\Models\PurchaseOrderLine;
+use Modules\Purchase\Services\PurchaseOrderService;
 use Modules\Sales\Models\SalesOrder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TenantTestCase;
@@ -107,6 +112,72 @@ class InvoicePostingTest extends TenantTestCase
         $this->assertSame('0.0000', $debitLine->credit);
         $this->assertSame('0.0000', $creditLine->debit);
         $this->assertSame('10.0000', $creditLine->credit);
+    }
+
+    public function test_posting_a_purchase_invoice_after_receipt_does_not_double_count_the_goods_value(): void
+    {
+        $defaults = app(AccountingDefaultsService::class);
+
+        $category = ProductCategory::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'stock_input_account_id' => $defaults->accountByCode($this->tenant->id, '153')->id,
+            'expense_account_id' => $defaults->accountByCode($this->tenant->id, '621')->id,
+        ]);
+
+        setPermissionsTeamId($this->tenant->id);
+        $admin = User::factory()->for($this->tenant)->create();
+        $admin->assignRole('Tenant Admin');
+        $officer = User::factory()->for($this->tenant)->create();
+        $officer->assignRole('Purchasing Officer');
+
+        $supplier = Partner::factory()->supplier()->create(['tenant_id' => $this->tenant->id]);
+        $warehouse = Warehouse::factory()->create(['tenant_id' => $this->tenant->id]);
+        $dock = Location::factory()->create(['tenant_id' => $this->tenant->id, 'warehouse_id' => $warehouse->id]);
+        $uomCategory = UomCategory::factory()->create(['tenant_id' => $this->tenant->id]);
+        $unit = Uom::factory()->create(['tenant_id' => $this->tenant->id, 'uom_category_id' => $uomCategory->id]);
+        $product = Product::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'uom_id' => $unit->id,
+            'cost_method' => 'fifo',
+            'product_category_id' => $category->id,
+        ]);
+
+        $purchaseOrders = app(PurchaseOrderService::class);
+        $po = $purchaseOrders->create($this->tenant->id, $supplier->id, $officer);
+        $line = $purchaseOrders->addLine($po, $product->id, $unit->id, '10', '5.0000');
+        $purchaseOrders->sendRfq($po);
+        $purchaseOrders->confirm($po->fresh(), $admin);
+
+        // Fiili teslim alım: net mal değeri (10 * 5.0000 = 50.0000) burada,
+        // postForPurchaseReceipt() tarafından, 320'ye ZATEN alacak yazılır.
+        $purchaseOrders->receive($line->fresh(), '10', $dock->id);
+
+        $taxRate = $this->purchaseTaxRate();
+
+        $invoice = $this->service()->create($this->tenant->id, $supplier->id, 'purchase', $po->fresh());
+        $this->service()->addLine($invoice, $product->id, '10', '5.0000', $taxRate->id);
+
+        $this->service()->post($invoice, $this->accountant());
+
+        $this->assertSame('posted', $invoice->fresh()->status);
+
+        $payablesAccount = $defaults->accountByCode($this->tenant->id, '320');
+
+        $totalDebit = JournalEntryLine::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenant->id)
+            ->where('account_id', $payablesAccount->id)
+            ->sum('debit');
+        $totalCredit = JournalEntryLine::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenant->id)
+            ->where('account_id', $payablesAccount->id)
+            ->sum('credit');
+
+        $netPayables = bcsub((string) $totalCredit, (string) $totalDebit, 4);
+
+        // 10 * 5.0000 = 50.0000 mal değeri (receive'de kaydedildi) + 10.0000
+        // KDV (invoice post'ta kaydedildi) = 60.0000. Eğer invoice post
+        // sırasında mal değeri TEKRAR kaydedilseydi bu 100.0000 olurdu.
+        $this->assertSame('60.0000', $netPayables);
     }
 
     public function test_posting_a_purchase_invoice_with_no_tax_fails(): void
