@@ -154,6 +154,14 @@
                                 </a>
                             </li>
                         @endif
+                        @if (auth()->user()?->can('create sales orders') || auth()->user()?->can('confirm sales orders'))
+                            <li class="menu-title" aria-disabled="true"><span>{{ __('Sales') }}</span></li>
+                            <li>
+                                <a href="{{ route('app.sales.orders.index') }}" class="{{ request()->routeIs('app.sales.orders.*') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-receipt"></i><span>{{ __('Sales Orders') }}</span>
+                                </a>
+                            </li>
+                        @endif
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>
                             @can('manage users')

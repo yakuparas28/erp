@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\StockQuant;
+use Modules\Inventory\Models\Uom;
 use Modules\Inventory\Services\CostingService;
 use Modules\Inventory\Services\KitExplosionService;
 use Modules\Inventory\Services\StockMoveService;
@@ -43,6 +44,15 @@ class SalesOrderService
     public function addLine(SalesOrder $so, int $productId, int $uomId, string $qty, string $unitPrice): SalesOrderLine
     {
         abort_unless($so->status === 'draft', 422, __('Lines can only be added to a draft sales order.'));
+
+        $product = Product::withoutGlobalScopes()->findOrFail($productId);
+        $uom = Uom::withoutGlobalScopes()->findOrFail($uomId);
+
+        abort_if(
+            $uom->uom_category_id !== $product->uom->uom_category_id,
+            422,
+            __('The selected unit does not belong to this product\'s unit category.'),
+        );
 
         $line = new SalesOrderLine([
             'sales_order_id' => $so->id,
