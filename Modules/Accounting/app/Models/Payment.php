@@ -53,7 +53,9 @@ class Payment extends Model
 
     public function allocatedTotal(): string
     {
-        return (string) $this->allocations()->sum('allocated_amount');
+        $sum = $this->allocations()->sum('allocated_amount');
+
+        return bcadd((string) $sum, '0', 4);
     }
 
     public function unallocatedAmount(): string

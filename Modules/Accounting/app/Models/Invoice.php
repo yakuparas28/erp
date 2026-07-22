@@ -67,7 +67,9 @@ class Invoice extends Model
 
     public function paidTotal(): string
     {
-        return (string) $this->allocations()->sum('allocated_amount');
+        $sum = $this->allocations()->sum('allocated_amount');
+
+        return bcadd((string) $sum, '0', 4);
     }
 
     public function remainingBalance(): string

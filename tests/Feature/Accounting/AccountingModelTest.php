@@ -156,7 +156,7 @@ class AccountingModelTest extends TenantTestCase
             'allocated_amount' => '35.0000',
         ]);
 
-        $this->assertSame(0, bccomp('35', $payment->allocatedTotal(), 4));
+        $this->assertSame('35.0000', $payment->allocatedTotal());
         $this->assertSame('65.0000', $payment->unallocatedAmount());
     }
 
