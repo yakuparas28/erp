@@ -159,6 +159,13 @@
                                     </a>
                                 </li>
                             @endcan
+                            @can('manage routes')
+                                <li>
+                                    <a href="{{ route('app.inventory.routes.index') }}" class="{{ request()->routeIs('app.inventory.routes.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-flow-arrow"></i><span>{{ __('Routes') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
                         @endif
                         @if (auth()->user()?->can('create purchase orders') || auth()->user()?->can('confirm purchase orders'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Purchasing') }}</span></li>
