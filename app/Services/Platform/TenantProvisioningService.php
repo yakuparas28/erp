@@ -9,6 +9,7 @@ use App\Services\Mail\NotificationTemplateService;
 use App\Services\Mail\TenantMailer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Modules\Accounting\Services\AccountingDefaultsService;
 use Modules\Inventory\Services\InventoryDefaultsService;
 
 class TenantProvisioningService
@@ -17,6 +18,7 @@ class TenantProvisioningService
         private readonly NotificationTemplateService $templates,
         private readonly TenantMailer $mailer,
         private readonly InventoryDefaultsService $inventoryDefaults,
+        private readonly AccountingDefaultsService $accountingDefaults,
     ) {}
 
     /**
@@ -45,6 +47,7 @@ class TenantProvisioningService
             $adminUser->assignRole('Tenant Admin');
 
             $this->inventoryDefaults->provision($tenant);
+            $this->accountingDefaults->provision($tenant);
 
             return [$tenant, $adminUser, $password];
         });
