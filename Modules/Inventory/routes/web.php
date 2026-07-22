@@ -7,6 +7,7 @@ use Modules\Inventory\Http\Controllers\PartnerController;
 use Modules\Inventory\Http\Controllers\ProductController;
 use Modules\Inventory\Http\Controllers\ProductTemplateController;
 use Modules\Inventory\Http\Controllers\PutawayRuleController;
+use Modules\Inventory\Http\Controllers\ReorderingRuleController;
 use Modules\Inventory\Http\Controllers\StockController;
 use Modules\Inventory\Http\Controllers\TransferController;
 use Modules\Inventory\Http\Controllers\WarehouseController;
@@ -72,5 +73,12 @@ Route::middleware(['auth:web'])->prefix('app/inventory')->name('app.inventory.')
         Route::get('/putaway', [PutawayRuleController::class, 'index'])->name('putaway.index');
         Route::post('/putaway', [PutawayRuleController::class, 'store'])->name('putaway.store');
         Route::delete('/putaway/{rule}', [PutawayRuleController::class, 'destroy'])->name('putaway.destroy');
+    });
+
+    Route::middleware('permission:manage reordering rules,web')->group(function (): void {
+        Route::get('/reordering', [ReorderingRuleController::class, 'index'])->name('reordering.index');
+        Route::post('/reordering', [ReorderingRuleController::class, 'store'])->name('reordering.store');
+        Route::delete('/reordering/{rule}', [ReorderingRuleController::class, 'destroy'])->name('reordering.destroy');
+        Route::post('/reordering/suggestions/{suggestion}/acknowledge', [ReorderingRuleController::class, 'acknowledge'])->name('reordering.suggestions.acknowledge');
     });
 });

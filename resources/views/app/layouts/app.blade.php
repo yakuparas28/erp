@@ -101,7 +101,7 @@
                                 <i class="ph-duotone ph-squares-four"></i><span>{{ __('Dashboard') }}</span>
                             </a>
                         </li>
-                        @if (auth()->user()?->can('view stock') || auth()->user()?->can('manage products') || auth()->user()?->can('manage warehouses') || auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers') || auth()->user()?->can('manage partners') || auth()->user()?->can('manage routes'))
+                        @if (auth()->user()?->can('view stock') || auth()->user()?->can('manage products') || auth()->user()?->can('manage warehouses') || auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers') || auth()->user()?->can('manage partners') || auth()->user()?->can('manage routes') || auth()->user()?->can('manage reordering rules'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Inventory') }}</span></li>
                             @can('manage products')
                                 <li>
@@ -149,6 +149,13 @@
                                 <li>
                                     <a href="{{ route('app.inventory.putaway.index') }}" class="{{ request()->routeIs('app.inventory.putaway.*') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-map-pin-line"></i><span>{{ __('Putaway Rules') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('manage reordering rules')
+                                <li>
+                                    <a href="{{ route('app.inventory.reordering.index') }}" class="{{ request()->routeIs('app.inventory.reordering.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-arrows-clockwise"></i><span>{{ __('Reordering') }}</span>
                                     </a>
                                 </li>
                             @endcan
