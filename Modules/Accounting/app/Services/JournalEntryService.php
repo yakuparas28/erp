@@ -12,6 +12,7 @@ use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductCategory;
 use Modules\Inventory\Models\StockMove;
 use Modules\Purchase\Models\PurchaseOrderLine;
+use Modules\Sales\Models\SalesOrderLine;
 
 /**
  * Otomatik yevmiye kayıt motoru (PRD 3.12). Hiçbir kayıt elle girilmez;
@@ -102,6 +103,48 @@ class JournalEntryService
             lines: [
                 ['account_id' => $debitAccountId, 'debit' => $value, 'credit' => '0.0000'],
                 ['account_id' => $payables->id, 'debit' => '0.0000', 'credit' => $value],
+            ],
+        );
+    }
+
+    /**
+     * Satış teslimatı (PRD 3.11/3.12): yalnızca anglo_saxon modda COGS'u
+     * dr expense(621) / cr stock_output(153) olarak tanır — continental
+     * modda COGS zaten alım anında tanındığından burada İKİNCİ KEZ
+     * tanınmaz (no-op, null döner). Kategori/hesap eksikse de sessizce
+     * atlanır (Task 4'teki gerekçeyle aynı).
+     */
+    public function postForSalesDelivery(SalesOrderLine $line, StockMove $move, string $cogsAmount): ?JournalEntry
+    {
+        $tenant = Tenant::withoutGlobalScopes()->findOrFail($line->tenant_id);
+
+        if ($tenant->accounting_mode === 'continental') {
+            return null;
+        }
+
+        if (bccomp($cogsAmount, '0', 4) <= 0) {
+            return null;
+        }
+
+        // NOT: $move->product_id kullanılır (kit satırında $line->product_id kit
+        // ürününe, $move ise gerçek bileşene aittir — bkz. Task 5 brief notu).
+        $product = Product::withoutGlobalScopes()->find($move->product_id);
+        $category = $product?->product_category_id !== null
+            ? ProductCategory::withoutGlobalScopes()->find($product->product_category_id)
+            : null;
+
+        if ($category === null || $category->expense_account_id === null || $category->stock_output_account_id === null) {
+            return null;
+        }
+
+        return $this->write(
+            tenantId: $line->tenant_id,
+            journalType: 'sale',
+            entryDate: now()->toDateString(),
+            reference: $move,
+            lines: [
+                ['account_id' => $category->expense_account_id, 'debit' => $cogsAmount, 'credit' => '0.0000'],
+                ['account_id' => $category->stock_output_account_id, 'debit' => '0.0000', 'credit' => $cogsAmount],
             ],
         );
     }

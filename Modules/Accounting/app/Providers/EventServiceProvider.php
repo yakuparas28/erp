@@ -4,7 +4,9 @@ namespace Modules\Accounting\Providers;
 
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Modules\Accounting\Listeners\CreateJournalEntryFromPurchaseReceipt;
+use Modules\Accounting\Listeners\CreateJournalEntryFromSalesDelivery;
 use Modules\Purchase\Events\PurchaseOrderLineReceived;
+use Modules\Sales\Events\SalesOrderLineDelivered;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -16,6 +18,9 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         PurchaseOrderLineReceived::class => [
             CreateJournalEntryFromPurchaseReceipt::class,
+        ],
+        SalesOrderLineDelivered::class => [
+            CreateJournalEntryFromSalesDelivery::class,
         ],
     ];
 

@@ -10,6 +10,7 @@ use Modules\Inventory\Models\Uom;
 use Modules\Inventory\Services\CostingService;
 use Modules\Inventory\Services\KitExplosionService;
 use Modules\Inventory\Services\StockMoveService;
+use Modules\Sales\Events\SalesOrderLineDelivered;
 use Modules\Sales\Models\SalesOrder;
 use Modules\Sales\Models\SalesOrderLine;
 
@@ -145,7 +146,8 @@ class SalesOrderService
 
                 foreach ($moves as $move) {
                     $moveProduct = Product::withoutGlobalScopes()->findOrFail($move->product_id);
-                    $this->costing->consumeOutbound($moveProduct, $move, bcmul($move->qty, '-1', 4));
+                    $cogs = $this->costing->consumeOutbound($moveProduct, $move, bcmul($move->qty, '-1', 4));
+                    SalesOrderLineDelivered::dispatch($line, $move, $cogs);
                 }
 
                 $this->increaseDeliveredQty($so, $line, $qty);
@@ -168,7 +170,8 @@ class SalesOrderService
                 referenceId: $line->id,
             );
 
-            $this->costing->consumeOutbound($product, $move, $qty);
+            $cogs = $this->costing->consumeOutbound($product, $move, $qty);
+            SalesOrderLineDelivered::dispatch($line, $move, $cogs);
 
             $this->increaseDeliveredQty($so, $line, $qty);
         });
