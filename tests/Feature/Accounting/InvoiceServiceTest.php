@@ -160,4 +160,23 @@ class InvoiceServiceTest extends TenantTestCase
             $this->assertSame(422, $e->getStatusCode());
         }
     }
+
+    public function test_adding_line_to_non_draft_invoice_fails(): void
+    {
+        $partner = Partner::factory()->create(['tenant_id' => $this->tenant->id]);
+        $salesOrder = SalesOrder::factory()->create(['tenant_id' => $this->tenant->id, 'partner_id' => $partner->id]);
+        $product = Product::factory()->create(['tenant_id' => $this->tenant->id]);
+
+        $invoice = $this->service()->create($this->tenant->id, $partner->id, 'sale', $salesOrder);
+        $invoice->update(['status' => 'posted']);
+
+        try {
+            $this->service()->addLine($invoice, $product->id, '1', '10.0000', null);
+            $this->fail('422 bekleniyordu');
+        } catch (HttpException $e) {
+            $this->assertSame(422, $e->getStatusCode());
+        }
+
+        $this->assertDatabaseCount('invoice_lines', 0);
+    }
 }
