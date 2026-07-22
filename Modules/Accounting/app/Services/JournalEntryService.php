@@ -10,6 +10,7 @@ use Modules\Accounting\Models\InvoiceLine;
 use Modules\Accounting\Models\Journal;
 use Modules\Accounting\Models\JournalEntry;
 use Modules\Accounting\Models\JournalEntryLine;
+use Modules\Accounting\Models\Payment;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductCategory;
 use Modules\Inventory\Models\StockMove;
@@ -203,6 +204,37 @@ class JournalEntryService
             journalType: 'sale',
             entryDate: now()->toDateString(),
             reference: $invoice,
+            lines: $lines,
+        );
+    }
+
+    /**
+     * Ödeme/tahsilat kaydı (PRD 3.12): tedarikçiye ödeme → dr Satıcılar(320)
+     * / cr kasa-banka; müşteriden tahsilat → dr kasa-banka / cr Alıcılar(120).
+     * Kasa/banka hesabı journal'ın type'ına göre kod üzerinden çözülür
+     * (cash→100, bank→102).
+     */
+    public function postForPayment(Payment $payment, Invoice $invoice, string $amount): JournalEntry
+    {
+        $cashOrBankCode = $payment->journal->type === 'cash' ? '100' : '102';
+        $cashOrBank = $this->defaults->accountByCode($payment->tenant_id, $cashOrBankCode);
+        $controlAccount = $this->defaults->accountByCode($payment->tenant_id, $invoice->type === 'purchase' ? '320' : '120');
+
+        $lines = $invoice->type === 'purchase'
+            ? [
+                ['account_id' => $controlAccount->id, 'debit' => $amount, 'credit' => '0.0000'],
+                ['account_id' => $cashOrBank->id, 'debit' => '0.0000', 'credit' => $amount],
+            ]
+            : [
+                ['account_id' => $cashOrBank->id, 'debit' => $amount, 'credit' => '0.0000'],
+                ['account_id' => $controlAccount->id, 'debit' => '0.0000', 'credit' => $amount],
+            ];
+
+        return $this->write(
+            tenantId: $payment->tenant_id,
+            journalType: $payment->journal->type,
+            entryDate: $payment->payment_date->toDateString(),
+            reference: $payment,
             lines: $lines,
         );
     }
