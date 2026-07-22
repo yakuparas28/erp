@@ -8,6 +8,7 @@ use Modules\Inventory\Models\Uom;
 use Modules\Inventory\Services\CostingService;
 use Modules\Inventory\Services\PutawayService;
 use Modules\Inventory\Services\StockMoveService;
+use Modules\Purchase\Events\PurchaseOrderLineReceived;
 use Modules\Purchase\Models\PurchaseOrder;
 use Modules\Purchase\Models\PurchaseOrderLine;
 
@@ -139,6 +140,8 @@ class PurchaseOrderService
                 lotId: $lotId,
             );
         }
+
+        PurchaseOrderLineReceived::dispatch($line, $move);
     }
 
     public function cancel(PurchaseOrder $po): void
