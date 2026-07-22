@@ -18,11 +18,17 @@ class ModuleScaffoldTest extends TestCase
 
     public function test_dependent_modules_declare_inventory_requirement(): void
     {
-        foreach (['Sales', 'Purchase', 'Accounting'] as $name) {
+        $expectedRequirements = [
+            'Sales' => ['Inventory'],
+            'Purchase' => ['Inventory'],
+            'Accounting' => ['Inventory', 'Purchase', 'Sales'],
+        ];
+
+        foreach ($expectedRequirements as $name => $requires) {
             $this->assertSame(
-                ['Inventory'],
+                $requires,
                 Module::find($name)->get('requires', []),
-                "{$name} modülü Inventory bağımlılığını beyan etmeli",
+                "{$name} modülü {$requires[0]} bağımlılığını beyan etmeli",
             );
         }
     }

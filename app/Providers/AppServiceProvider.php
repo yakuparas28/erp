@@ -13,6 +13,8 @@ use App\Models\TenantSubscription;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\ServiceProvider;
+use Modules\Accounting\Models\Invoice;
+use Modules\Accounting\Models\Payment;
 use Modules\Inventory\Models\InventoryAdjustment;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Product;
@@ -22,7 +24,9 @@ use Modules\Inventory\Models\StockMove;
 use Modules\Inventory\Models\StockQuant;
 use Modules\Inventory\Models\Warehouse;
 use Modules\Inventory\Models\WarehouseTransfer;
+use Modules\Purchase\Models\PurchaseOrder;
 use Modules\Purchase\Models\PurchaseOrderLine;
+use Modules\Sales\Models\SalesOrder;
 use Modules\Sales\Models\SalesOrderLine;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -74,6 +78,10 @@ class AppServiceProvider extends ServiceProvider
             'purchase_order_line' => PurchaseOrderLine::class,
             'sales_order_line' => SalesOrderLine::class,
             'permission' => Permission::class,
+            'purchase_order' => PurchaseOrder::class,
+            'sales_order' => SalesOrder::class,
+            'invoice' => Invoice::class,
+            'payment' => Payment::class,
         ]);
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\Accounting\Models\TaxRate;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\StockMove;
 use Modules\Inventory\Models\Uom;
@@ -52,6 +53,11 @@ class PurchaseOrderLine extends Model
     public function uom(): BelongsTo
     {
         return $this->belongsTo(Uom::class);
+    }
+
+    public function taxRate(): BelongsTo
+    {
+        return $this->belongsTo(TaxRate::class);
     }
 
     /**

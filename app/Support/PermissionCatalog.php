@@ -82,4 +82,12 @@ final class PermissionCatalog
     {
         return ['create sales orders', 'manage partners'];
     }
+
+    /**
+     * @return list<string>
+     */
+    public static function accountantDefaults(): array
+    {
+        return ['manage chart of accounts', 'post journal entries', 'register payments'];
+    }
 }

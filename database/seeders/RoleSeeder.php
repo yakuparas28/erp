@@ -23,6 +23,7 @@ class RoleSeeder extends Seeder
         Role::findOrCreate('Warehouse Operator', 'web');
         Role::findOrCreate('Purchasing Officer', 'web');
         Role::findOrCreate('Sales Representative', 'web');
+        Role::findOrCreate('Accountant', 'web');
 
         $this->call(PermissionSeeder::class);
     }

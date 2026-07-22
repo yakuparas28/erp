@@ -9,6 +9,8 @@
     ],
     "files": [],
     "requires": [
-        "Inventory"
+        "Inventory",
+        "Purchase",
+        "Sales"
     ]
 }

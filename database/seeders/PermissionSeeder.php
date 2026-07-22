@@ -24,5 +24,6 @@ class PermissionSeeder extends Seeder
         Role::findByName('Warehouse Operator', 'web')->syncPermissions(PermissionCatalog::warehouseOperatorDefaults());
         Role::findByName('Purchasing Officer', 'web')->syncPermissions(PermissionCatalog::purchasingOfficerDefaults());
         Role::findByName('Sales Representative', 'web')->syncPermissions(PermissionCatalog::salesRepresentativeDefaults());
+        Role::findByName('Accountant', 'web')->syncPermissions(PermissionCatalog::accountantDefaults());
     }
 }
