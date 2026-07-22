@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Accounting\Http\Controllers\ChartOfAccountController;
 use Modules\Accounting\Http\Controllers\JournalEntryViewerController;
+use Modules\Accounting\Http\Controllers\PurchaseInvoiceController;
 
 Route::middleware(['auth:web'])->prefix('app/accounting')->name('app.accounting.')->group(function (): void {
     Route::middleware('permission:manage chart of accounts,web')->group(function (): void {
@@ -12,5 +13,13 @@ Route::middleware(['auth:web'])->prefix('app/accounting')->name('app.accounting.
 
         Route::get('/journal-entries', [JournalEntryViewerController::class, 'index'])->name('journal-entries.index');
         Route::get('/journal-entries/{entry}', [JournalEntryViewerController::class, 'show'])->name('journal-entries.show');
+    });
+
+    Route::middleware('permission:post journal entries,web')->group(function (): void {
+        Route::get('/purchase-invoices', [PurchaseInvoiceController::class, 'index'])->name('purchase-invoices.index');
+        Route::post('/purchase-invoices', [PurchaseInvoiceController::class, 'store'])->name('purchase-invoices.store');
+        Route::get('/purchase-invoices/{invoice}', [PurchaseInvoiceController::class, 'show'])->name('purchase-invoices.show');
+        Route::post('/purchase-invoices/{invoice}/lines', [PurchaseInvoiceController::class, 'storeLine'])->name('purchase-invoices.lines.store');
+        Route::post('/purchase-invoices/{invoice}/post', [PurchaseInvoiceController::class, 'post'])->name('purchase-invoices.post');
     });
 });

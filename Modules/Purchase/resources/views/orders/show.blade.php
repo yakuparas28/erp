@@ -149,6 +149,17 @@
 </div>
 
 <div class="flex items-center gap-2 mt-4">
+    @can('post journal entries')
+        @if (in_array($po->status, ['confirmed', 'done']))
+            <form method="POST" action="{{ route('app.accounting.purchase-invoices.store') }}">
+                @csrf
+                <input type="hidden" name="purchase_order_id" value="{{ $po->id }}">
+                <button type="submit" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light cursor-pointer">
+                    <i class="ph ph-receipt"></i> {{ __('Create Invoice') }}
+                </button>
+            </form>
+        @endif
+    @endcan
     @if ($po->status === 'draft')
         <form method="POST" action="{{ route('app.purchase.orders.send-rfq', $po) }}">
             @csrf

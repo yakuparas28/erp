@@ -199,6 +199,13 @@
                                     </a>
                                 </li>
                             @endcan
+                            @can('post journal entries')
+                                <li>
+                                    <a href="{{ route('app.accounting.purchase-invoices.index') }}" class="{{ request()->routeIs('app.accounting.purchase-invoices.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-file-text"></i><span>{{ __('Purchase Invoices') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
                         @endif
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>
