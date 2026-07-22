@@ -2,6 +2,7 @@
 
 namespace Modules\Accounting\Services;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\InvoiceLine;
@@ -17,6 +18,18 @@ use Modules\Purchase\Models\PurchaseOrderLine;
  */
 class InvoiceService
 {
+    public function __construct(private readonly JournalEntryService $journalEntries) {}
+
+    public function post(Invoice $invoice, User $poster): void
+    {
+        abort_unless($invoice->status === 'draft', 422, __('Only a draft invoice can be posted.'));
+        abort_unless($poster->can('post journal entries'), 403, __('You are not allowed to post journal entries.'));
+
+        $this->journalEntries->postForInvoice($invoice);
+
+        $invoice->update(['status' => 'posted']);
+    }
+
     public function create(int $tenantId, int $partnerId, string $type, Model $source): Invoice
     {
         $invoice = new Invoice(['partner_id' => $partnerId, 'type' => $type, 'status' => 'draft']);

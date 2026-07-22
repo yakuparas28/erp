@@ -5,6 +5,8 @@ namespace Modules\Accounting\Services;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Modules\Accounting\Models\Invoice;
+use Modules\Accounting\Models\InvoiceLine;
 use Modules\Accounting\Models\Journal;
 use Modules\Accounting\Models\JournalEntry;
 use Modules\Accounting\Models\JournalEntryLine;
@@ -147,5 +149,70 @@ class JournalEntryService
                 ['account_id' => $category->stock_output_account_id, 'debit' => '0.0000', 'credit' => $cogsAmount],
             ],
         );
+    }
+
+    /**
+     * Fatura onayı (PRD 3.12). Satınalma faturası: net mal değeri
+     * receive()'de ZATEN kaydedildiğinden (Task 4) burada yalnızca KDV
+     * tutarı Satıcılar'a (320) eklenir. Satış faturası: gelir tanıma HER
+     * ZAMAN burada olur (teslimatta değil) — dr Alıcılar(120, brüt) /
+     * cr income_account_id(net) / cr Hesaplanan KDV(391, KDV).
+     */
+    public function postForInvoice(Invoice $invoice): JournalEntry
+    {
+        $tax = $invoice->taxTotal();
+
+        if ($invoice->type === 'purchase') {
+            $incomeTax = $this->defaults->accountByCode($invoice->tenant_id, '191');
+            $payables = $this->defaults->accountByCode($invoice->tenant_id, '320');
+
+            abort_if(bccomp($tax, '0', 4) <= 0, 422, __('This invoice has no tax amount to post.'));
+
+            return $this->write(
+                tenantId: $invoice->tenant_id,
+                journalType: 'purchase',
+                entryDate: now()->toDateString(),
+                reference: $invoice,
+                lines: [
+                    ['account_id' => $incomeTax->id, 'debit' => $tax, 'credit' => '0.0000'],
+                    ['account_id' => $payables->id, 'debit' => '0.0000', 'credit' => $tax],
+                ],
+            );
+        }
+
+        $receivables = $this->defaults->accountByCode($invoice->tenant_id, '120');
+        $outputTax = $this->defaults->accountByCode($invoice->tenant_id, '391');
+        $total = $invoice->total();
+
+        $lines = [
+            ['account_id' => $receivables->id, 'debit' => $total, 'credit' => '0.0000'],
+        ];
+
+        foreach ($invoice->lines as $line) {
+            $category = $this->categoryFor($line);
+            abort_if($category === null || $category->income_account_id === null, 422, __('This product\'s category has no income account configured.'));
+            $lines[] = ['account_id' => $category->income_account_id, 'debit' => '0.0000', 'credit' => $line->subtotal()];
+        }
+
+        if (bccomp($tax, '0', 4) > 0) {
+            $lines[] = ['account_id' => $outputTax->id, 'debit' => '0.0000', 'credit' => $tax];
+        }
+
+        return $this->write(
+            tenantId: $invoice->tenant_id,
+            journalType: 'sale',
+            entryDate: now()->toDateString(),
+            reference: $invoice,
+            lines: $lines,
+        );
+    }
+
+    private function categoryFor(InvoiceLine $line): ?ProductCategory
+    {
+        $product = Product::withoutGlobalScopes()->find($line->product_id);
+
+        return $product?->product_category_id !== null
+            ? ProductCategory::withoutGlobalScopes()->find($product->product_category_id)
+            : null;
     }
 }
