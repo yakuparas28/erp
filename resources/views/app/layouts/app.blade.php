@@ -183,6 +183,16 @@
                                 </a>
                             </li>
                         @endif
+                        @if (auth()->user()?->can('manage chart of accounts') || auth()->user()?->can('post journal entries') || auth()->user()?->can('register payments'))
+                            <li class="menu-title" aria-disabled="true"><span>{{ __('Accounting') }}</span></li>
+                            @can('manage chart of accounts')
+                                <li>
+                                    <a href="{{ route('app.accounting.accounts.index') }}" class="{{ request()->routeIs('app.accounting.accounts.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-book-open-text"></i><span>{{ __('Chart of Accounts') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                        @endif
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>
                             @can('manage users')
@@ -235,6 +245,15 @@
                     @if (session('status'))
                         <div class="bg-success-transparent text-success border border-success rounded-md px-4 py-3 text-sm mb-4">
                             {{ session('status') }}
+                        </div>
+                    @endif
+                    @if ($errors->any())
+                        <div class="bg-danger-transparent text-danger border border-danger rounded-md px-4 py-3 text-sm mb-4">
+                            <ul class="mb-0 list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
                         </div>
                     @endif
 
