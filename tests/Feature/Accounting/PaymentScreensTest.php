@@ -86,7 +86,16 @@ class PaymentScreensTest extends TenantTestCase
         $response->assertSee(route('app.accounting.payments.store'), false);
         $response->assertSee($this->journalOfType('cash')->name);
         $response->assertSee($this->journalOfType('bank')->name);
-        $response->assertDontSee($this->journalOfType('sale')->name);
+        // Not: journal adının (ör. "Satış") düz metin olarak assertDontSee ile
+        // aranması yanlış pozitif verir, çünkü kenar menüsündeki "Satış
+        // Faturaları" linki de aynı kelimeyi içerir. `<option value="ID">`
+        // biçimindeki kontrol de tek başına yeterli değil, çünkü partner
+        // select'indeki bir option'ın ID'si tesadüfen aynı olabilir (partner
+        // ve journal ayrı sayaçlar). Bu yüzden hem ID HEM AD'ı aynı option
+        // etiketinde birlikte arayarak sale journal'ın select'te HİÇ
+        // render edilmediğini kesin olarak doğruluyoruz.
+        $saleJournal = $this->journalOfType('sale');
+        $response->assertDontSee('<option value="'.$saleJournal->id.'">'.$saleJournal->name.'</option>', false);
     }
 
     public function test_a_payment_can_be_created_with_a_cash_journal(): void
