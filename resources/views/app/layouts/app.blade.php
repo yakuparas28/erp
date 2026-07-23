@@ -213,6 +213,13 @@
                                     </a>
                                 </li>
                             @endcan
+                            @can('register payments')
+                                <li>
+                                    <a href="{{ route('app.accounting.payments.index') }}" class="{{ request()->routeIs('app.accounting.payments.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-wallet"></i><span>{{ __('Payments') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
                         @endif
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>

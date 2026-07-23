@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Accounting\Http\Controllers\ChartOfAccountController;
 use Modules\Accounting\Http\Controllers\JournalEntryViewerController;
+use Modules\Accounting\Http\Controllers\PaymentController;
 use Modules\Accounting\Http\Controllers\PurchaseInvoiceController;
 use Modules\Accounting\Http\Controllers\SalesInvoiceController;
 
@@ -28,5 +29,12 @@ Route::middleware(['auth:web'])->prefix('app/accounting')->name('app.accounting.
         Route::get('/sales-invoices/{invoice}', [SalesInvoiceController::class, 'show'])->name('sales-invoices.show');
         Route::post('/sales-invoices/{invoice}/lines', [SalesInvoiceController::class, 'storeLine'])->name('sales-invoices.lines.store');
         Route::post('/sales-invoices/{invoice}/post', [SalesInvoiceController::class, 'post'])->name('sales-invoices.post');
+    });
+
+    Route::middleware('permission:register payments,web')->group(function (): void {
+        Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+        Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
+        Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
+        Route::post('/payments/{payment}/allocations', [PaymentController::class, 'storeAllocation'])->name('payments.allocations.store');
     });
 });
