@@ -222,15 +222,32 @@ class JournalEntryService
         $cashOrBank = $this->defaults->accountByCode($payment->tenant_id, $cashOrBankCode);
         $controlAccount = $this->defaults->accountByCode($payment->tenant_id, $invoice->type === 'purchase' ? '320' : '120');
 
+        $controlAmountTL = bcmul($amount, $invoice->exchangeRateOrOne(), 4);
+        $cashAmountTL = bcmul($amount, $payment->exchangeRateOrOne(), 4);
+        $fxDifference = bcsub($cashAmountTL, $controlAmountTL, 4);
+
         $lines = $invoice->type === 'purchase'
             ? [
-                ['account_id' => $controlAccount->id, 'debit' => $amount, 'credit' => '0.0000'],
-                ['account_id' => $cashOrBank->id, 'debit' => '0.0000', 'credit' => $amount],
+                ['account_id' => $controlAccount->id, 'debit' => $controlAmountTL, 'credit' => '0.0000'],
+                ['account_id' => $cashOrBank->id, 'debit' => '0.0000', 'credit' => $cashAmountTL],
             ]
             : [
-                ['account_id' => $cashOrBank->id, 'debit' => $amount, 'credit' => '0.0000'],
-                ['account_id' => $controlAccount->id, 'debit' => '0.0000', 'credit' => $amount],
+                ['account_id' => $cashOrBank->id, 'debit' => $cashAmountTL, 'credit' => '0.0000'],
+                ['account_id' => $controlAccount->id, 'debit' => '0.0000', 'credit' => $controlAmountTL],
             ];
+
+        if (bccomp($fxDifference, '0', 4) !== 0) {
+            // satış: fark>0 → cash>control → kâr(646) fazladan kredi; fark<0 → zarar(656) fazladan borç
+            // alış: fark>0 → cash>control → daha fazla ödendi → zarar(656); fark<0 → kâr(646)
+            $isGainForSale = $invoice->type === 'sale' && bccomp($fxDifference, '0', 4) > 0;
+            $isGainForPurchase = $invoice->type === 'purchase' && bccomp($fxDifference, '0', 4) < 0;
+            $isGain = $isGainForSale || $isGainForPurchase;
+
+            $account = $this->defaults->accountByCode($payment->tenant_id, $isGain ? '646' : '656');
+            $absDifference = bccomp($fxDifference, '0', 4) < 0 ? bcmul($fxDifference, '-1', 4) : $fxDifference;
+
+            $lines[] = ['account_id' => $account->id, 'debit' => $isGain ? '0.0000' : $absDifference, 'credit' => $isGain ? $absDifference : '0.0000'];
+        }
 
         return $this->write(
             tenantId: $payment->tenant_id,

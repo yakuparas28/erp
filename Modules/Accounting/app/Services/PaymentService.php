@@ -17,6 +17,7 @@ class PaymentService
     public function __construct(
         private readonly JournalEntryService $journalEntries,
         private readonly ExchangeRateService $exchangeRates,
+        private readonly FxRevaluationService $fxRevaluations,
     ) {}
 
     public function create(int $tenantId, int $partnerId, int $journalId, string $amount, string $paymentDate, ?int $currencyId = null): Payment
@@ -44,6 +45,7 @@ class PaymentService
     {
         abort_if(bccomp($amount, $payment->unallocatedAmount(), 4) > 0, 422, __('This amount exceeds the unallocated payment balance.'));
         abort_if(bccomp($amount, $invoice->remainingBalance(), 4) > 0, 422, __('This amount exceeds the invoice\'s remaining balance.'));
+        abort_if($payment->currency_id !== $invoice->currency_id, 422, __('Payment and invoice currencies must match.'));
 
         $allocation = new PaymentAllocation([
             'payment_id' => $payment->id,
@@ -54,6 +56,7 @@ class PaymentService
         $allocation->save();
 
         $this->journalEntries->postForPayment($payment, $invoice, $amount);
+        $this->fxRevaluations->recognizeRealized($payment, $invoice, $amount);
 
         if (bccomp($invoice->fresh()->remainingBalance(), '0', 4) === 0) {
             $invoice->update(['status' => 'paid']);
