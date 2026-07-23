@@ -169,34 +169,36 @@ class JournalEntryService
 
             abort_if(bccomp($tax, '0', 4) <= 0, 422, __('This invoice has no tax amount to post.'));
 
+            $taxTL = bcmul($tax, $invoice->exchangeRateOrOne(), 4);
+
             return $this->write(
                 tenantId: $invoice->tenant_id,
                 journalType: 'purchase',
                 entryDate: now()->toDateString(),
                 reference: $invoice,
                 lines: [
-                    ['account_id' => $incomeTax->id, 'debit' => $tax, 'credit' => '0.0000'],
-                    ['account_id' => $payables->id, 'debit' => '0.0000', 'credit' => $tax],
+                    ['account_id' => $incomeTax->id, 'debit' => $taxTL, 'credit' => '0.0000'],
+                    ['account_id' => $payables->id, 'debit' => '0.0000', 'credit' => $taxTL],
                 ],
             );
         }
 
         $receivables = $this->defaults->accountByCode($invoice->tenant_id, '120');
         $outputTax = $this->defaults->accountByCode($invoice->tenant_id, '391');
-        $total = $invoice->total();
+        $totalTL = bcmul($invoice->total(), $invoice->exchangeRateOrOne(), 4);
 
         $lines = [
-            ['account_id' => $receivables->id, 'debit' => $total, 'credit' => '0.0000'],
+            ['account_id' => $receivables->id, 'debit' => $totalTL, 'credit' => '0.0000'],
         ];
 
         foreach ($invoice->lines as $line) {
             $category = $this->categoryFor($line);
             abort_if($category === null || $category->income_account_id === null, 422, __('This product\'s category has no income account configured.'));
-            $lines[] = ['account_id' => $category->income_account_id, 'debit' => '0.0000', 'credit' => $line->subtotal()];
+            $lines[] = ['account_id' => $category->income_account_id, 'debit' => '0.0000', 'credit' => bcmul($line->subtotal(), $invoice->exchangeRateOrOne(), 4)];
         }
 
         if (bccomp($tax, '0', 4) > 0) {
-            $lines[] = ['account_id' => $outputTax->id, 'debit' => '0.0000', 'credit' => $tax];
+            $lines[] = ['account_id' => $outputTax->id, 'debit' => '0.0000', 'credit' => bcmul($tax, $invoice->exchangeRateOrOne(), 4)];
         }
 
         return $this->write(

@@ -14,9 +14,12 @@ use Modules\Accounting\Models\PaymentAllocation;
  */
 class PaymentService
 {
-    public function __construct(private readonly JournalEntryService $journalEntries) {}
+    public function __construct(
+        private readonly JournalEntryService $journalEntries,
+        private readonly ExchangeRateService $exchangeRates,
+    ) {}
 
-    public function create(int $tenantId, int $partnerId, int $journalId, string $amount, string $paymentDate): Payment
+    public function create(int $tenantId, int $partnerId, int $journalId, string $amount, string $paymentDate, ?int $currencyId = null): Payment
     {
         $journal = Journal::withoutGlobalScopes()->findOrFail($journalId);
         abort_unless(in_array($journal->type, ['cash', 'bank'], true), 422, __('Payments must use a cash or bank journal.'));
@@ -26,6 +29,10 @@ class PaymentService
             'journal_id' => $journalId,
             'amount' => $amount,
             'payment_date' => $paymentDate,
+            'currency_id' => $currencyId,
+            'exchange_rate_used' => $currencyId !== null
+                ? $this->exchangeRates->lockRateFor($tenantId, $currencyId, $paymentDate)
+                : null,
         ]);
         $payment->tenant_id = $tenantId;
         $payment->save();

@@ -18,7 +18,10 @@ use Modules\Purchase\Models\PurchaseOrderLine;
  */
 class InvoiceService
 {
-    public function __construct(private readonly JournalEntryService $journalEntries) {}
+    public function __construct(
+        private readonly JournalEntryService $journalEntries,
+        private readonly ExchangeRateService $exchangeRates,
+    ) {}
 
     public function post(Invoice $invoice, User $poster): void
     {
@@ -30,9 +33,17 @@ class InvoiceService
         $invoice->update(['status' => 'posted']);
     }
 
-    public function create(int $tenantId, int $partnerId, string $type, Model $source): Invoice
+    public function create(int $tenantId, int $partnerId, string $type, Model $source, ?int $currencyId = null): Invoice
     {
-        $invoice = new Invoice(['partner_id' => $partnerId, 'type' => $type, 'status' => 'draft']);
+        $invoice = new Invoice([
+            'partner_id' => $partnerId,
+            'type' => $type,
+            'status' => 'draft',
+            'currency_id' => $currencyId,
+            'exchange_rate_used' => $currencyId !== null
+                ? $this->exchangeRates->lockRateFor($tenantId, $currencyId, now()->toDateString())
+                : null,
+        ]);
         $invoice->tenant_id = $tenantId;
         $invoice->source()->associate($source);
         $invoice->save();
