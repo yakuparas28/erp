@@ -3,6 +3,9 @@
 namespace Modules\Accounting\Providers;
 
 use Illuminate\Console\Scheduling\Schedule;
+use Modules\Accounting\Console\Commands\SyncExchangeRates;
+use Modules\Accounting\Contracts\TcmbClientInterface;
+use Modules\Accounting\Services\Tcmb\HttpTcmbClient;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
 class AccountingServiceProvider extends ModuleServiceProvider
@@ -22,7 +25,9 @@ class AccountingServiceProvider extends ModuleServiceProvider
      *
      * @var string[]
      */
-    // protected array $commands = [];
+    protected array $commands = [
+        SyncExchangeRates::class,
+    ];
 
     /**
      * Provider classes to register.
@@ -34,13 +39,18 @@ class AccountingServiceProvider extends ModuleServiceProvider
         RouteServiceProvider::class,
     ];
 
+    public function register(): void
+    {
+        parent::register();
+
+        $this->app->bind(TcmbClientInterface::class, HttpTcmbClient::class);
+    }
+
     /**
      * Define module schedules.
-     *
-     * @param  $schedule
      */
-    // protected function configureSchedules(Schedule $schedule): void
-    // {
-    //     $schedule->command('inspire')->hourly();
-    // }
+    protected function configureSchedules(Schedule $schedule): void
+    {
+        $schedule->command('accounting:sync-exchange-rates')->dailyAt('09:00');
+    }
 }
