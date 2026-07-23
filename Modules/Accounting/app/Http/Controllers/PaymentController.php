@@ -70,6 +70,11 @@ class PaymentController extends Controller
     {
         $payment->load(['partner', 'journal', 'allocations.invoice']);
 
+        $payment->setAttribute(
+            'computed_unallocated_amount',
+            bcsub($payment->amount, $this->sumAllocatedAmounts($payment->allocations), 4),
+        );
+
         // Same N+1 hazard as index(): `Invoice::remainingBalance()` calls
         // `paidTotal()`, which sums `allocations()` via a fresh query per
         // call. Eager-load `lines.taxRate` (for total()) and `allocations`,

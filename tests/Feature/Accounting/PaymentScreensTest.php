@@ -192,6 +192,28 @@ class PaymentScreensTest extends TenantTestCase
         $this->assertSame('posted', $invoice->fresh()->status);
     }
 
+    public function test_show_page_displays_the_computed_unallocated_amount(): void
+    {
+        $partner = Partner::factory()->create(['tenant_id' => $this->tenant->id]);
+        $invoice = $this->postedSaleInvoice($partner, '10', '5.0000');
+
+        $cashJournal = $this->journalOfType('cash');
+        $payment = $this->payments()->create($this->tenant->id, $partner->id, $cashJournal->id, '133.0000', now()->toDateString());
+        $this->payments()->allocate($payment, $invoice, '30.0000');
+
+        // Chosen so the unallocated amount (103.0000) does not collide with
+        // any other number rendered on the page (payment amount 133.0000,
+        // allocated amount 30.0000, invoice remaining balance 20.0000) —
+        // this proves `computed_unallocated_amount` itself is rendered,
+        // rather than incidentally matching an unrelated figure.
+        $this->assertSame('103.0000', $payment->fresh()->unallocatedAmount());
+
+        $response = $this->actingAs($this->accountant)->get(route('app.accounting.payments.show', $payment));
+
+        $response->assertOk();
+        $response->assertSee('103.0000');
+    }
+
     public function test_show_page_only_lists_open_invoices_with_a_remaining_balance(): void
     {
         $partner = Partner::factory()->create(['tenant_id' => $this->tenant->id]);
