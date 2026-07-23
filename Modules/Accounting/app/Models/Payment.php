@@ -21,6 +21,8 @@ class Payment extends Model
         'journal_id',
         'amount',
         'payment_date',
+        'currency_id',
+        'exchange_rate_used',
     ];
 
     protected function casts(): array
@@ -28,6 +30,7 @@ class Payment extends Model
         return [
             'amount' => 'decimal:4',
             'payment_date' => 'date',
+            'exchange_rate_used' => 'decimal:6',
         ];
     }
 
@@ -39,6 +42,16 @@ class Payment extends Model
     public function partner(): BelongsTo
     {
         return $this->belongsTo(Partner::class);
+    }
+
+    public function currency(): BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
+    }
+
+    public function exchangeRateOrOne(): string
+    {
+        return $this->exchange_rate_used ?? '1.000000';
     }
 
     public function journal(): BelongsTo

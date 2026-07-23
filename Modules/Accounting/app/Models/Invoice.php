@@ -23,7 +23,16 @@ class Invoice extends Model
         'source_type',
         'source_id',
         'status',
+        'currency_id',
+        'exchange_rate_used',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'exchange_rate_used' => 'decimal:6',
+        ];
+    }
 
     protected static function newFactory(): InvoiceFactory
     {
@@ -33,6 +42,16 @@ class Invoice extends Model
     public function partner(): BelongsTo
     {
         return $this->belongsTo(Partner::class);
+    }
+
+    public function currency(): BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
+    }
+
+    public function exchangeRateOrOne(): string
+    {
+        return $this->exchange_rate_used ?? '1.000000';
     }
 
     public function lines(): HasMany

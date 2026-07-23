@@ -4,6 +4,7 @@ namespace Modules\Accounting\Services;
 
 use App\Models\Tenant;
 use Modules\Accounting\Models\ChartOfAccount;
+use Modules\Accounting\Models\Currency;
 use Modules\Accounting\Models\Journal;
 use Modules\Accounting\Models\TaxRate;
 
@@ -37,6 +38,12 @@ class AccountingDefaultsService
         ['name' => 'Genel', 'type' => 'general'],
     ];
 
+    private const CURRENCIES = [
+        ['code' => 'TRY', 'name' => 'Türk Lirası', 'is_functional' => true],
+        ['code' => 'USD', 'name' => 'ABD Doları', 'is_functional' => false],
+        ['code' => 'EUR', 'name' => 'Euro', 'is_functional' => false],
+    ];
+
     public function provision(Tenant $tenant): void
     {
         foreach (self::ACCOUNTS as $account) {
@@ -66,6 +73,13 @@ class AccountingDefaultsService
             TaxRate::withoutGlobalScopes()->firstOrCreate(
                 ['tenant_id' => $tenant->id, 'name' => "KDV %{$rate} (Alış)"],
                 ['percentage' => $rate, 'type' => 'purchase', 'tax_account_id' => $purchaseTaxAccount->id],
+            );
+        }
+
+        foreach (self::CURRENCIES as $currency) {
+            Currency::withoutGlobalScopes()->firstOrCreate(
+                ['tenant_id' => $tenant->id, 'code' => $currency['code']],
+                ['name' => $currency['name'], 'is_functional' => $currency['is_functional']],
             );
         }
     }
