@@ -194,6 +194,13 @@
                             @endcan
                             @can('manage chart of accounts')
                                 <li>
+                                    <a href="{{ route('app.accounting.exchange-rates.index') }}" class="{{ request()->routeIs('app.accounting.exchange-rates.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-currency-circle-dollar"></i><span>{{ __('Exchange Rates') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('manage chart of accounts')
+                                <li>
                                     <a href="{{ route('app.accounting.journal-entries.index') }}" class="{{ request()->routeIs('app.accounting.journal-entries.*') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-notebook"></i><span>{{ __('Journal Entries') }}</span>
                                     </a>

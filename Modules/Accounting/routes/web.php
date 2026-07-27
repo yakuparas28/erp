@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Accounting\Http\Controllers\ChartOfAccountController;
+use Modules\Accounting\Http\Controllers\ExchangeRateController;
 use Modules\Accounting\Http\Controllers\JournalEntryViewerController;
 use Modules\Accounting\Http\Controllers\PaymentController;
 use Modules\Accounting\Http\Controllers\PurchaseInvoiceController;
@@ -15,6 +16,9 @@ Route::middleware(['auth:web'])->prefix('app/accounting')->name('app.accounting.
 
         Route::get('/journal-entries', [JournalEntryViewerController::class, 'index'])->name('journal-entries.index');
         Route::get('/journal-entries/{entry}', [JournalEntryViewerController::class, 'show'])->name('journal-entries.show');
+
+        Route::get('/exchange-rates', [ExchangeRateController::class, 'index'])->name('exchange-rates.index');
+        Route::post('/exchange-rates', [ExchangeRateController::class, 'store'])->name('exchange-rates.store');
     });
 
     Route::middleware('permission:post journal entries,web')->group(function (): void {
