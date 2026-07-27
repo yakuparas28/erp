@@ -8,6 +8,7 @@ use Modules\Accounting\Models\FxRevaluation;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\Journal;
 use Modules\Accounting\Models\JournalEntry;
+use Modules\Accounting\Models\TaxRate;
 use Modules\Accounting\Services\AccountingDefaultsService;
 use Modules\Accounting\Services\ExchangeRateService;
 use Modules\Accounting\Services\FxRevaluationService;
@@ -16,6 +17,8 @@ use Modules\Accounting\Services\PaymentService;
 use Modules\Inventory\Models\Partner;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductCategory;
+use Modules\Purchase\Models\PurchaseOrder;
+use Modules\Purchase\Models\PurchaseOrderLine;
 use Modules\Sales\Models\SalesOrder;
 use Tests\TenantTestCase;
 
@@ -83,6 +86,36 @@ class UnrealizedFxRevaluationTest extends TenantTestCase
 
         $invoice = $this->invoices()->create($this->tenant->id, $partner->id, 'sale', $salesOrder, $usd->id);
         $this->invoices()->addLine($invoice, $product->id, '1', '100.0000', null);
+        $this->invoices()->post($invoice, $this->accountant());
+
+        return $invoice;
+    }
+
+    private function purchaseTaxRate(): TaxRate
+    {
+        return TaxRate::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenant->id)->where('type', 'purchase')->where('percentage', '20')->firstOrFail();
+    }
+
+    private function openPurchaseInvoice(Currency $usd): Invoice
+    {
+        $supplier = Partner::factory()->supplier()->create(['tenant_id' => $this->tenant->id]);
+        $po = PurchaseOrder::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'partner_id' => $supplier->id,
+            'bill_control_policy' => 'ordered_qty',
+        ]);
+        $product = Product::factory()->create(['tenant_id' => $this->tenant->id]);
+        PurchaseOrderLine::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'purchase_order_id' => $po->id,
+            'product_id' => $product->id,
+            'uom_id' => $product->uom_id,
+            'qty' => '1',
+        ]);
+
+        $invoice = $this->invoices()->create($this->tenant->id, $supplier->id, 'purchase', $po, $usd->id);
+        $this->invoices()->addLine($invoice, $product->id, '1', '100.0000', $this->purchaseTaxRate()->id);
         $this->invoices()->post($invoice, $this->accountant());
 
         return $invoice;
@@ -180,5 +213,50 @@ class UnrealizedFxRevaluationTest extends TenantTestCase
         $this->revaluations()->revaluateOpenBalances($this->tenant->id, $asOfDate);
 
         $this->assertSame('30.000000', $invoice->fresh()->exchange_rate_used);
+    }
+
+    /**
+     * Alışta kur artışı zarardır (satıştakinin tersi): borcun (320) değeri
+     * artar, bu firmanın aleyhinedir. 100.0000 mal + %20 KDV = 120.0000
+     * toplam bakiye; (33 - 30) * 120 = 360 TL zarar, 656'ya borç.
+     */
+    public function test_an_open_purchase_invoice_revalued_at_a_higher_rate_records_a_loss(): void
+    {
+        $usd = $this->currency('USD');
+        $this->recordRate($usd, now()->toDateString(), '30.000000');
+        $invoice = $this->openPurchaseInvoice($usd);
+        $this->assertSame('30.000000', $invoice->exchange_rate_used);
+
+        $asOfDate = now()->addDay()->toDateString();
+        $this->recordRate($usd, $asOfDate, '33.000000');
+
+        $created = $this->revaluations()->revaluateOpenBalances($this->tenant->id, $asOfDate);
+
+        $this->assertCount(1, $created);
+
+        $this->assertDatabaseHas('fx_revaluations', [
+            'invoice_id' => $invoice->id,
+            'payment_id' => null,
+            'type' => 'unrealized',
+            'difference_amount' => '-360.0000',
+        ]);
+
+        $entry = JournalEntry::withoutGlobalScopes()
+            ->where('reference_type', 'invoice')->where('reference_id', $invoice->id)
+            ->where('journal_id', Journal::withoutGlobalScopes()->where('tenant_id', $this->tenant->id)->where('type', 'general')->firstOrFail()->id)
+            ->firstOrFail();
+
+        $this->assertCount(2, $entry->lines);
+
+        $payables = app(AccountingDefaultsService::class)->accountByCode($this->tenant->id, '320');
+        $lossAccount = app(AccountingDefaultsService::class)->accountByCode($this->tenant->id, '656');
+
+        $payablesLine = $entry->lines->firstWhere('account_id', $payables->id);
+        $lossLine = $entry->lines->firstWhere('account_id', $lossAccount->id);
+
+        $this->assertSame('360.0000', $lossLine->debit);
+        $this->assertSame('0.0000', $lossLine->credit);
+        $this->assertSame('360.0000', $payablesLine->credit);
+        $this->assertSame('0.0000', $payablesLine->debit);
     }
 }

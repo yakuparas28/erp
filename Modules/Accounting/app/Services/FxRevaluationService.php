@@ -58,6 +58,16 @@ class FxRevaluationService
      * kayıt üretilir (bilinçli sadeleştirme: dönem başı ters kayıt/reversal
      * bu fazın kapsamında değil).
      *
+     * UYARI — bu metod ŞU AN hiçbir ekran/komuttan ÇAĞRILMIYOR (yalnızca
+     * testlerden). Üretim koduna bağlanmadan önce şu iki kısıt giderilmeli:
+     * (1) ürettiği kayıt bir sonraki dönem başında TERS KAYITLA geri
+     * alınmıyor — bu olmadan 120/320 bakiyesi kalıcı olarak bozulur ve
+     * fatura daha sonra ödendiğinde tam kapanmaz; (2) aynı asOfDate için
+     * tekrar çağrılmaya karşı bir idempotency kontrolü YOK (çift kayıt
+     * riski). Bu iki eksik, bu metodu gerçek bir dönem-sonu iş akışına
+     * bağlamadan ÖNCE (muhtemelen Faz 11+ ekran/otomasyon işinde) ele
+     * alınmalıdır.
+     *
      * @return list<FxRevaluation>
      */
     public function revaluateOpenBalances(int $tenantId, string $asOfDate): array

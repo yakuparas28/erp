@@ -4,6 +4,7 @@ namespace Modules\Accounting\Console\Commands;
 
 use App\Models\Tenant;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Modules\Accounting\Services\ExchangeRateService;
 
 class SyncExchangeRates extends Command
@@ -15,7 +16,14 @@ class SyncExchangeRates extends Command
     public function handle(ExchangeRateService $exchangeRates): int
     {
         foreach (Tenant::withoutGlobalScopes()->cursor() as $tenant) {
-            $exchangeRates->syncFromTcmb($tenant->id);
+            try {
+                $exchangeRates->syncFromTcmb($tenant->id);
+            } catch (\Throwable $e) {
+                Log::warning('TCMB exchange rate sync failed for tenant.', [
+                    'tenant_id' => $tenant->id,
+                    'message' => $e->getMessage(),
+                ]);
+            }
         }
 
         return self::SUCCESS;

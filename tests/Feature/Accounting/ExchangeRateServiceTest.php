@@ -165,4 +165,48 @@ class ExchangeRateServiceTest extends TenantTestCase
                 ->exists(),
         );
     }
+
+    /**
+     * Regresyon: TCMB hafta sonu/tatilde veri yayınlamadığında
+     * HttpTcmbClient::fetchRates() 422 fırlatır. Düzeltmeden önce bu,
+     * try/catch olmadığından cursor()'daki İLK tenant'tan sonra tüm
+     * döngüyü durduruyordu — bu testte tenantA'nın senkronu KASITLI
+     * olarak başarısız olur, ama tenantB (cursor'da sonra gelen) yine de
+     * senkronize edilmeli. Sequence'in ilk elemanı, TenantTestCase::setUp()
+     * içinde ZATEN oluşturulan (ve cursor()'da tenantA/tenantB'den ÖNCE
+     * gelen) $this->tenant içindir — o tenant'ta izlenen bir para birimi
+     * olmadığından yanıtı sonucu etkilemez.
+     */
+    public function test_a_tenant_sync_failure_does_not_stop_the_remaining_tenants(): void
+    {
+        $tenantA = Tenant::factory()->create();
+        $tenantB = Tenant::factory()->create();
+        $usdA = Currency::factory()->for($tenantA)->create(['code' => 'USD']);
+        $usdB = Currency::factory()->for($tenantB)->create(['code' => 'USD']);
+
+        Http::fake([
+            'tcmb.gov.tr/*' => Http::sequence()
+                ->push($this->fakeTcmbXml(now()->format('d.m.Y')), 200) // $this->tenant (setUp)
+                ->push('not xml, tcmb has no data for this date', 422) // tenantA
+                ->push($this->fakeTcmbXml(now()->format('d.m.Y')), 200), // tenantB
+        ]);
+
+        $this->artisan('accounting:sync-exchange-rates')->assertExitCode(0);
+
+        $this->assertFalse(
+            ExchangeRate::withoutGlobalScopes()
+                ->where('tenant_id', $tenantA->id)
+                ->where('currency_id', $usdA->id)
+                ->whereDate('rate_date', now()->toDateString())
+                ->exists(),
+        );
+
+        $this->assertTrue(
+            ExchangeRate::withoutGlobalScopes()
+                ->where('tenant_id', $tenantB->id)
+                ->where('currency_id', $usdB->id)
+                ->whereDate('rate_date', now()->toDateString())
+                ->exists(),
+        );
+    }
 }
