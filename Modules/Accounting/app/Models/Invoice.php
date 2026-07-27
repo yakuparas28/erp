@@ -25,6 +25,9 @@ class Invoice extends Model
         'status',
         'currency_id',
         'exchange_rate_used',
+        'e_invoice_type',
+        'e_invoice_status',
+        'gib_uuid',
     ];
 
     protected function casts(): array

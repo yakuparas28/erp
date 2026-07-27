@@ -27,6 +27,8 @@ class InvoiceFactory extends Factory
             'source_type' => 'sales_order',
             'source_id' => SalesOrder::factory(),
             'status' => 'draft',
+            'e_invoice_type' => 'kagit',
+            'e_invoice_status' => 'not_sent',
         ];
     }
 }

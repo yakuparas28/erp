@@ -4,7 +4,9 @@ namespace Modules\Accounting\Providers;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Modules\Accounting\Console\Commands\SyncExchangeRates;
+use Modules\Accounting\Contracts\EInvoiceProviderInterface;
 use Modules\Accounting\Contracts\TcmbClientInterface;
+use Modules\Accounting\Services\EInvoice\NullEInvoiceProvider;
 use Modules\Accounting\Services\Tcmb\HttpTcmbClient;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 
@@ -44,6 +46,7 @@ class AccountingServiceProvider extends ModuleServiceProvider
         parent::register();
 
         $this->app->bind(TcmbClientInterface::class, HttpTcmbClient::class);
+        $this->app->bind(EInvoiceProviderInterface::class, NullEInvoiceProvider::class);
     }
 
     /**
