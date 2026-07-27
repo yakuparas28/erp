@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Accounting;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Modules\Accounting\Models\Currency;
 use Modules\Accounting\Services\AccountingDefaultsService;
@@ -65,6 +66,41 @@ class ExchangeRateScreensTest extends TenantTestCase
             'currency_id' => $currency->id,
             'buy_rate' => '33.500000',
             'sell_rate' => '33.600000',
+        ]);
+    }
+
+    public function test_recording_a_rate_for_another_tenants_currency_is_rejected(): void
+    {
+        $otherTenant = Tenant::factory()->create();
+        $otherTenantsCurrency = Currency::factory()->create(['tenant_id' => $otherTenant->id, 'code' => 'USD']);
+
+        $this->actingAs($this->tenantAdmin)->post('/app/accounting/exchange-rates', [
+            'currency_id' => $otherTenantsCurrency->id,
+            'rate_date' => '2026-07-27',
+            'buy_rate' => '33.100000',
+            'sell_rate' => '33.200000',
+        ])->assertSessionHasErrors('currency_id');
+
+        $this->assertDatabaseMissing('exchange_rates', [
+            'currency_id' => $otherTenantsCurrency->id,
+        ]);
+    }
+
+    public function test_recording_a_rate_for_the_functional_currency_is_rejected(): void
+    {
+        app(AccountingDefaultsService::class)->provision($this->tenant);
+        $try = Currency::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenant->id)->where('code', 'TRY')->firstOrFail();
+
+        $this->actingAs($this->tenantAdmin)->post('/app/accounting/exchange-rates', [
+            'currency_id' => $try->id,
+            'rate_date' => '2026-07-27',
+            'buy_rate' => '1.000000',
+            'sell_rate' => '1.000000',
+        ])->assertSessionHasErrors('currency_id');
+
+        $this->assertDatabaseMissing('exchange_rates', [
+            'currency_id' => $try->id,
         ]);
     }
 

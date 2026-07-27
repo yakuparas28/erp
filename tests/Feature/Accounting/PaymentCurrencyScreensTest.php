@@ -164,6 +164,36 @@ class PaymentCurrencyScreensTest extends TenantTestCase
         $response->assertSee('200.0000');
     }
 
+    public function test_show_page_sums_the_fx_difference_across_multiple_allocations_to_the_same_invoice(): void
+    {
+        $usd = $this->currency('USD');
+        $this->recordRate($usd, now()->toDateString(), '30.000000');
+        $this->recordRate($usd, now()->addDay()->toDateString(), '32.000000');
+
+        $partner = Partner::factory()->create(['tenant_id' => $this->tenant->id]);
+        $invoice = $this->postedSaleInvoice($partner, '1', '100.0000', $usd);
+
+        $cashJournal = $this->journalOfType('cash');
+        $payment = $this->payments()->create(
+            $this->tenant->id, $partner->id, $cashJournal->id, '100.0000', now()->addDay()->toDateString(), $usd->id
+        );
+
+        // Same payment allocated to the same invoice in two separate
+        // allocations: 40 USD (fx diff = 40 * (32-30) = 80.0000) then
+        // 60 USD (fx diff = 60 * (32-30) = 120.0000). The screen must show
+        // the SUM (200.0000) for each allocation row, not just the latest
+        // FxRevaluation row.
+        $this->payments()->allocate($payment, $invoice, '40.0000');
+        $this->payments()->allocate($payment, $invoice, '60.0000');
+
+        $response = $this->actingAs($this->accountant)->get(route('app.accounting.payments.show', $payment));
+
+        $response->assertOk();
+        $response->assertSee('200.0000');
+        $response->assertDontSee('80.0000');
+        $response->assertDontSee('120.0000');
+    }
+
     public function test_show_page_displays_an_em_dash_when_an_allocation_has_no_fx_difference(): void
     {
         $usd = $this->currency('USD');

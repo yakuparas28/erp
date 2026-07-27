@@ -5,6 +5,7 @@ namespace Modules\Accounting\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Accounting\Models\Currency;
 use Modules\Accounting\Models\ExchangeRate;
@@ -25,7 +26,12 @@ class ExchangeRateController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'currency_id' => ['required', 'exists:currencies,id'],
+            'currency_id' => [
+                'required',
+                Rule::exists('currencies', 'id')->where(fn ($query) => $query
+                    ->where('tenant_id', $request->user()->tenant_id)
+                    ->where('is_functional', false)),
+            ],
             'rate_date' => ['required', 'date'],
             'buy_rate' => ['required', 'numeric', 'gt:0'],
             'sell_rate' => ['required', 'numeric', 'gt:0'],

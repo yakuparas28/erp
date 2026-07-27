@@ -35,7 +35,7 @@
                     <tr class="border-b border-border-color">
                         <td class="py-2.5 px-3 text-sm font-semibold text-title">{{ __('Invoice No.') }} {{ $allocation->invoice->id }}</td>
                         <td class="py-2.5 px-3 text-sm text-default">{{ $allocation->allocated_amount }}</td>
-                        <td class="py-2.5 px-3 text-sm text-default">{{ $fxRevaluationsByInvoice->get($allocation->invoice_id)?->difference_amount ?? '—' }}</td>
+                        <td class="py-2.5 px-3 text-sm text-default">{{ $fxRevaluationsByInvoice->get($allocation->invoice_id) ?? '—' }}</td>
                     </tr>
                 @empty
                     <tr><td colspan="3" class="py-8 text-center text-sm text-default">{{ __('No allocations yet.') }}</td></tr>

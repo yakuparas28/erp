@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Accounting\Models\Currency;
 use Modules\Accounting\Models\FxRevaluation;
@@ -52,7 +53,12 @@ class PaymentController extends Controller
             'journal_id' => ['required', 'exists:journals,id'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'payment_date' => ['required', 'date'],
-            'currency_id' => ['nullable', 'exists:currencies,id'],
+            'currency_id' => [
+                'nullable',
+                Rule::exists('currencies', 'id')->where(fn ($query) => $query
+                    ->where('tenant_id', $request->user()->tenant_id)
+                    ->where('is_functional', false)),
+            ],
         ]);
 
         try {
@@ -98,7 +104,13 @@ class PaymentController extends Controller
             ->filter(fn (Invoice $invoice) => bccomp($invoice->computed_remaining_balance, '0', 4) > 0)
             ->values();
 
-        $fxRevaluationsByInvoice = FxRevaluation::where('payment_id', $payment->id)->get()->keyBy('invoice_id');
+        $fxRevaluationsByInvoice = FxRevaluation::where('payment_id', $payment->id)
+            ->get()
+            ->groupBy('invoice_id')
+            ->map(fn ($revaluations) => $revaluations->reduce(
+                fn (string $carry, FxRevaluation $revaluation) => bcadd($carry, $revaluation->difference_amount, 4),
+                '0.0000',
+            ));
 
         return view('accounting::payments.show', [
             'payment' => $payment,
