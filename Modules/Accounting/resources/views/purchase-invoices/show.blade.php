@@ -7,6 +7,9 @@
     <div>
         <h1 class="text-gray-900 text-xl font-bold mb-1">{{ __('Purchase Invoice') }} — {{ $invoice->partner->name }}</h1>
         @include('accounting::purchase-invoices._status-badge', ['status' => $invoice->status])
+        @if ($invoice->currency_id)
+            <span class="text-sm text-default ms-2">{{ __('Currency') }}: {{ $invoice->currency->code }} ({{ __('Rate') }}: {{ $invoice->exchange_rate_used }})</span>
+        @endif
         @if ($invoice->source)
             <a href="{{ route('app.purchase.orders.show', $invoice->source_id) }}" class="text-sm text-default hover:underline ms-2">
                 {{ __('Purchase Order') }} #{{ $invoice->source->id }}
@@ -91,7 +94,12 @@
                 <tfoot>
                     <tr>
                         <td colspan="4" class="py-2.5 px-3 text-sm font-semibold text-title text-right">{{ __('Total') }}</td>
-                        <td colspan="2" class="py-2.5 px-3 text-sm font-semibold text-title">{{ $invoice->total() }}</td>
+                        <td colspan="2" class="py-2.5 px-3 text-sm font-semibold text-title">
+                            {{ $invoice->total() }}{{ $invoice->currency_id ? ' '.$invoice->currency->code : '' }}
+                            @if ($invoice->currency_id)
+                                <span class="block text-xs font-normal text-default">{{ __('TL Equivalent') }}: {{ $invoice->computed_total_tl }}</span>
+                            @endif
+                        </td>
                     </tr>
                 </tfoot>
             @endif
