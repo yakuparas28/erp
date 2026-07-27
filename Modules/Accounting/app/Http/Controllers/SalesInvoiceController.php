@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Modules\Accounting\Models\Currency;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\TaxRate;
 use Modules\Accounting\Services\InvoiceService;
@@ -19,25 +20,43 @@ class SalesInvoiceController extends Controller
     public function index(): View
     {
         return view('accounting::sales-invoices.index', [
-            'invoices' => Invoice::with(['partner', 'lines.taxRate'])->where('type', 'sale')->latest()->get(),
+            'invoices' => Invoice::with(['partner', 'currency', 'lines.taxRate'])->where('type', 'sale')->latest()->get(),
+            'currencies' => Currency::where('is_functional', false)->orderBy('code')->get(),
+            'salesOrders' => SalesOrder::whereIn('status', ['confirmed', 'done'])->with('partner')->orderByDesc('id')->get(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate(['sales_order_id' => ['required', 'exists:sales_orders,id']]);
+        $validated = $request->validate([
+            'sales_order_id' => ['required', 'exists:sales_orders,id'],
+            'currency_id' => ['nullable', 'exists:currencies,id'],
+        ]);
 
         $so = SalesOrder::findOrFail($validated['sales_order_id']);
 
-        $invoice = $this->invoices->create($request->user()->tenant_id, $so->partner_id, 'sale', $so);
+        try {
+            $invoice = $this->invoices->create(
+                $request->user()->tenant_id,
+                $so->partner_id,
+                'sale',
+                $so,
+                isset($validated['currency_id']) ? (int) $validated['currency_id'] : null,
+            );
+        } catch (HttpException $e) {
+            return back()->withErrors(['currency_id' => $e->getMessage()]);
+        }
 
         return redirect()->route('app.accounting.sales-invoices.show', $invoice)->with('status', __('Draft invoice created.'));
     }
 
     public function show(Invoice $invoice): View
     {
+        $invoice->load(['partner', 'currency', 'lines.product', 'lines.taxRate', 'source.lines.product']);
+        $invoice->setAttribute('computed_total_tl', bcmul($invoice->total(), $invoice->exchangeRateOrOne(), 4));
+
         return view('accounting::sales-invoices.show', [
-            'invoice' => $invoice->load(['partner', 'lines.product', 'lines.taxRate', 'source.lines.product']),
+            'invoice' => $invoice,
             'taxRates' => TaxRate::where('type', 'sale')->orderBy('percentage')->get(),
         ]);
     }
