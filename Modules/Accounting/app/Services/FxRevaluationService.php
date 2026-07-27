@@ -7,26 +7,31 @@ use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\Payment;
 
 /**
- * Kambiyo farkı muhasebeleşmesi (PRD 3.13 YENİ KURAL). Gerçekleşen fark =
- * (ödeme kuru - fatura kuru) × dağıtılan tutar; satışta pozitif fark kâr
- * (646), alışta pozitif fark zarar (656) — yön ters, çünkü satışta
- * alacağın değeri artması kâr, alışta borcun değeri artması zarardır.
+ * Kambiyo farkı muhasebeleşmesi (PRD 3.13 YENİ KURAL). Gerçekleşen fark,
+ * JournalEntryService::calculateFxDifferenceTL()'den (TEK KAYNAK) alınır —
+ * bu, yevmiye kaydının 646/656 satırına yazdığı AYNI TL tutarıdır. Böylece
+ * fx_revaluations.difference_amount ile yevmiye kaydı HER ZAMAN birebir
+ * tutarlı kalır (iki bağımsız hesaplamanın bcmath kesme sırası farkından
+ * ±0.0001 TL sapması engellenir). Satışta pozitif fark kâr (646), alışta
+ * pozitif fark zarar (656) — yön ters, çünkü satışta alacağın değeri
+ * artması kâr, alışta borcun değeri artması zarardır.
  */
 class FxRevaluationService
 {
+    public function __construct(private readonly JournalEntryService $journalEntries) {}
+
     public function recognizeRealized(Payment $payment, Invoice $invoice, string $allocatedAmount): ?FxRevaluation
     {
         if ($invoice->currency_id === null) {
             return null;
         }
 
-        $rateDifference = bcsub($payment->exchangeRateOrOne(), $invoice->exchangeRateOrOne(), 6);
+        $rawDifference = $this->journalEntries->calculateFxDifferenceTL($payment, $invoice, $allocatedAmount);
 
-        if (bccomp($rateDifference, '0', 6) === 0) {
+        if (bccomp($rawDifference, '0', 4) === 0) {
             return null;
         }
 
-        $rawDifference = bcmul($allocatedAmount, $rateDifference, 4);
         $signedDifference = $invoice->type === 'sale' ? $rawDifference : bcmul($rawDifference, '-1', 4);
 
         $revaluation = new FxRevaluation([

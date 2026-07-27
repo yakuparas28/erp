@@ -232,6 +232,59 @@ class RealizedFxGainLossTest extends TenantTestCase
         $this->assertDatabaseCount('fx_revaluations', 0);
     }
 
+    /**
+     * Regresyon: kod incelemesinde bulunan, yuvarlak OLMAYAN tutar/kur
+     * kombinasyonuyla (amount=60863.7544, invoiceRate=787.846415,
+     * paymentRate=421.126071) yevmiye kaydına (656) yazılan tutar İLE
+     * fx_revaluations.difference_amount'ın artık AYNI değeri (TEK KAYNAK:
+     * JournalEntryService::calculateFxDifferenceTL()) taşıdığını doğrular.
+     * Düzeltmeden önce bu iki değer bcmath'in kesme sırası farkı yüzünden
+     * ±0.0001 TL sapabiliyordu (656 borç = 22319976.9507 iken
+     * difference_amount bağımsız hesapla -22319976.9506 çıkabiliyordu).
+     */
+    public function test_the_journal_entry_and_the_fx_revaluation_use_the_exact_same_amount_for_a_non_round_rate(): void
+    {
+        $usd = $this->currency('USD');
+        $this->recordRate($usd, now()->toDateString(), '787.846415');
+        $this->recordRate($usd, now()->addDay()->toDateString(), '421.126071');
+
+        $partner = Partner::factory()->create(['tenant_id' => $this->tenant->id]);
+        $salesOrder = SalesOrder::factory()->create(['tenant_id' => $this->tenant->id, 'partner_id' => $partner->id]);
+        $product = $this->productWithIncomeCategory();
+
+        $invoice = $this->invoices()->create($this->tenant->id, $partner->id, 'sale', $salesOrder, $usd->id);
+        $this->assertSame('787.846415', $invoice->exchange_rate_used);
+        $this->invoices()->addLine($invoice, $product->id, '1', '60863.7544', null);
+        $this->invoices()->post($invoice, $this->accountant());
+
+        $cashJournal = $this->journalOfType('cash');
+        $payment = $this->payments()->create(
+            $this->tenant->id, $partner->id, $cashJournal->id, '60863.7544', now()->addDay()->toDateString(), $usd->id
+        );
+        $this->assertSame('421.126071', $payment->exchange_rate_used);
+
+        $this->payments()->allocate($payment, $invoice, '60863.7544');
+
+        $entry = JournalEntry::withoutGlobalScopes()
+            ->where('reference_type', 'payment')->where('reference_id', $payment->id)->firstOrFail();
+
+        $this->assertCount(3, $entry->lines);
+
+        // Ödeme kuru fatura kurundan çok daha düşük → satışta zarar (656).
+        $lossAccount = app(AccountingDefaultsService::class)->accountByCode($this->tenant->id, '656');
+        $lossLine = $entry->lines->firstWhere('account_id', $lossAccount->id);
+
+        $this->assertSame('22319976.9507', $lossLine->debit);
+        $this->assertSame('0.0000', $lossLine->credit);
+
+        $this->assertDatabaseHas('fx_revaluations', [
+            'invoice_id' => $invoice->id,
+            'payment_id' => $payment->id,
+            'type' => 'realized',
+            'difference_amount' => '-22319976.9507',
+        ]);
+    }
+
     public function test_a_local_currency_invoice_payment_never_produces_a_fx_difference(): void
     {
         $partner = Partner::factory()->create(['tenant_id' => $this->tenant->id]);

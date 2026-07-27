@@ -224,7 +224,7 @@ class JournalEntryService
 
         $controlAmountTL = bcmul($amount, $invoice->exchangeRateOrOne(), 4);
         $cashAmountTL = bcmul($amount, $payment->exchangeRateOrOne(), 4);
-        $fxDifference = bcsub($cashAmountTL, $controlAmountTL, 4);
+        $fxDifference = $this->calculateFxDifferenceTL($payment, $invoice, $amount);
 
         $lines = $invoice->type === 'purchase'
             ? [
@@ -256,6 +256,24 @@ class JournalEntryService
             reference: $payment,
             lines: $lines,
         );
+    }
+
+    /**
+     * Ödeme/tahsilatın kambiyo farkını TL cinsinden hesaplar (işaretli):
+     * kasa/banka TL tutarı EKSİ kontrol hesabı TL tutarı — postForPayment()'ın
+     * yevmiye satırlarına yazdığı TAM DEĞER. FxRevaluationService de AYNI
+     * TEK KAYNAĞI kullanır (bkz. sınıf docblock'u) ki 646/656 satırı ile
+     * fx_revaluations.difference_amount HER ZAMAN birebir tutarlı kalsın —
+     * iki ayrı bcmul()'un ayrı ayrı kesilip SONRA çıkarılması, kurların
+     * önce çıkarılıp TEK çarpımla kesilmesinden bcmath'in kesme (yuvarlama
+     * değil) davranışı yüzünden ±0.0001 TL farklı sonuç üretebiliyordu.
+     */
+    public function calculateFxDifferenceTL(Payment $payment, Invoice $invoice, string $amount): string
+    {
+        $controlAmountTL = bcmul($amount, $invoice->exchangeRateOrOne(), 4);
+        $cashAmountTL = bcmul($amount, $payment->exchangeRateOrOne(), 4);
+
+        return bcsub($cashAmountTL, $controlAmountTL, 4);
     }
 
     private function categoryFor(InvoiceLine $line): ?ProductCategory
