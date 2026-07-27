@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Modules\Accounting\Models\Currency;
+use Modules\Accounting\Models\FxRevaluation;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\Journal;
 use Modules\Accounting\Models\Payment;
@@ -39,6 +41,7 @@ class PaymentController extends Controller
             'payments' => $payments,
             'partners' => Partner::orderBy('name')->get(),
             'cashAndBankJournals' => Journal::whereIn('type', ['cash', 'bank'])->orderBy('name')->get(),
+            'currencies' => Currency::where('is_functional', false)->orderBy('code')->get(),
         ]);
     }
 
@@ -49,6 +52,7 @@ class PaymentController extends Controller
             'journal_id' => ['required', 'exists:journals,id'],
             'amount' => ['required', 'numeric', 'gt:0'],
             'payment_date' => ['required', 'date'],
+            'currency_id' => ['nullable', 'exists:currencies,id'],
         ]);
 
         try {
@@ -58,6 +62,7 @@ class PaymentController extends Controller
                 (int) $validated['journal_id'],
                 (string) $validated['amount'],
                 (string) $validated['payment_date'],
+                isset($validated['currency_id']) ? (int) $validated['currency_id'] : null,
             );
         } catch (HttpException $e) {
             return back()->withErrors(['journal_id' => $e->getMessage()]);
@@ -81,6 +86,7 @@ class PaymentController extends Controller
         // then compute the remaining balance from the loaded collections.
         $openInvoices = Invoice::with(['lines.taxRate', 'allocations'])
             ->where('partner_id', $payment->partner_id)
+            ->where('currency_id', $payment->currency_id)
             ->whereIn('status', ['posted'])
             ->get()
             ->each(function (Invoice $invoice): void {
@@ -92,9 +98,12 @@ class PaymentController extends Controller
             ->filter(fn (Invoice $invoice) => bccomp($invoice->computed_remaining_balance, '0', 4) > 0)
             ->values();
 
+        $fxRevaluationsByInvoice = FxRevaluation::where('payment_id', $payment->id)->get()->keyBy('invoice_id');
+
         return view('accounting::payments.show', [
             'payment' => $payment,
             'openInvoices' => $openInvoices,
+            'fxRevaluationsByInvoice' => $fxRevaluationsByInvoice,
         ]);
     }
 

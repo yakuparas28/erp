@@ -82,6 +82,15 @@
                     <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Payment Date') }} <span class="text-danger">*</span></label>
                     <input type="date" name="payment_date" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
                 </div>
+                <div class="col-span-12">
+                    <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Currency') }}</label>
+                    <select name="currency_id" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                        <option value="">{{ __('TRY (Default)') }}</option>
+                        @foreach ($currencies as $currency)
+                            <option value="{{ $currency->id }}">{{ $currency->code }}</option>
+                        @endforeach
+                    </select>
+                </div>
             </div>
             <div class="flex justify-end gap-2 p-4 border-t border-border-color">
                 <button type="button" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light cursor-pointer" data-hs-overlay="#add-payment-modal">{{ __('Cancel') }}</button>
