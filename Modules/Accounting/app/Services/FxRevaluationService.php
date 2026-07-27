@@ -18,7 +18,11 @@ use Modules\Accounting\Models\Payment;
  */
 class FxRevaluationService
 {
-    public function __construct(private readonly JournalEntryService $journalEntries) {}
+    public function __construct(
+        private readonly JournalEntryService $journalEntries,
+        private readonly ExchangeRateService $exchangeRates,
+        private readonly AccountingDefaultsService $defaults,
+    ) {}
 
     public function recognizeRealized(Payment $payment, Invoice $invoice, string $allocatedAmount): ?FxRevaluation
     {
@@ -45,5 +49,90 @@ class FxRevaluationService
         $revaluation->save();
 
         return $revaluation;
+    }
+
+    /**
+     * Dönem sonu değerleme (PRD 3.13): açık (henüz tam ödenmemiş) döviz
+     * faturalarının kalan bakiyesi, güncel TCMB kuruyla yeniden değerlenir.
+     * invoice.exchange_rate_used DEĞİŞMEZ — yalnızca raporlama amaçlı bir
+     * kayıt üretilir (bilinçli sadeleştirme: dönem başı ters kayıt/reversal
+     * bu fazın kapsamında değil).
+     *
+     * @return list<FxRevaluation>
+     */
+    public function revaluateOpenBalances(int $tenantId, string $asOfDate): array
+    {
+        $invoices = Invoice::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'posted')
+            ->whereNotNull('currency_id')
+            ->get()
+            ->filter(fn (Invoice $invoice) => bccomp($invoice->remainingBalance(), '0', 4) > 0);
+
+        $created = [];
+
+        foreach ($invoices as $invoice) {
+            $currentRate = $this->exchangeRates->lockRateFor($tenantId, $invoice->currency_id, $asOfDate);
+            $rawDifference = $this->calculateUnrealizedDifferenceTL($currentRate, $invoice);
+
+            if (bccomp($rawDifference, '0', 4) === 0) {
+                continue;
+            }
+
+            $signedDifference = $invoice->type === 'sale' ? $rawDifference : bcmul($rawDifference, '-1', 4);
+
+            $revaluation = new FxRevaluation([
+                'invoice_id' => $invoice->id,
+                'payment_id' => null,
+                'type' => 'unrealized',
+                'difference_amount' => $signedDifference,
+                'revaluation_date' => $asOfDate,
+            ]);
+            $revaluation->tenant_id = $tenantId;
+            $revaluation->save();
+
+            $isGain = bccomp($signedDifference, '0', 4) > 0;
+            $account = $this->defaults->accountByCode($tenantId, $isGain ? '646' : '656');
+            $controlAccount = $this->defaults->accountByCode($tenantId, $invoice->type === 'purchase' ? '320' : '120');
+            $absDifference = $isGain ? $signedDifference : bcmul($signedDifference, '-1', 4);
+
+            $this->journalEntries->write(
+                tenantId: $tenantId,
+                journalType: 'general',
+                entryDate: $asOfDate,
+                reference: $invoice,
+                lines: $isGain
+                    ? [
+                        ['account_id' => $controlAccount->id, 'debit' => $absDifference, 'credit' => '0.0000'],
+                        ['account_id' => $account->id, 'debit' => '0.0000', 'credit' => $absDifference],
+                    ]
+                    : [
+                        ['account_id' => $account->id, 'debit' => $absDifference, 'credit' => '0.0000'],
+                        ['account_id' => $controlAccount->id, 'debit' => '0.0000', 'credit' => $absDifference],
+                    ],
+            );
+
+            $created[] = $revaluation;
+        }
+
+        return $created;
+    }
+
+    /**
+     * Kalan bakiyenin güncel kur ile fatura kuru arasındaki TL farkını
+     * hesaplar: ÖNCE iki ayrı bcmul() 4 ondalık basamağa kesilir, SONRA
+     * çıkarılır — calculateFxDifferenceTL()'deki İLE AYNI sıra (Task 4'te
+     * keşfedilen bcmath kesme sırası tutarsızlığını burada da önlemek için;
+     * bkz. sınıf docblock'u).
+     */
+    private function calculateUnrealizedDifferenceTL(string $currentRate, Invoice $invoice): string
+    {
+        $remainingBalance = $invoice->remainingBalance();
+
+        return bcsub(
+            bcmul($remainingBalance, $currentRate, 4),
+            bcmul($remainingBalance, $invoice->exchangeRateOrOne(), 4),
+            4,
+        );
     }
 }
