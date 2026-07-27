@@ -28,11 +28,19 @@ Route::middleware(['auth:web'])->prefix('app/accounting')->name('app.accounting.
         Route::post('/purchase-invoices/{invoice}/lines', [PurchaseInvoiceController::class, 'storeLine'])->name('purchase-invoices.lines.store');
         Route::post('/purchase-invoices/{invoice}/post', [PurchaseInvoiceController::class, 'post'])->name('purchase-invoices.post');
 
+        Route::post('/purchase-invoices/{invoice}/e-invoice/send', [PurchaseInvoiceController::class, 'sendEInvoice'])->name('purchase-invoices.e-invoice.send');
+        Route::post('/purchase-invoices/{invoice}/e-invoice/accept', [PurchaseInvoiceController::class, 'acceptEInvoice'])->name('purchase-invoices.e-invoice.accept');
+        Route::post('/purchase-invoices/{invoice}/e-invoice/reject', [PurchaseInvoiceController::class, 'rejectEInvoice'])->name('purchase-invoices.e-invoice.reject');
+
         Route::get('/sales-invoices', [SalesInvoiceController::class, 'index'])->name('sales-invoices.index');
         Route::post('/sales-invoices', [SalesInvoiceController::class, 'store'])->name('sales-invoices.store');
         Route::get('/sales-invoices/{invoice}', [SalesInvoiceController::class, 'show'])->name('sales-invoices.show');
         Route::post('/sales-invoices/{invoice}/lines', [SalesInvoiceController::class, 'storeLine'])->name('sales-invoices.lines.store');
         Route::post('/sales-invoices/{invoice}/post', [SalesInvoiceController::class, 'post'])->name('sales-invoices.post');
+
+        Route::post('/sales-invoices/{invoice}/e-invoice/send', [SalesInvoiceController::class, 'sendEInvoice'])->name('sales-invoices.e-invoice.send');
+        Route::post('/sales-invoices/{invoice}/e-invoice/accept', [SalesInvoiceController::class, 'acceptEInvoice'])->name('sales-invoices.e-invoice.accept');
+        Route::post('/sales-invoices/{invoice}/e-invoice/reject', [SalesInvoiceController::class, 'rejectEInvoice'])->name('sales-invoices.e-invoice.reject');
     });
 
     Route::middleware('permission:register payments,web')->group(function (): void {

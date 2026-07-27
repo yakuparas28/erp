@@ -7,6 +7,9 @@
     <div>
         <h1 class="text-gray-900 text-xl font-bold mb-1">{{ __('Sales Invoice') }} — {{ $invoice->partner->name }}</h1>
         @include('accounting::sales-invoices._status-badge', ['status' => $invoice->status])
+        <span class="text-[11px] {{ $invoice->e_invoice_status === 'accepted' ? 'bg-success-transparent text-success' : ($invoice->e_invoice_status === 'rejected' ? 'bg-danger-transparent text-danger' : 'bg-light text-default') }} px-2 py-0.5 rounded ms-2">
+            {{ __('e-invoice-status.'.$invoice->e_invoice_status) }}
+        </span>
         @if ($invoice->currency_id)
             <span class="text-sm text-default ms-2">{{ __('Currency') }}: {{ $invoice->currency->code }} ({{ __('Rate') }}: {{ $invoice->exchange_rate_used }})</span>
         @endif
@@ -112,6 +115,26 @@
         <form method="POST" action="{{ route('app.accounting.sales-invoices.post', $invoice) }}">
             @csrf
             <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover cursor-pointer">{{ __('Post') }}</button>
+        </form>
+    </div>
+@endif
+
+@if ($invoice->status === 'posted' && $invoice->e_invoice_status === 'not_sent')
+    <div class="flex items-center gap-2 mt-4">
+        <form method="POST" action="{{ route('app.accounting.sales-invoices.e-invoice.send', $invoice) }}">
+            @csrf
+            <button type="submit" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light cursor-pointer">{{ __('Send e-Invoice') }}</button>
+        </form>
+    </div>
+@elseif ($invoice->e_invoice_status === 'sent')
+    <div class="flex items-center gap-2 mt-4">
+        <form method="POST" action="{{ route('app.accounting.sales-invoices.e-invoice.accept', $invoice) }}">
+            @csrf
+            <button type="submit" class="btn-sm bg-white border border-success text-success hover:bg-success hover:text-white cursor-pointer">{{ __('Mark Accepted') }}</button>
+        </form>
+        <form method="POST" action="{{ route('app.accounting.sales-invoices.e-invoice.reject', $invoice) }}">
+            @csrf
+            <button type="submit" class="btn-sm bg-white border border-danger text-danger hover:bg-danger hover:text-white cursor-pointer">{{ __('Mark Rejected') }}</button>
         </form>
     </div>
 @endif

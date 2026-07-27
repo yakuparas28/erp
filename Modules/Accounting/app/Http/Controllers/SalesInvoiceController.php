@@ -9,13 +9,17 @@ use Illuminate\View\View;
 use Modules\Accounting\Models\Currency;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\TaxRate;
+use Modules\Accounting\Services\EInvoiceService;
 use Modules\Accounting\Services\InvoiceService;
 use Modules\Sales\Models\SalesOrder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SalesInvoiceController extends Controller
 {
-    public function __construct(private readonly InvoiceService $invoices) {}
+    public function __construct(
+        private readonly InvoiceService $invoices,
+        private readonly EInvoiceService $eInvoices,
+    ) {}
 
     public function index(): View
     {
@@ -94,5 +98,38 @@ class SalesInvoiceController extends Controller
         }
 
         return redirect()->route('app.accounting.sales-invoices.show', $invoice)->with('status', __('Invoice posted.'));
+    }
+
+    public function sendEInvoice(Invoice $invoice): RedirectResponse
+    {
+        try {
+            $this->eInvoices->send($invoice);
+        } catch (HttpException $e) {
+            return back()->withErrors(['invoice' => $e->getMessage()]);
+        }
+
+        return redirect()->route('app.accounting.sales-invoices.show', $invoice)->with('status', __('e-Invoice sent.'));
+    }
+
+    public function acceptEInvoice(Invoice $invoice): RedirectResponse
+    {
+        try {
+            $this->eInvoices->markAccepted($invoice);
+        } catch (HttpException $e) {
+            return back()->withErrors(['invoice' => $e->getMessage()]);
+        }
+
+        return redirect()->route('app.accounting.sales-invoices.show', $invoice)->with('status', __('e-Invoice marked as accepted.'));
+    }
+
+    public function rejectEInvoice(Invoice $invoice): RedirectResponse
+    {
+        try {
+            $this->eInvoices->markRejected($invoice);
+        } catch (HttpException $e) {
+            return back()->withErrors(['invoice' => $e->getMessage()]);
+        }
+
+        return redirect()->route('app.accounting.sales-invoices.show', $invoice)->with('status', __('e-Invoice marked as rejected.'));
     }
 }
