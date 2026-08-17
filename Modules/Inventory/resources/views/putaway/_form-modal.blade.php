@@ -1,5 +1,5 @@
 <div id="add-putaway-rule-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
-    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-md sm:w-full m-3 sm:mx-auto pointer-events-auto min-h-screen flex items-center justify-center">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto pointer-events-auto min-h-screen flex items-center justify-center">
         <form method="POST" action="{{ route('app.inventory.putaway.store') }}" class="flex flex-col bg-white border shadow-sm rounded-md border-border-color w-full">
             @csrf
             <div class="flex justify-between items-center p-4 border-b border-border-color">
