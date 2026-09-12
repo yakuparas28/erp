@@ -23,11 +23,11 @@
     </div>
 @endif
 
-<div class="bg-white border border-border-color rounded-md p-4">
-    <div class="overflow-x-auto -mx-4">
+<div class="bg-white border border-border-color rounded-md">
+    <div class="overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
-                <tr class="border-y border-border-color bg-light">
+                <tr class="text-sm text-default border-b border-border-color">
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Employee') }}</th>
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Department') }}</th>
                     <th class="text-right py-2 px-3 font-semibold text-gray-900">{{ __('Carried') }}</th>
@@ -40,8 +40,8 @@
             <tbody>
                 @foreach ($employees as $e)
                     @php $b = $balances[$e->id] ?? null; @endphp
-                    <tr class="border-b border-border-color hover:bg-light/50">
-                        <td class="py-3 px-3">
+                    <tr class="border-b border-border-color ">
+                        <td class="py-2.5 px-3">
                             <div class="flex items-center gap-2">
                                 <div class="size-7 rounded-full bg-primary-transparent text-primary flex items-center justify-center text-[10px] font-semibold">
                                     {{ strtoupper(substr($e->first_name, 0, 1)) }}{{ strtoupper(substr($e->last_name, 0, 1)) }}
@@ -49,12 +49,12 @@
                                 <a href="{{ route('app.hr.employees.show', $e) }}" class="font-semibold text-title hover:text-primary">{{ $e->full_name }}</a>
                             </div>
                         </td>
-                        <td class="py-3 px-3 text-default">{{ $e->department?->name ?? '—' }}</td>
-                        <td class="py-3 px-3 text-right">{{ $b?->carried_from_previous ?? '—' }}</td>
-                        <td class="py-3 px-3 text-right">{{ $b?->current_year_entitlement ?? '—' }}</td>
-                        <td class="py-3 px-3 text-right">{{ $b?->manual_adjustment ?? '—' }}</td>
-                        <td class="py-3 px-3 text-right font-bold text-title">{{ $e->annual_leave_balance }}</td>
-                        <td class="py-3 px-3 text-center">
+                        <td class="py-2.5 px-3 text-default">{{ $e->department?->name ?? '—' }}</td>
+                        <td class="py-2.5 px-3 text-right">{{ $b?->carried_from_previous ?? '—' }}</td>
+                        <td class="py-2.5 px-3 text-right">{{ $b?->current_year_entitlement ?? '—' }}</td>
+                        <td class="py-2.5 px-3 text-right">{{ $b?->manual_adjustment ?? '—' }}</td>
+                        <td class="py-2.5 px-3 text-right font-bold text-title">{{ $e->annual_leave_balance }}</td>
+                        <td class="py-2.5 px-3 text-center">
                             <button type="button" data-hs-overlay="#adj-{{ $e->id }}" class="size-7 rounded-md border border-border-color inline-flex items-center justify-center text-primary hover:bg-light" title="{{ __('Adjust') }}">
                                 <i class="ph ph-pencil-simple"></i>
                             </button>

@@ -59,7 +59,7 @@
         </div>
 
         @if ($employee->subordinates->isNotEmpty())
-            <div class="bg-white border border-border-color rounded-md p-4">
+            <div class="bg-white border border-border-color rounded-md">
                 <h3 class="text-sm font-semibold text-title mb-3">{{ __('Direct Reports') }} ({{ $employee->subordinates->count() }})</h3>
                 <ul class="space-y-2 text-sm">
                     @foreach ($employee->subordinates as $sub)

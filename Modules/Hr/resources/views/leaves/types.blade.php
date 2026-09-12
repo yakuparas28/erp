@@ -19,11 +19,11 @@
     </div>
 @endif
 
-<div class="bg-white border border-border-color rounded-md p-4">
-    <div class="overflow-x-auto -mx-4">
+<div class="bg-white border border-border-color rounded-md">
+    <div class="overflow-x-auto">
         <table class="w-full text-xs">
             <thead>
-                <tr class="border-y border-border-color bg-light text-sm">
+                <tr class="text-sm text-default border-b border-border-color">
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Code') }}</th>
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Leave Type') }}</th>
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Unit') }}</th>
@@ -37,25 +37,25 @@
             </thead>
             <tbody>
                 @forelse ($types as $t)
-                    <tr class="border-b border-border-color hover:bg-light/50">
-                        <td class="py-3 px-3 font-mono text-primary">LT-{{ str_pad((string) $t->id, 3, '0', STR_PAD_LEFT) }}</td>
-                        <td class="py-3 px-3">
+                    <tr class="border-b border-border-color ">
+                        <td class="py-2.5 px-3 font-mono text-primary">LT-{{ str_pad((string) $t->id, 3, '0', STR_PAD_LEFT) }}</td>
+                        <td class="py-2.5 px-3">
                             <div class="font-semibold text-title text-sm">{{ $t->name }}</div>
                             <div class="font-mono text-[10px] text-default">{{ $t->key }}</div>
                         </td>
-                        <td class="py-3 px-3 text-sm">{{ __($t->unit) }}</td>
-                        <td class="py-3 px-3 text-right text-sm">{{ $t->max_days_per_year ?? '—' }}</td>
-                        <td class="py-3 px-3 text-center">{{ $t->deducts_from_balance ? '✓' : '—' }}</td>
-                        <td class="py-3 px-3 text-center">{{ $t->requires_document ? '✓' : '—' }}</td>
-                        <td class="py-3 px-3 text-center">{{ $t->requires_second_level ? '✓' : '—' }}</td>
-                        <td class="py-3 px-3">
+                        <td class="py-2.5 px-3 text-sm">{{ __($t->unit) }}</td>
+                        <td class="py-2.5 px-3 text-right text-sm">{{ $t->max_days_per_year ?? '—' }}</td>
+                        <td class="py-2.5 px-3 text-center">{{ $t->deducts_from_balance ? '✓' : '—' }}</td>
+                        <td class="py-2.5 px-3 text-center">{{ $t->requires_document ? '✓' : '—' }}</td>
+                        <td class="py-2.5 px-3 text-center">{{ $t->requires_second_level ? '✓' : '—' }}</td>
+                        <td class="py-2.5 px-3">
                             @if ($t->is_active)
                                 <span class="text-[11px] bg-success-transparent text-success px-2 py-0.5 rounded">{{ __('Active') }}</span>
                             @else
                                 <span class="text-[11px] bg-danger-transparent text-danger px-2 py-0.5 rounded">{{ __('Inactive') }}</span>
                             @endif
                         </td>
-                        <td class="py-3 px-3">
+                        <td class="py-2.5 px-3">
                             <div class="flex items-center justify-center">
                                 <form method="POST" action="{{ route('app.hr.leave-types.destroy', $t) }}" onsubmit="return confirm('{{ __('Delete this leave type?') }}')">
                                     @csrf

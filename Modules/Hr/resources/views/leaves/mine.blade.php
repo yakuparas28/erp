@@ -20,25 +20,25 @@
 @endif
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-    <div class="bg-white border border-border-color rounded-md p-4">
+    <div class="bg-white border border-border-color rounded-md">
         <div class="text-xs text-default mb-1">{{ __('Current annual leave balance') }}</div>
         <div class="text-2xl font-bold text-title">{{ $employee->annual_leave_balance }} <span class="text-sm text-default font-normal">{{ __('days') }}</span></div>
     </div>
-    <div class="bg-white border border-border-color rounded-md p-4">
+    <div class="bg-white border border-border-color rounded-md">
         <div class="text-xs text-default mb-1">{{ __('Pending') }}</div>
         <div class="text-2xl font-bold text-warning">{{ $requests->filter(fn ($r) => ($r->approval?->status ?? 'pending') === 'pending')->count() }}</div>
     </div>
-    <div class="bg-white border border-border-color rounded-md p-4">
+    <div class="bg-white border border-border-color rounded-md">
         <div class="text-xs text-default mb-1">{{ __('Approved') }}</div>
         <div class="text-2xl font-bold text-success">{{ $requests->filter(fn ($r) => $r->approval?->status === 'approved')->count() }}</div>
     </div>
 </div>
 
-<div class="bg-white border border-border-color rounded-md p-4">
-    <div class="overflow-x-auto -mx-4">
+<div class="bg-white border border-border-color rounded-md">
+    <div class="overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
-                <tr class="border-y border-border-color bg-light">
+                <tr class="text-sm text-default border-b border-border-color">
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('ID') }}</th>
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Type') }}</th>
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('From') }}</th>
@@ -50,13 +50,13 @@
             </thead>
             <tbody>
                 @forelse ($requests as $r)
-                    <tr class="border-b border-border-color hover:bg-light/50">
-                        <td class="py-3 px-3 font-mono text-xs text-primary">LV-{{ str_pad((string) $r->id, 5, '0', STR_PAD_LEFT) }}</td>
-                        <td class="py-3 px-3 font-semibold text-title">{{ $r->leaveType->name }}</td>
-                        <td class="py-3 px-3">{{ $r->start_date->format('d.m.Y') }}</td>
-                        <td class="py-3 px-3">{{ $r->end_date->format('d.m.Y') }}</td>
-                        <td class="py-3 px-3 text-right font-semibold">{{ $r->total_days }}</td>
-                        <td class="py-3 px-3">
+                    <tr class="border-b border-border-color ">
+                        <td class="py-2.5 px-3 font-mono text-xs text-primary">LV-{{ str_pad((string) $r->id, 5, '0', STR_PAD_LEFT) }}</td>
+                        <td class="py-2.5 px-3 font-semibold text-title">{{ $r->leaveType->name }}</td>
+                        <td class="py-2.5 px-3">{{ $r->start_date->format('d.m.Y') }}</td>
+                        <td class="py-2.5 px-3">{{ $r->end_date->format('d.m.Y') }}</td>
+                        <td class="py-2.5 px-3 text-right font-semibold">{{ $r->total_days }}</td>
+                        <td class="py-2.5 px-3">
                             @php $s = $r->approval?->status ?? 'pending'; @endphp
                             @if ($s === 'approved')
                                 <span class="text-[11px] bg-success-transparent text-success px-2 py-0.5 rounded">{{ __('Approved') }}</span>
@@ -68,7 +68,7 @@
                                 <span class="text-[11px] bg-warning-transparent text-warning px-2 py-0.5 rounded">{{ __('Pending') }}</span>
                             @endif
                         </td>
-                        <td class="py-3 px-3 text-center">
+                        <td class="py-2.5 px-3 text-center">
                             @if ($s === 'pending')
                                 <form method="POST" action="{{ route('app.hr.leaves.cancel', $r) }}" onsubmit="return confirm('{{ __('Cancel this request?') }}')" class="inline">
                                     @csrf

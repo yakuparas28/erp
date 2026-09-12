@@ -19,7 +19,7 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
-    <div class="bg-white border border-border-color rounded-md p-4">
+    <div class="bg-white border border-border-color rounded-md">
         <h2 class="text-base font-bold text-title mb-3">{{ __('Holidays') }}</h2>
         <form method="POST" action="{{ route('app.hr.leave-config.holidays.store') }}" class="grid grid-cols-3 gap-2 mb-3">
             @csrf
@@ -45,7 +45,7 @@
         </table>
     </div>
 
-    <div class="bg-white border border-border-color rounded-md p-4">
+    <div class="bg-white border border-border-color rounded-md">
         <h2 class="text-base font-bold text-title mb-3">{{ __('Critical Dates') }}</h2>
         <form method="POST" action="{{ route('app.hr.leave-config.critical-dates.store') }}" class="space-y-2 mb-3">
             @csrf
