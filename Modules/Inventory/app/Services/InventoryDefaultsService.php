@@ -32,6 +32,7 @@ class InventoryDefaultsService
             'Tedarikçiler' => 'supplier',
             'Sayım Farkı / Zayiat' => 'inventory_loss',
             'Transit' => 'transit',
+            'Hurda' => 'scrap',
         ];
 
         foreach ($virtualLocations as $name => $type) {

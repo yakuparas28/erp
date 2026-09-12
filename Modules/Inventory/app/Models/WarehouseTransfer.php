@@ -17,6 +17,7 @@ class WarehouseTransfer extends Model
 
     protected $fillable = [
         'tenant_id',
+        'batch_id',
         'from_location_id',
         'to_location_id',
         'created_by',
@@ -26,6 +27,11 @@ class WarehouseTransfer extends Model
     protected static function newFactory(): WarehouseTransferFactory
     {
         return WarehouseTransferFactory::new();
+    }
+
+    public function batch(): BelongsTo
+    {
+        return $this->belongsTo(TransferBatch::class, 'batch_id');
     }
 
     public function fromLocation(): BelongsTo
