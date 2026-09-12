@@ -63,6 +63,11 @@ Route::middleware(['auth:web', 'module:hr'])->prefix('app/hr')->name('app.hr.')-
         Route::post('/leave-config/hour-configs', [LeaveConfigController::class, 'storeHourConfig'])->name('leave-config.hour-configs.store');
         Route::delete('/leave-config/hour-configs/{leaveHourConfig}', [LeaveConfigController::class, 'destroyHourConfig'])->name('leave-config.hour-configs.destroy');
 
+        Route::get('/leave-config/hourly', [LeaveConfigController::class, 'hourlyIndex'])->name('leave-config.hourly.index');
+        Route::patch('/leave-config/hourly/platform', [LeaveConfigController::class, 'updatePlatformHourly'])->name('leave-config.hourly.platform');
+        Route::post('/leave-config/hourly/override', [LeaveConfigController::class, 'storeHourOverride'])->name('leave-config.hourly.override.store');
+        Route::delete('/leave-config/hourly/override/{leaveHourConfig}', [LeaveConfigController::class, 'destroyHourOverride'])->name('leave-config.hourly.override.destroy');
+
         Route::get('/consumption-rules', [ConsumptionRuleController::class, 'index'])->name('consumption-rules.index');
         Route::post('/consumption-rules', [ConsumptionRuleController::class, 'store'])->name('consumption-rules.store');
         Route::patch('/consumption-rules/{consumptionRule}', [ConsumptionRuleController::class, 'update'])->name('consumption-rules.update');

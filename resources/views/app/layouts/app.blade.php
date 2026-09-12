@@ -453,8 +453,13 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="{{ route('app.hr.leave-config.index') }}" class="{{ request()->routeIs('app.hr.leave-config.*') ? 'active' : '' }}">
+                                            <a href="{{ route('app.hr.leave-config.index') }}" class="{{ request()->routeIs('app.hr.leave-config.index') || request()->routeIs('app.hr.leave-config.holidays.*') || request()->routeIs('app.hr.leave-config.critical-dates.*') ? 'active' : '' }}">
                                                 <i class="ph-duotone ph-gear-six"></i><span>{{ __('Leave Configuration') }}</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('app.hr.leave-config.hourly.index') }}" class="{{ request()->routeIs('app.hr.leave-config.hourly.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-clock"></i><span>{{ __('Hourly Leave Configuration') }}</span>
                                             </a>
                                         </li>
                                         <li>

@@ -103,4 +103,87 @@ class LeaveConfigController extends Controller
 
         return back()->with('status', __('Hourly setting deleted.'));
     }
+
+    /**
+     * "Mazeret İzni Yapılandırması" — demo VatPortal / Spec v4.1 §9.5:
+     * sol tarafta tenant geneli tek row, sağ tarafta departman override tablosu.
+     */
+    public function hourlyIndex(Request $request): View
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        $platform = LeaveHourConfig::firstOrCreate(
+            ['tenant_id' => $tenantId, 'department_id' => null],
+            [
+                'daily_work_hours' => 8,
+                'monthly_leave_hours' => 24,
+                'min_hours' => 1,
+                'negative_balance_policy' => 'strict',
+                'is_active' => true,
+            ],
+        );
+
+        return view('hr::leaves.hourly-config', [
+            'platform' => $platform,
+            'overrides' => LeaveHourConfig::with('department')
+                ->whereNotNull('department_id')
+                ->get(),
+            'departments' => Department::orderBy('name')->get(),
+        ]);
+    }
+
+    public function updatePlatformHourly(Request $request): RedirectResponse
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        $validated = $request->validate([
+            'is_active' => ['sometimes', 'boolean'],
+            'min_hours' => ['required', 'numeric', 'min:0.25', 'max:24'],
+            'daily_work_hours' => ['required', 'numeric', 'min:1', 'max:24'],
+            'negative_balance_policy' => ['required', Rule::in(['strict', 'lenient'])],
+        ]);
+
+        LeaveHourConfig::updateOrCreate(
+            ['tenant_id' => $tenantId, 'department_id' => null],
+            $validated + ['monthly_leave_hours' => 24],
+        );
+
+        return back()->with('status', __('Platform-wide settings saved.'));
+    }
+
+    public function storeHourOverride(Request $request): RedirectResponse
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        $validated = $request->validate([
+            'department_id' => [
+                'required',
+                Rule::exists('departments', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+                Rule::unique('leave_hour_configs', 'department_id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+            ],
+            'min_hours' => ['required', 'numeric', 'min:0.25', 'max:24'],
+        ]);
+
+        $platform = LeaveHourConfig::where('tenant_id', $tenantId)->whereNull('department_id')->first();
+
+        LeaveHourConfig::create([
+            'tenant_id' => $tenantId,
+            'department_id' => $validated['department_id'],
+            'min_hours' => $validated['min_hours'],
+            'daily_work_hours' => $platform?->daily_work_hours ?? 8,
+            'monthly_leave_hours' => $platform?->monthly_leave_hours ?? 24,
+            'negative_balance_policy' => $platform?->negative_balance_policy ?? 'strict',
+            'is_active' => true,
+        ]);
+
+        return back()->with('status', __('Department override added.'));
+    }
+
+    public function destroyHourOverride(LeaveHourConfig $leaveHourConfig): RedirectResponse
+    {
+        abort_if($leaveHourConfig->department_id === null, 422, __('Platform-wide row cannot be deleted; edit it instead.'));
+        $leaveHourConfig->delete();
+
+        return back()->with('status', __('Department override removed.'));
+    }
 }

@@ -109,66 +109,14 @@
         </div>
     </div>
 
-    <div class="bg-white border border-border-color rounded-md lg:col-span-2">
-        <div class="flex items-center justify-between p-4 border-b border-border-color">
-            <div>
-                <h2 class="text-base font-bold text-title mb-0">{{ __('Hourly Leave Settings') }}</h2>
-                <p class="text-xs text-default mt-1 mb-0">{{ __('Default applies to all departments; add a row per department to override.') }}</p>
-            </div>
-            <button type="button" data-hs-overlay="#add-hour-modal" class="btn-sm bg-dark text-white border border-dark inline-flex items-center gap-2 hover:bg-primary-hover cursor-pointer">
-                <i class="ph ph-plus"></i> {{ __('Add') }}
-            </button>
+    <div class="bg-white border border-border-color rounded-md lg:col-span-2 p-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+            <h2 class="text-base font-bold text-title mb-1">{{ __('Hourly Leave (Mazeret İzni)') }}</h2>
+            <p class="text-xs text-default mb-0">{{ __('Platform-wide activity, min duration and negative-balance policy are managed on a dedicated screen.') }}</p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead>
-                    <tr class="text-sm text-default border-b border-border-color">
-                        <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Department') }}</th>
-                        <th class="text-right py-2 px-3 font-semibold text-gray-900">{{ __('Daily') }}</th>
-                        <th class="text-right py-2 px-3 font-semibold text-gray-900">{{ __('Monthly limit') }}</th>
-                        <th class="text-right py-2 px-3 font-semibold text-gray-900">{{ __('Min. request') }}</th>
-                        <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Negative balance') }}</th>
-                        <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Status') }}</th>
-                        <th class="text-right py-2 px-3 font-semibold text-gray-900">{{ __('Actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($hourConfigs as $c)
-                        <tr class="border-b border-border-color">
-                            <td class="py-2.5 px-3 font-semibold text-title">{{ $c->department?->name ?? __('Default (all)') }}</td>
-                            <td class="py-2.5 px-3 text-right">{{ $c->daily_work_hours }}</td>
-                            <td class="py-2.5 px-3 text-right">{{ $c->monthly_leave_hours }}</td>
-                            <td class="py-2.5 px-3 text-right">{{ $c->min_hours }}</td>
-                            <td class="py-2.5 px-3">
-                                @if ($c->negative_balance_policy === 'strict')
-                                    <span class="text-[11px] bg-danger-transparent text-danger px-2 py-0.5 rounded">{{ __('Strict') }}</span>
-                                @else
-                                    <span class="text-[11px] bg-warning-transparent text-warning px-2 py-0.5 rounded">{{ __('Lenient') }}</span>
-                                @endif
-                            </td>
-                            <td class="py-2.5 px-3">
-                                @if ($c->is_active)
-                                    <span class="text-[11px] bg-success-transparent text-success px-2 py-0.5 rounded">{{ __('Active') }}</span>
-                                @else
-                                    <span class="text-[11px] bg-danger-transparent text-danger px-2 py-0.5 rounded">{{ __('Inactive') }}</span>
-                                @endif
-                            </td>
-                            <td class="py-2.5 px-3 text-right">
-                                <form method="POST" action="{{ route('app.hr.leave-config.hour-configs.destroy', $c) }}" onsubmit="return confirm('{{ __('Delete?') }}')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="size-7 rounded-md border border-border-color inline-flex items-center justify-center text-danger hover:bg-light cursor-pointer" title="{{ __('Delete') }}">
-                                        <i class="ph ph-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="7" class="py-8 text-center text-sm text-default">{{ __('No hourly settings yet.') }}</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        <a href="{{ route('app.hr.leave-config.hourly.index') }}" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light">
+            <i class="ph ph-arrow-right"></i> {{ __('Open configuration') }}
+        </a>
     </div>
 
 </div>
@@ -230,65 +178,6 @@
             </div>
             <div class="flex justify-end gap-2 p-4 border-t border-border-color">
                 <button type="button" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light cursor-pointer" data-hs-overlay="#add-critical-modal">{{ __('Cancel') }}</button>
-                <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover cursor-pointer">{{ __('Save') }}</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div id="add-hour-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
-    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto pointer-events-auto min-h-screen flex items-center justify-center">
-        <form method="POST" action="{{ route('app.hr.leave-config.hour-configs.store') }}" class="flex flex-col bg-white border shadow-sm rounded-md border-border-color w-full">
-            @csrf
-            <div class="flex justify-between items-center p-4 border-b border-border-color">
-                <h2 class="text-base font-bold text-title">{{ __('Hourly Leave Settings') }}</h2>
-                <button type="button" class="size-7 inline-flex justify-center items-center rounded-md border border-border-color hover:bg-light cursor-pointer" data-hs-overlay="#add-hour-modal"><i class="ph ph-x text-sm"></i></button>
-            </div>
-            <div class="p-4 grid grid-cols-12 gap-3">
-                <div class="col-span-12">
-                    <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Department') }}</label>
-                    <select name="department_id" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
-                        <option value="">{{ __('Default (all)') }}</option>
-                        @foreach ($departments as $d)
-                            <option value="{{ $d->id }}">{{ $d->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-span-12 sm:col-span-6">
-                    <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Daily hours') }} <span class="text-danger">*</span></label>
-                    <input type="number" step="0.5" name="daily_work_hours" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" placeholder="8" value="8">
-                </div>
-                <div class="col-span-12 sm:col-span-6">
-                    <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Monthly leave hours') }} <span class="text-danger">*</span></label>
-                    <input type="number" step="0.5" name="monthly_leave_hours" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" placeholder="24" value="24">
-                </div>
-                <div class="col-span-12 sm:col-span-6">
-                    <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Minimum request hours') }} <span class="text-danger">*</span></label>
-                    <select name="min_hours" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
-                        <option value="0.5">0.5</option>
-                        <option value="1" selected>1</option>
-                        <option value="2">2</option>
-                        <option value="4">4</option>
-                    </select>
-                    <p class="text-xs text-default mt-1 mb-0">{{ __('Minimum hours per hourly leave request.') }}</p>
-                </div>
-                <div class="col-span-12 sm:col-span-6">
-                    <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Negative balance policy') }} <span class="text-danger">*</span></label>
-                    <select name="negative_balance_policy" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
-                        <option value="strict" selected>{{ __('Strict — reject requests when balance is zero') }}</option>
-                        <option value="lenient">{{ __('Lenient — allow debt, offset against next accrual') }}</option>
-                    </select>
-                </div>
-                <div class="col-span-12">
-                    <label class="flex items-center gap-2 text-sm text-gray-900">
-                        <input type="hidden" name="is_active" value="0">
-                        <input type="checkbox" name="is_active" value="1" checked>
-                        {{ __('Active') }}
-                    </label>
-                </div>
-            </div>
-            <div class="flex justify-end gap-2 p-4 border-t border-border-color">
-                <button type="button" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light cursor-pointer" data-hs-overlay="#add-hour-modal">{{ __('Cancel') }}</button>
                 <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover cursor-pointer">{{ __('Save') }}</button>
             </div>
         </form>
