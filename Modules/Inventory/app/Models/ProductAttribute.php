@@ -17,7 +17,18 @@ class ProductAttribute extends Model
         'tenant_id',
         'name',
         'creation_mode',
+        'display_type',
+        'sequence',
+        'active',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'active' => 'boolean',
+            'sequence' => 'integer',
+        ];
+    }
 
     protected static function newFactory(): ProductAttributeFactory
     {

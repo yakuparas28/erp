@@ -24,7 +24,9 @@ class SalesOrderLine extends Model
         'qty',
         'unit_price',
         'delivered_qty',
+        'reserved_qty',
         'tax_rate_id',
+        'custom_values',
     ];
 
     protected function casts(): array
@@ -33,6 +35,8 @@ class SalesOrderLine extends Model
             'qty' => 'decimal:4',
             'unit_price' => 'decimal:4',
             'delivered_qty' => 'decimal:4',
+            'reserved_qty' => 'decimal:4',
+            'custom_values' => 'array',
         ];
     }
 

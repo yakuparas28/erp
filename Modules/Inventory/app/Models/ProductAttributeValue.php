@@ -18,12 +18,20 @@ class ProductAttributeValue extends Model
         'product_attribute_id',
         'value',
         'price_extra',
+        'html_color',
+        'image_path',
+        'sequence',
+        'active',
+        'is_custom',
     ];
 
     protected function casts(): array
     {
         return [
             'price_extra' => 'decimal:4',
+            'active' => 'boolean',
+            'is_custom' => 'boolean',
+            'sequence' => 'integer',
         ];
     }
 

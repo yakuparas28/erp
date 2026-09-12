@@ -5,12 +5,12 @@ namespace Modules\Inventory\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Inventory\Models\ProductAttribute;
-use Modules\Inventory\Models\ProductAttributeValue;
+use Modules\Inventory\Models\ProductAttributeExclusion;
 use Modules\Inventory\Models\ProductTemplate;
 use Modules\Inventory\Models\ProductTemplateAttributeLine;
-use Modules\Inventory\Models\ProductVariantAttributeValue;
 use Modules\Inventory\Services\ProductDeletionService;
 use Modules\Inventory\Services\VariantGeneratorService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -45,41 +45,53 @@ class ProductTemplateController extends Controller
 
     public function show(ProductTemplate $template): View
     {
+        $template->load(['attributeLines.attribute.values', 'variants']);
+
+        $exclusions = ProductAttributeExclusion::with(['value.attribute', 'excludedValue.attribute'])
+            ->where(fn ($q) => $q->whereNull('product_template_id')->orWhere('product_template_id', $template->id))
+            ->get();
+
         return view('inventory::templates.show', [
-            'template' => $template->load(['attributeLines.attribute.values', 'variants']),
+            'template' => $template,
             'availableAttributes' => ProductAttribute::whereNotIn(
                 'id',
                 $template->attributeLines()->pluck('product_attribute_id'),
             )->orderBy('name')->get(),
+            'exclusions' => $exclusions,
         ]);
     }
 
-    public function storeAttribute(Request $request): RedirectResponse
+    public function storeExclusion(Request $request, ProductTemplate $template): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'creation_mode' => ['required', 'in:instant,dynamic,never'],
+            'product_attribute_value_id' => [
+                'required',
+                Rule::exists('product_attribute_values', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+            ],
+            'excluded_value_id' => [
+                'required',
+                'different:product_attribute_value_id',
+                Rule::exists('product_attribute_values', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+            ],
         ]);
 
-        ProductAttribute::create($validated);
+        ProductAttributeExclusion::firstOrCreate([
+            'tenant_id' => $tenantId,
+            'product_template_id' => $template->id,
+            'product_attribute_value_id' => (int) $validated['product_attribute_value_id'],
+            'excluded_value_id' => (int) $validated['excluded_value_id'],
+        ]);
 
-        return redirect()->route('app.inventory.templates.index')->with('status', __('Attribute added.'));
+        return back()->with('status', __('Exclusion rule added.'));
     }
 
-    public function storeAttributeValue(Request $request, ProductAttribute $attribute): RedirectResponse
+    public function destroyExclusion(ProductAttributeExclusion $exclusion): RedirectResponse
     {
-        $validated = $request->validate([
-            'value' => ['required', 'string', 'max:255'],
-            'price_extra' => ['nullable', 'numeric'],
-        ]);
+        $exclusion->delete();
 
-        ProductAttributeValue::create([
-            'product_attribute_id' => $attribute->id,
-            'value' => $validated['value'],
-            'price_extra' => $validated['price_extra'] ?? 0,
-        ]);
-
-        return redirect()->route('app.inventory.templates.index')->with('status', __('Attribute value added.'));
+        return back()->with('status', __('Exclusion rule removed.'));
     }
 
     public function attachAttribute(Request $request, ProductTemplate $template): RedirectResponse
@@ -114,40 +126,5 @@ class ProductTemplateController extends Controller
         return redirect()
             ->route('app.inventory.templates.index')
             ->with('status', __('Template ":name" and its variants were deleted.', ['name' => $name]));
-    }
-
-    public function destroyAttribute(ProductAttribute $attribute): RedirectResponse
-    {
-        $isAttached = ProductTemplateAttributeLine::where('product_attribute_id', $attribute->id)->exists();
-
-        if ($isAttached) {
-            return back()->withErrors([
-                'attribute' => __('This attribute is attached to a template and cannot be deleted.'),
-            ]);
-        }
-
-        ProductAttributeValue::where('product_attribute_id', $attribute->id)->delete();
-        $attribute->delete();
-
-        return redirect()
-            ->route('app.inventory.templates.index')
-            ->with('status', __('Attribute ":name" deleted.', ['name' => $attribute->name]));
-    }
-
-    public function destroyAttributeValue(ProductAttributeValue $value): RedirectResponse
-    {
-        $isUsedByVariant = ProductVariantAttributeValue::where('product_attribute_value_id', $value->id)->exists();
-
-        if ($isUsedByVariant) {
-            return back()->withErrors([
-                'value' => __('This value is used by a generated variant and cannot be deleted.'),
-            ]);
-        }
-
-        $value->delete();
-
-        return redirect()
-            ->route('app.inventory.templates.index')
-            ->with('status', __('Value ":name" deleted.', ['name' => $value->value]));
     }
 }

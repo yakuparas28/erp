@@ -64,5 +64,64 @@
             </table>
         </div>
     </div>
+
+    @php
+        $allValues = $template->attributeLines->flatMap(fn ($l) => $l->attribute->values)->unique('id');
+    @endphp
+    @if ($allValues->count() >= 2)
+        <div class="col-span-12">
+            <div class="bg-white border border-border-color rounded-md p-4">
+                <h2 class="text-base font-bold text-title mb-1">{{ __('Exclusion Rules') }}</h2>
+                <p class="text-xs text-default mb-3">{{ __('Prevent impossible attribute combinations (e.g. "Red" cannot exist with "XL Size"). Applied when generating variants.') }}</p>
+
+                @if ($exclusions->isNotEmpty())
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        @foreach ($exclusions as $exclusion)
+                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-danger-transparent text-danger border border-danger text-sm">
+                                {{ $exclusion->value->attribute->name }}: {{ $exclusion->value->value }}
+                                <i class="ph ph-x text-xs"></i>
+                                {{ $exclusion->excludedValue->attribute->name }}: {{ $exclusion->excludedValue->value }}
+                                <form method="POST" action="{{ route('app.inventory.exclusions.destroy', $exclusion) }}" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-danger hover:text-danger-hover" title="{{ __('Remove') }}">×</button>
+                                </form>
+                            </span>
+                        @endforeach
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('app.inventory.templates.exclusions.store', $template) }}" class="flex flex-wrap items-end gap-2">
+                    @csrf
+                    <div class="flex-1 min-w-40">
+                        <label class="text-xs text-default mb-1 block">{{ __('If this value…') }}</label>
+                        <select name="product_attribute_value_id" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                            @foreach ($template->attributeLines as $line)
+                                <optgroup label="{{ $line->attribute->name }}">
+                                    @foreach ($line->attribute->values as $v)
+                                        <option value="{{ $v->id }}">{{ $v->value }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="flex-1 min-w-40">
+                        <label class="text-xs text-default mb-1 block">{{ __('…excludes this value') }}</label>
+                        <select name="excluded_value_id" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                            @foreach ($template->attributeLines as $line)
+                                <optgroup label="{{ $line->attribute->name }}">
+                                    @foreach ($line->attribute->values as $v)
+                                        <option value="{{ $v->id }}">{{ $v->value }}</option>
+                                    @endforeach
+                                </optgroup>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover cursor-pointer">{{ __('Add rule') }}</button>
+                </form>
+                @error('excluded_value_id')<p class="text-xs text-danger mt-2 mb-0">{{ $message }}</p>@enderror
+            </div>
+        </div>
+    @endif
 </div>
 @endsection

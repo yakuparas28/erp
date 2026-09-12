@@ -8,6 +8,7 @@ use Illuminate\Foundation\Queue\Queueable as QueueableTrait;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\ProductAttributeExclusion;
 use Modules\Inventory\Models\ProductTemplate;
 use Modules\Inventory\Models\ProductVariantAttributeValue;
 use Modules\Inventory\Models\StockMove;
@@ -55,6 +56,30 @@ class GenerateInstantVariants implements ShouldQueue
                 ->all(),
             [[]],
         );
+
+        $exclusions = ProductAttributeExclusion::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenantId)
+            ->where(fn ($q) => $q->whereNull('product_template_id')->orWhere('product_template_id', $template->id))
+            ->get()
+            ->flatMap(fn ($e) => [
+                $e->product_attribute_value_id.':'.$e->excluded_value_id,
+                $e->excluded_value_id.':'.$e->product_attribute_value_id,
+            ])
+            ->flip();
+
+        $combinations = array_values(array_filter($combinations, function (array $combination) use ($exclusions): bool {
+            $ids = collect($combination)->pluck('id')->all();
+
+            foreach ($ids as $a) {
+                foreach ($ids as $b) {
+                    if ($a !== $b && $exclusions->has($a.':'.$b)) {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }));
 
         $referenceUom = Uom::withoutGlobalScopes()
             ->where('tenant_id', $this->tenantId)

@@ -5,6 +5,7 @@ namespace Modules\Inventory\Services;
 use Modules\Inventory\Jobs\GenerateInstantVariants;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductAttribute;
+use Modules\Inventory\Models\ProductAttributeExclusion;
 use Modules\Inventory\Models\ProductAttributeValue;
 use Modules\Inventory\Models\ProductTemplate;
 use Modules\Inventory\Models\ProductTemplateAttributeLine;
@@ -48,6 +49,12 @@ class VariantGeneratorService
     public function resolveOrCreateDynamic(ProductTemplate $template, array $attributeValueIds): Product
     {
         sort($attributeValueIds);
+
+        abort_if(
+            $this->hasExcludedCombination($template, $attributeValueIds),
+            422,
+            __('This combination of attribute values is excluded by a rule.'),
+        );
 
         $existing = ProductVariantAttributeValue::whereIn('product_attribute_value_id', $attributeValueIds)
             ->whereHas('product', fn ($q) => $q->where('product_template_id', $template->id))
@@ -105,5 +112,27 @@ class VariantGeneratorService
         abort_if($attached, 422, __('Creation mode cannot be changed after this attribute is attached to a template.'));
 
         $attribute->update(['creation_mode' => $mode]);
+    }
+
+    /**
+     * Odoo `_exclude_from_combination` denkliği: verilen değer listesinde
+     * karşılıklı olarak dışlanmış herhangi bir ikili varsa true döner.
+     *
+     * @param  list<int>  $valueIds
+     */
+    public function hasExcludedCombination(ProductTemplate $template, array $valueIds): bool
+    {
+        $exclusions = ProductAttributeExclusion::where('tenant_id', $template->tenant_id)
+            ->where(fn ($q) => $q->whereNull('product_template_id')->orWhere('product_template_id', $template->id))
+            ->get();
+
+        foreach ($exclusions as $rule) {
+            if (in_array($rule->product_attribute_value_id, $valueIds, true)
+                && in_array($rule->excluded_value_id, $valueIds, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
