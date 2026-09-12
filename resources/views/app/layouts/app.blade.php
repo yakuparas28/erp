@@ -272,6 +272,7 @@
                                 @endcan
                             @endif
                         @endif
+                        @module('purchase')
                         @if (auth()->user()?->can('create purchase orders') || auth()->user()?->can('confirm purchase orders'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Purchasing') }}</span></li>
                             <li>
@@ -280,6 +281,8 @@
                                 </a>
                             </li>
                         @endif
+                        @endmodule
+                        @module('sales')
                         @if (auth()->user()?->can('create sales orders') || auth()->user()?->can('confirm sales orders'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Sales') }}</span></li>
                             <li>
@@ -300,6 +303,8 @@
                                 </li>
                             @endcan
                         @endif
+                        @endmodule
+                        @module('accounting')
                         @if (auth()->user()?->can('manage chart of accounts') || auth()->user()?->can('post journal entries') || auth()->user()?->can('register payments'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Accounting') }}</span></li>
                             @can('manage chart of accounts')
@@ -352,6 +357,7 @@
                                 </li>
                             @endcan
                         @endif
+                        @endmodule
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>
                             @can('manage users')

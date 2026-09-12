@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Purchase\Http\Controllers\PurchaseOrderController;
 
-Route::middleware(['auth:web'])->prefix('app/purchase')->name('app.purchase.')->group(function (): void {
+Route::middleware(['auth:web', 'module:purchase'])->prefix('app/purchase')->name('app.purchase.')->group(function (): void {
     Route::middleware('permission:create purchase orders,web')->group(function (): void {
         Route::get('/orders', [PurchaseOrderController::class, 'index'])->name('orders.index');
         Route::post('/orders', [PurchaseOrderController::class, 'store'])->name('orders.store');

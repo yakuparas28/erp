@@ -5,7 +5,7 @@ use Modules\Sales\Http\Controllers\DeliveryCarrierController;
 use Modules\Sales\Http\Controllers\QuotationController;
 use Modules\Sales\Http\Controllers\SalesOrderController;
 
-Route::middleware(['auth:web'])->prefix('app/sales')->name('app.sales.')->group(function (): void {
+Route::middleware(['auth:web', 'module:sales'])->prefix('app/sales')->name('app.sales.')->group(function (): void {
     Route::middleware('permission:create sales orders,web')->group(function (): void {
         Route::get('/carriers', [DeliveryCarrierController::class, 'index'])->name('carriers.index');
         Route::post('/carriers', [DeliveryCarrierController::class, 'store'])->name('carriers.store');

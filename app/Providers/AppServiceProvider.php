@@ -12,6 +12,7 @@ use App\Models\TenantModuleActivation;
 use App\Models\TenantSubscription;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\Payment;
@@ -47,6 +48,19 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureMorphMap();
+        $this->registerBladeDirectives();
+    }
+
+    /**
+     * @module('sales') ... @endmodule — geçerli kullanıcının tenant'ında
+     * modül aktifse render eder. Süper admin oturumunda tenant yoktur; o
+     * durumda false döner (süper admin tenant panelini kullanmaz).
+     */
+    private function registerBladeDirectives(): void
+    {
+        Blade::if('module', function (string $key): bool {
+            return auth()->user()?->tenant?->hasActiveModule($key) ?? false;
+        });
     }
 
     /**

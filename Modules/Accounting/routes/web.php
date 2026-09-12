@@ -9,7 +9,7 @@ use Modules\Accounting\Http\Controllers\PaymentController;
 use Modules\Accounting\Http\Controllers\PurchaseInvoiceController;
 use Modules\Accounting\Http\Controllers\SalesInvoiceController;
 
-Route::middleware(['auth:web'])->prefix('app/accounting')->name('app.accounting.')->group(function (): void {
+Route::middleware(['auth:web', 'module:accounting'])->prefix('app/accounting')->name('app.accounting.')->group(function (): void {
     Route::middleware('permission:manage chart of accounts,web')->group(function (): void {
         Route::get('/accounts', [ChartOfAccountController::class, 'index'])->name('accounts.index');
         Route::post('/accounts', [ChartOfAccountController::class, 'store'])->name('accounts.store');

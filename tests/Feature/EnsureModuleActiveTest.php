@@ -16,6 +16,10 @@ class EnsureModuleActiveTest extends TenantTestCase
 
         $this->seed(ModuleSeeder::class);
 
+        // TenantTestCase varsayılan olarak tüm modülleri aktive eder;
+        // bu test lisans-red senaryolarını doğruladığı için baştan sıfırlar.
+        TenantModuleActivation::where('tenant_id', $this->tenant->id)->delete();
+
         Route::middleware(['api', 'auth:sanctum', 'module:accounting'])
             ->get('/api/_test/accounting-ping', fn () => response()->json(['pong' => true]));
 
