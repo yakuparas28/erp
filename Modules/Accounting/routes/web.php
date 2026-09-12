@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Accounting\Http\Controllers\ChartOfAccountController;
+use Modules\Accounting\Http\Controllers\CurrencyController;
 use Modules\Accounting\Http\Controllers\ExchangeRateController;
 use Modules\Accounting\Http\Controllers\JournalEntryViewerController;
 use Modules\Accounting\Http\Controllers\PaymentController;
@@ -12,6 +13,7 @@ Route::middleware(['auth:web'])->prefix('app/accounting')->name('app.accounting.
     Route::middleware('permission:manage chart of accounts,web')->group(function (): void {
         Route::get('/accounts', [ChartOfAccountController::class, 'index'])->name('accounts.index');
         Route::post('/accounts', [ChartOfAccountController::class, 'store'])->name('accounts.store');
+        Route::patch('/accounts/{account}', [ChartOfAccountController::class, 'update'])->name('accounts.update');
         Route::delete('/accounts/{account}', [ChartOfAccountController::class, 'destroy'])->name('accounts.destroy');
 
         Route::get('/journal-entries', [JournalEntryViewerController::class, 'index'])->name('journal-entries.index');
@@ -19,6 +21,15 @@ Route::middleware(['auth:web'])->prefix('app/accounting')->name('app.accounting.
 
         Route::get('/exchange-rates', [ExchangeRateController::class, 'index'])->name('exchange-rates.index');
         Route::post('/exchange-rates', [ExchangeRateController::class, 'store'])->name('exchange-rates.store');
+        Route::post('/exchange-rates/sync-tcmb', [ExchangeRateController::class, 'syncFromTcmb'])->name('exchange-rates.sync-tcmb');
+
+        Route::get('/currencies', [CurrencyController::class, 'index'])->name('currencies.index');
+        Route::get('/currencies/{currency}', [CurrencyController::class, 'show'])->name('currencies.show');
+        Route::post('/currencies', [CurrencyController::class, 'store'])->name('currencies.store');
+        Route::patch('/currencies/{currency}', [CurrencyController::class, 'update'])->name('currencies.update');
+        Route::post('/currencies/{currency}/archive', [CurrencyController::class, 'archive'])->name('currencies.archive');
+        Route::post('/currencies/{currency}/restore', [CurrencyController::class, 'restore'])->name('currencies.restore');
+        Route::delete('/currencies/{currency}', [CurrencyController::class, 'destroy'])->name('currencies.destroy');
     });
 
     Route::middleware('permission:post journal entries,web')->group(function (): void {

@@ -1,0 +1,27 @@
+<div id="add-sub-account-{{ $parent->id }}" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto pointer-events-auto min-h-screen flex items-center justify-center">
+        <form method="POST" action="{{ route('app.accounting.accounts.store') }}" class="flex flex-col bg-white border shadow-sm rounded-md border-border-color w-full">
+            @csrf
+            <input type="hidden" name="parent_id" value="{{ $parent->id }}">
+            <div class="flex justify-between items-center p-4 border-b border-border-color">
+                <h2 class="text-base font-bold text-title">{{ __('New Sub-account under') }} {{ $parent->code }} — {{ $parent->name }}</h2>
+                <button type="button" class="size-7 inline-flex justify-center items-center rounded-md border border-border-color hover:bg-light cursor-pointer" data-hs-overlay="#add-sub-account-{{ $parent->id }}" aria-label="{{ __('Cancel') }}"><i class="ph ph-x text-sm"></i></button>
+            </div>
+            <div class="p-4 grid grid-cols-12 gap-3">
+                <div class="col-span-12 sm:col-span-4">
+                    <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Code') }} <span class="text-danger">*</span></label>
+                    <input type="text" name="code" required value="{{ $parent->code }}." placeholder="{{ $parent->code }}.01" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0 font-mono">
+                </div>
+                <div class="col-span-12 sm:col-span-8">
+                    <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Name') }} <span class="text-danger">*</span></label>
+                    <input type="text" name="name" required placeholder="{{ __('e.g. Merkez Kasa') }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                </div>
+                <p class="col-span-12 text-xs text-default mb-0">{{ __('Type is inherited from the parent account (:type).', ['type' => __('account-type.'.$parent->type)]) }}</p>
+            </div>
+            <div class="flex justify-end gap-2 p-4 border-t border-border-color">
+                <button type="button" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light cursor-pointer" data-hs-overlay="#add-sub-account-{{ $parent->id }}">{{ __('Cancel') }}</button>
+                <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover cursor-pointer">{{ __('Save') }}</button>
+            </div>
+        </form>
+    </div>
+</div>

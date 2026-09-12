@@ -18,7 +18,7 @@ class AccountingDefaultsServiceTest extends TenantTestCase
 
         app(AccountingDefaultsService::class)->provision($tenant);
 
-        $this->assertSame(11, ChartOfAccount::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(269, ChartOfAccount::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
         $this->assertSame(6, Journal::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
         $this->assertSame(6, TaxRate::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
 
@@ -40,7 +40,7 @@ class AccountingDefaultsServiceTest extends TenantTestCase
         app(AccountingDefaultsService::class)->provision($tenant);
         app(AccountingDefaultsService::class)->provision($tenant);
 
-        $this->assertSame(11, ChartOfAccount::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
+        $this->assertSame(269, ChartOfAccount::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
         $this->assertSame(6, Journal::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
         $this->assertSame(6, TaxRate::withoutGlobalScopes()->where('tenant_id', $tenant->id)->count());
     }

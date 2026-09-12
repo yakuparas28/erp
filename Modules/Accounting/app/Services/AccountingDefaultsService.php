@@ -7,6 +7,7 @@ use Modules\Accounting\Models\ChartOfAccount;
 use Modules\Accounting\Models\Currency;
 use Modules\Accounting\Models\Journal;
 use Modules\Accounting\Models\TaxRate;
+use Modules\Accounting\Support\TekduzenHesapPlani;
 
 /**
  * Yeni tenant için Tekdüzen Hesap Planı (PRD 3.14) + yevmiye defterleri +
@@ -15,20 +16,6 @@ use Modules\Accounting\Models\TaxRate;
  */
 class AccountingDefaultsService
 {
-    private const ACCOUNTS = [
-        ['code' => '100', 'name' => 'Kasa', 'type' => 'asset'],
-        ['code' => '102', 'name' => 'Bankalar', 'type' => 'asset'],
-        ['code' => '120', 'name' => 'Alıcılar', 'type' => 'asset'],
-        ['code' => '153', 'name' => 'Ticari Mallar', 'type' => 'asset'],
-        ['code' => '191', 'name' => 'İndirilecek KDV', 'type' => 'asset'],
-        ['code' => '320', 'name' => 'Satıcılar', 'type' => 'liability'],
-        ['code' => '391', 'name' => 'Hesaplanan KDV', 'type' => 'liability'],
-        ['code' => '600', 'name' => 'Yurtiçi Satışlar', 'type' => 'income'],
-        ['code' => '621', 'name' => 'Satılan Ticari Mallar Maliyeti', 'type' => 'expense'],
-        ['code' => '646', 'name' => 'Kambiyo Karları', 'type' => 'income'],
-        ['code' => '656', 'name' => 'Kambiyo Zararları', 'type' => 'expense'],
-    ];
-
     private const JOURNALS = [
         ['name' => 'Satış', 'type' => 'sale'],
         ['name' => 'Alış', 'type' => 'purchase'],
@@ -39,17 +26,17 @@ class AccountingDefaultsService
     ];
 
     private const CURRENCIES = [
-        ['code' => 'TRY', 'name' => 'Türk Lirası', 'is_functional' => true],
-        ['code' => 'USD', 'name' => 'ABD Doları', 'is_functional' => false],
-        ['code' => 'EUR', 'name' => 'Euro', 'is_functional' => false],
+        ['code' => 'TRY', 'name' => 'Türk Lirası', 'symbol' => '₺', 'position' => 'after', 'is_functional' => true],
+        ['code' => 'USD', 'name' => 'ABD Doları', 'symbol' => '$', 'position' => 'before', 'is_functional' => false],
+        ['code' => 'EUR', 'name' => 'Euro', 'symbol' => '€', 'position' => 'before', 'is_functional' => false],
     ];
 
     public function provision(Tenant $tenant): void
     {
-        foreach (self::ACCOUNTS as $account) {
+        foreach (TekduzenHesapPlani::accounts() as $account) {
             ChartOfAccount::withoutGlobalScopes()->firstOrCreate(
                 ['tenant_id' => $tenant->id, 'code' => $account['code']],
-                ['name' => $account['name'], 'type' => $account['type']],
+                ['name' => $account['name'], 'type' => $account['type'], 'is_system' => true],
             );
         }
 
@@ -79,7 +66,12 @@ class AccountingDefaultsService
         foreach (self::CURRENCIES as $currency) {
             Currency::withoutGlobalScopes()->firstOrCreate(
                 ['tenant_id' => $tenant->id, 'code' => $currency['code']],
-                ['name' => $currency['name'], 'is_functional' => $currency['is_functional']],
+                [
+                    'name' => $currency['name'],
+                    'symbol' => $currency['symbol'],
+                    'position' => $currency['position'],
+                    'is_functional' => $currency['is_functional'],
+                ],
             );
         }
     }
