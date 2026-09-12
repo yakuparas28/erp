@@ -40,4 +40,14 @@ class ExchangeRate extends Model
     {
         return $this->belongsTo(Currency::class);
     }
+
+    /**
+     * Odoo'nun `inverse_company_rate` compute'una karşılık: 1 döviz kaç TL
+     * yerine 1 TL kaç dövize denk geliyor. buy_rate üzerinden hesaplanır
+     * (TCMB'de alış temel kurdur).
+     */
+    public function getInverseBuyRateAttribute(): string
+    {
+        return bcdiv('1', (string) $this->buy_rate, 6);
+    }
 }

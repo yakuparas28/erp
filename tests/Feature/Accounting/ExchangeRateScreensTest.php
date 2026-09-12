@@ -4,8 +4,11 @@ namespace Tests\Feature\Accounting;
 
 use App\Models\Tenant;
 use App\Models\User;
+use Modules\Accounting\Contracts\TcmbClientInterface;
 use Modules\Accounting\Models\Currency;
+use Modules\Accounting\Models\ExchangeRate;
 use Modules\Accounting\Services\AccountingDefaultsService;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TenantTestCase;
 
 class ExchangeRateScreensTest extends TenantTestCase
@@ -102,6 +105,51 @@ class ExchangeRateScreensTest extends TenantTestCase
         $this->assertDatabaseMissing('exchange_rates', [
             'currency_id' => $try->id,
         ]);
+    }
+
+    public function test_tcmb_button_imports_todays_rates(): void
+    {
+        app(AccountingDefaultsService::class)->provision($this->tenant);
+
+        $this->mock(TcmbClientInterface::class, function ($mock): void {
+            $mock->shouldReceive('fetchRates')->once()->andReturn([
+                'USD' => ['buy' => '33.500000', 'sell' => '33.600000'],
+                'EUR' => ['buy' => '36.500000', 'sell' => '36.600000'],
+            ]);
+        });
+
+        $this->actingAs($this->tenantAdmin)
+            ->post('/app/accounting/exchange-rates/sync-tcmb')
+            ->assertRedirect(route('app.accounting.exchange-rates.index'))
+            ->assertSessionHas('status');
+
+        $this->assertDatabaseHas('exchange_rates', [
+            'tenant_id' => $this->tenant->id,
+            'buy_rate' => '33.500000',
+            'source' => 'tcmb',
+        ]);
+        $this->assertDatabaseHas('exchange_rates', [
+            'tenant_id' => $this->tenant->id,
+            'buy_rate' => '36.500000',
+            'source' => 'tcmb',
+        ]);
+    }
+
+    public function test_tcmb_fetch_failure_shows_a_warning_instead_of_crashing(): void
+    {
+        app(AccountingDefaultsService::class)->provision($this->tenant);
+
+        $this->mock(TcmbClientInterface::class, function ($mock): void {
+            $mock->shouldReceive('fetchRates')->once()
+                ->andThrow(new HttpException(422, 'TCMB rates unavailable'));
+        });
+
+        $this->actingAs($this->tenantAdmin)
+            ->post('/app/accounting/exchange-rates/sync-tcmb')
+            ->assertRedirect()
+            ->assertSessionHas('warning');
+
+        $this->assertSame(0, ExchangeRate::count());
     }
 
     public function test_user_without_permission_cannot_access_exchange_rates_page(): void
