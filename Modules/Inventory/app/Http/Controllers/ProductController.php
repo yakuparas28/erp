@@ -5,6 +5,8 @@ namespace Modules\Inventory\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductCategory;
@@ -67,18 +69,40 @@ class ProductController extends Controller
             return back()->withErrors(['product' => $e->getMessage()]);
         }
 
+        if ($product->image_path && Storage::disk('public')->exists($product->image_path)) {
+            Storage::disk('public')->delete($product->image_path);
+        }
+
         return redirect()
             ->route('app.inventory.products.index')
             ->with('status', __(':name deleted.', ['name' => $product->name]));
     }
 
-    public function storeCategory(Request $request): RedirectResponse
+    public function uploadImage(Request $request, Product $product): RedirectResponse
     {
-        $validated = $request->validate(['name' => ['required', 'string', 'max:255']]);
+        $request->validate([
+            'image' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+        ]);
 
-        ProductCategory::create($validated);
+        if ($product->image_path && Storage::disk('public')->exists($product->image_path)) {
+            Storage::disk('public')->delete($product->image_path);
+        }
 
-        return redirect()->route('app.inventory.products.index')->with('status', __('Category added.'));
+        $path = $request->file('image')->store('products', 'public');
+        $product->update(['image_path' => $path]);
+
+        return back()->with('status', __('Image uploaded.'));
+    }
+
+    public function destroyImage(Product $product): RedirectResponse
+    {
+        if ($product->image_path && Storage::disk('public')->exists($product->image_path)) {
+            Storage::disk('public')->delete($product->image_path);
+        }
+
+        $product->update(['image_path' => null]);
+
+        return back()->with('status', __('Image removed.'));
     }
 
     /**
@@ -86,13 +110,32 @@ class ProductController extends Controller
      */
     private function validated(Request $request): array
     {
+        $tenantId = $request->user()->tenant_id;
+        $productId = $request->route('product')?->id;
+
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'sku' => ['nullable', 'string', 'max:100'],
+            'barcode' => [
+                'nullable',
+                'string',
+                'max:255',
+                Rule::unique('products', 'barcode')
+                    ->where(fn ($q) => $q->where('tenant_id', $tenantId))
+                    ->ignore($productId),
+            ],
             'product_category_id' => ['nullable', 'exists:product_categories,id'],
             'uom_id' => ['required', 'exists:uoms,id'],
             'product_type' => ['required', 'in:stockable,consumable,service'],
             'track_by' => ['required', 'in:none,lot,serial'],
+            'reservation_method' => ['nullable', 'in:at_confirmation,manual'],
+            'list_price' => ['nullable', 'numeric', 'min:0'],
+            'sale_ok' => ['sometimes', 'boolean'],
+            'purchase_ok' => ['sometimes', 'boolean'],
+            'description' => ['nullable', 'string', 'max:2000'],
+            'description_sale' => ['nullable', 'string', 'max:2000'],
+            'hs_code' => ['nullable', 'string', 'max:20'],
+            'country_of_origin' => ['nullable', 'string', 'size:2'],
             'is_kit' => ['sometimes', 'boolean'],
         ]);
     }

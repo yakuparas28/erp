@@ -28,15 +28,28 @@ class Product extends Model
         'cost_method',
         'standard_cost',
         'avco_unit_cost',
+        'reservation_method',
+        'barcode',
+        'list_price',
+        'sale_ok',
+        'purchase_ok',
+        'description',
+        'description_sale',
+        'hs_code',
+        'country_of_origin',
+        'image_path',
     ];
 
     protected function casts(): array
     {
         return [
             'is_kit' => 'boolean',
+            'sale_ok' => 'boolean',
+            'purchase_ok' => 'boolean',
             'standard_cost' => 'decimal:4',
             'avco_unit_cost' => 'decimal:4',
             'current_stock' => 'decimal:4',
+            'list_price' => 'decimal:4',
         ];
     }
 
