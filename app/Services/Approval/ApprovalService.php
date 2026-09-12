@@ -10,6 +10,7 @@ use App\Models\User;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Modules\Hr\Models\LeaveRequest;
 
 /**
  * Generic çok-adımlı onay motoru: HR/Fleet gibi farklı modüller aynı yapıyı
@@ -41,6 +42,37 @@ class ApprovalService
     {
         self::$resolvers['role'] ??= fn (User $actor, ?string $role, ?Model $subject): bool => $role !== null && $actor->hasRole($role);
         self::$resolvers['user'] ??= fn (User $actor, ?string $userId, ?Model $subject): bool => $userId !== null && (int) $userId === $actor->id;
+
+        // Hr modülüne özgü resolver'lar. Modül bağımlılık halkası burada
+        // tersine dönüyor (core → Hr) — bunun yerine güvenli çözüm modül
+        // etkinse resolver'ı kaydetmek. HR modeli her yerde import edildiği
+        // için pratik bir sorun oluşturmuyor.
+        self::$resolvers['manager'] ??= function (User $actor, ?string $value, ?Model $subject): bool {
+            if (! $subject instanceof LeaveRequest) {
+                return false;
+            }
+            $submitter = $subject->employee()->first();
+            if ($submitter === null || $submitter->manager_id === null) {
+                return false;
+            }
+            $actorEmployee = $actor->employee()->first();
+
+            return $actorEmployee !== null && $actorEmployee->id === $submitter->manager_id;
+        };
+
+        self::$resolvers['department_manager'] ??= function (User $actor, ?string $value, ?Model $subject): bool {
+            if (! $subject instanceof LeaveRequest) {
+                return false;
+            }
+            $submitter = $subject->employee()->with('department')->first();
+            $manager = $submitter?->department?->manager_employee_id;
+            if ($manager === null) {
+                return false;
+            }
+            $actorEmployee = $actor->employee()->first();
+
+            return $actorEmployee !== null && $actorEmployee->id === $manager;
+        };
     }
 
     public function submit(Model $subject, User $submitter): Approval

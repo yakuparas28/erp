@@ -376,6 +376,52 @@
                                 </li>
                             @endcan
                         @endif
+                        <li class="menu-title" aria-disabled="true"><span>{{ __('Leave') }}</span></li>
+                        <li>
+                            <a href="{{ route('app.hr.leaves.mine') }}" class="{{ request()->routeIs('app.hr.leaves.*') ? 'active' : '' }}">
+                                <i class="ph-duotone ph-calendar-check"></i><span>{{ __('My Leave Requests') }}</span>
+                            </a>
+                        </li>
+                        @can('approve leave first level')
+                            <li>
+                                <a href="{{ route('app.hr.leave-approvals.first') }}" class="{{ request()->routeIs('app.hr.leave-approvals.first') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-user-check"></i><span>{{ __('Unit Manager Approvals') }}</span>
+                                </a>
+                            </li>
+                        @endcan
+                        @can('approve leave second level')
+                            <li>
+                                <a href="{{ route('app.hr.leave-approvals.second') }}" class="{{ request()->routeIs('app.hr.leave-approvals.second') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-check-square"></i><span>{{ __('General Manager Approvals') }}</span>
+                                </a>
+                            </li>
+                        @endcan
+                        @can('view leave monitoring')
+                            <li>
+                                <a href="{{ route('app.hr.leave-monitoring.index') }}" class="{{ request()->routeIs('app.hr.leave-monitoring.*') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-eye"></i><span>{{ __('Leave Monitoring') }}</span>
+                                </a>
+                            </li>
+                        @endcan
+                        @can('manage leave balances')
+                            <li>
+                                <a href="{{ route('app.hr.leave-balances.index') }}" class="{{ request()->routeIs('app.hr.leave-balances.*') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-scales"></i><span>{{ __('Leave Balances') }}</span>
+                                </a>
+                            </li>
+                        @endcan
+                        @can('manage leave configuration')
+                            <li>
+                                <a href="{{ route('app.hr.leave-types.index') }}" class="{{ request()->routeIs('app.hr.leave-types.*') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-tag"></i><span>{{ __('Leave Types') }}</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ route('app.hr.leave-config.index') }}" class="{{ request()->routeIs('app.hr.leave-config.*') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-gear-six"></i><span>{{ __('Leave Configuration') }}</span>
+                                </a>
+                            </li>
+                        @endcan
                         @endmodule
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>

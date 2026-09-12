@@ -3,6 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use Modules\Hr\Http\Controllers\DepartmentController;
 use Modules\Hr\Http\Controllers\EmployeeController;
+use Modules\Hr\Http\Controllers\LeaveApprovalController;
+use Modules\Hr\Http\Controllers\LeaveBalanceController;
+use Modules\Hr\Http\Controllers\LeaveConfigController;
+use Modules\Hr\Http\Controllers\LeaveRequestController;
+use Modules\Hr\Http\Controllers\LeaveTypeController;
 
 Route::middleware(['auth:web', 'module:hr'])->prefix('app/hr')->name('app.hr.')->group(function (): void {
     Route::middleware('permission:manage employees,web')->group(function (): void {
@@ -17,5 +22,42 @@ Route::middleware(['auth:web', 'module:hr'])->prefix('app/hr')->name('app.hr.')-
         Route::post('/departments', [DepartmentController::class, 'store'])->name('departments.store');
         Route::patch('/departments/{department}', [DepartmentController::class, 'update'])->name('departments.update');
         Route::delete('/departments/{department}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
+    });
+
+    // Personel: her tenant kullanıcısı kendi taleplerini görebilir.
+    Route::get('/leaves/mine', [LeaveRequestController::class, 'index'])->name('leaves.mine');
+    Route::post('/leaves', [LeaveRequestController::class, 'store'])->name('leaves.store');
+    Route::post('/leaves/{leave}/cancel', [LeaveRequestController::class, 'cancel'])->name('leaves.cancel');
+
+    Route::middleware('permission:approve leave first level,web')->group(function (): void {
+        Route::get('/leave-approvals/first-level', [LeaveApprovalController::class, 'firstLevelIndex'])->name('leave-approvals.first');
+    });
+    Route::middleware('permission:approve leave second level,web')->group(function (): void {
+        Route::get('/leave-approvals/second-level', [LeaveApprovalController::class, 'secondLevelIndex'])->name('leave-approvals.second');
+    });
+    Route::post('/leave-approvals/{leave}/approve', [LeaveApprovalController::class, 'approve'])->name('leave-approvals.approve');
+    Route::post('/leave-approvals/{leave}/reject', [LeaveApprovalController::class, 'reject'])->name('leave-approvals.reject');
+
+    Route::middleware('permission:view leave monitoring,web')->group(function (): void {
+        Route::get('/leave-monitoring', [LeaveApprovalController::class, 'monitoring'])->name('leave-monitoring.index');
+    });
+
+    Route::middleware('permission:manage leave balances,web')->group(function (): void {
+        Route::get('/leave-balances', [LeaveBalanceController::class, 'index'])->name('leave-balances.index');
+        Route::post('/leave-balances', [LeaveBalanceController::class, 'upsert'])->name('leave-balances.upsert');
+    });
+
+    Route::middleware('permission:manage leave configuration,web')->group(function (): void {
+        Route::get('/leave-types', [LeaveTypeController::class, 'index'])->name('leave-types.index');
+        Route::post('/leave-types', [LeaveTypeController::class, 'store'])->name('leave-types.store');
+        Route::patch('/leave-types/{leaveType}', [LeaveTypeController::class, 'update'])->name('leave-types.update');
+        Route::delete('/leave-types/{leaveType}', [LeaveTypeController::class, 'destroy'])->name('leave-types.destroy');
+
+        Route::get('/leave-config', [LeaveConfigController::class, 'index'])->name('leave-config.index');
+        Route::post('/leave-config/holidays', [LeaveConfigController::class, 'storeHoliday'])->name('leave-config.holidays.store');
+        Route::delete('/leave-config/holidays/{holiday}', [LeaveConfigController::class, 'destroyHoliday'])->name('leave-config.holidays.destroy');
+        Route::post('/leave-config/critical-dates', [LeaveConfigController::class, 'storeCriticalDate'])->name('leave-config.critical-dates.store');
+        Route::delete('/leave-config/critical-dates/{criticalDate}', [LeaveConfigController::class, 'destroyCriticalDate'])->name('leave-config.critical-dates.destroy');
+        Route::post('/leave-config/hour-configs', [LeaveConfigController::class, 'storeHourConfig'])->name('leave-config.hour-configs.store');
     });
 });

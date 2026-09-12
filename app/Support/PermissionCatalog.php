@@ -52,6 +52,11 @@ final class PermissionCatalog
             'hr' => [
                 'manage employees',
                 'manage departments',
+                'approve leave first level',
+                'approve leave second level',
+                'view leave monitoring',
+                'manage leave balances',
+                'manage leave configuration',
             ],
         ];
     }
