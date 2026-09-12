@@ -9,6 +9,15 @@
         @include('sales::orders._status-badge', ['status' => $so->status])
     </div>
     <div class="flex items-center gap-2">
+        @if ($so->customer_confirmed_at)
+            <span class="inline-flex items-center gap-2 text-sm bg-success-transparent text-success border border-success rounded-md px-3 py-1">
+                <i class="ph ph-check-circle"></i> {{ __('Customer confirmed the quotation on :date.', ['date' => $so->customer_confirmed_at->format('d.m.Y H:i')]) }}
+            </span>
+        @elseif ($so->customer_declined_at)
+            <span class="inline-flex items-center gap-2 text-sm bg-danger-transparent text-danger border border-danger rounded-md px-3 py-1">
+                <i class="ph ph-x-circle"></i> {{ __('Customer declined the quotation on :date.', ['date' => $so->customer_declined_at->format('d.m.Y H:i')]) }}
+            </span>
+        @endif
         @if (in_array($so->status, ['quotation_sent', 'confirmed', 'done']))
             <a href="{{ route('app.sales.orders.quotation', $so) }}" target="_blank" class="btn-sm bg-white border border-border-color text-gray-900 inline-flex items-center gap-2 hover:bg-light">
                 <i class="ph ph-file-text"></i> {{ __('Quotation') }}
@@ -82,6 +91,18 @@
                     <div class="flex justify-between border-b border-border-color pb-2">
                         <dt class="text-default">{{ __('Valid Until') }}</dt>
                         <dd class="text-title font-mono {{ $so->validity_date->isPast() ? 'text-danger' : '' }}">{{ $so->validity_date->format('d.m.Y') }}</dd>
+                    </div>
+                @endif
+                @if ($so->customer_confirmed_at)
+                    <div class="flex justify-between border-b border-border-color pb-2">
+                        <dt class="text-default">{{ __('Customer Confirmed At') }}</dt>
+                        <dd class="text-title font-mono text-success">{{ $so->customer_confirmed_at->format('d.m.Y H:i') }}</dd>
+                    </div>
+                @endif
+                @if ($so->customer_declined_at)
+                    <div class="flex justify-between border-b border-border-color pb-2">
+                        <dt class="text-default">{{ __('Customer Declined At') }}</dt>
+                        <dd class="text-title font-mono text-danger">{{ $so->customer_declined_at->format('d.m.Y H:i') }}</dd>
                     </div>
                 @endif
                 @php
