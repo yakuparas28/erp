@@ -4,12 +4,9 @@
 
 @section('content')
 <div class="flex flex-wrap items-center justify-between gap-3 mb-3 lg:mb-6">
-    <div>
-        <h1 class="text-gray-900 text-xl font-bold mb-1">{{ __('Departments') }}</h1>
-        <p class="text-sm text-default mb-0">{{ __('Departments can be nested and assigned a manager (an employee).') }}</p>
-    </div>
+    <h1 class="text-gray-900 text-xl font-bold mb-0">{{ __('Departments') }}</h1>
     <button type="button" data-hs-overlay="#add-department-modal" class="btn-sm bg-dark text-white border border-dark inline-flex items-center gap-2 hover:bg-primary-hover hover:border-primary-hover cursor-pointer">
-        <i class="ph ph-plus"></i> {{ __('New Department') }}
+        <i class="ph ph-plus"></i> {{ __('Add New') }}
     </button>
 </div>
 
@@ -22,27 +19,40 @@
     </div>
 @endif
 
-<div class="bg-white border border-border-color rounded-md">
-    <div class="overflow-x-auto">
+<div class="bg-white border border-border-color rounded-md p-4">
+    <p class="text-sm text-default mb-3">{{ __('Departments can be nested and assigned a manager (an employee).') }}</p>
+    <div class="overflow-x-auto -mx-4">
         <table class="w-full text-sm">
             <thead>
-                <tr class="text-sm text-default border-b border-border-color">
-                    <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Name') }}</th>
+                <tr class="border-y border-border-color bg-light">
+                    <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Code') }}</th>
+                    <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Department') }}</th>
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Parent') }}</th>
-                    <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Manager') }}</th>
-                    <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Sub-departments') }}</th>
-                    <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Actions') }}</th>
+                    <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Head') }}</th>
+                    <th class="text-right py-2 px-3 font-semibold text-gray-900">{{ __('Employees') }}</th>
+                    <th class="text-right py-2 px-3 font-semibold text-gray-900">{{ __('Sub-departments') }}</th>
+                    <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Status') }}</th>
+                    <th class="text-center py-2 px-3 font-semibold text-gray-900">{{ __('Actions') }}</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($departments as $department)
-                    <tr class="border-b border-border-color">
-                        <td class="py-2.5 px-3 text-sm font-semibold text-title">{{ $department->name }}</td>
-                        <td class="py-2.5 px-3 text-sm text-default">{{ $department->parent?->name ?? '—' }}</td>
-                        <td class="py-2.5 px-3 text-sm text-default">{{ $department->manager?->full_name ?? '—' }}</td>
-                        <td class="py-2.5 px-3 text-sm text-default">{{ $department->children->count() }}</td>
-                        <td class="py-2.5 px-3">
-                            <div class="flex items-center gap-2">
+                    <tr class="border-b border-border-color hover:bg-light/50">
+                        <td class="py-3 px-3 font-mono text-xs text-primary">DPT-{{ str_pad((string) $department->id, 3, '0', STR_PAD_LEFT) }}</td>
+                        <td class="py-3 px-3 font-semibold text-title">{{ $department->name }}</td>
+                        <td class="py-3 px-3 text-default">{{ $department->parent?->name ?? '—' }}</td>
+                        <td class="py-3 px-3 text-default">{{ $department->manager?->full_name ?? '—' }}</td>
+                        <td class="py-3 px-3 text-right">{{ $department->employees->count() }}</td>
+                        <td class="py-3 px-3 text-right">{{ $department->children->count() }}</td>
+                        <td class="py-3 px-3">
+                            @if ($department->is_active)
+                                <span class="text-[11px] bg-success-transparent text-success px-2 py-0.5 rounded">{{ __('Active') }}</span>
+                            @else
+                                <span class="text-[11px] bg-danger-transparent text-danger px-2 py-0.5 rounded">{{ __('Inactive') }}</span>
+                            @endif
+                        </td>
+                        <td class="py-3 px-3">
+                            <div class="flex items-center justify-center gap-1">
                                 <button type="button" data-hs-overlay="#edit-department-modal-{{ $department->id }}" class="size-7 rounded-md border border-border-color flex items-center justify-center text-gray-900 hover:bg-light cursor-pointer" title="{{ __('Edit') }}">
                                     <i class="ph ph-pencil-simple"></i>
                                 </button>
@@ -57,7 +67,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="py-8 text-center text-sm text-default">{{ __('No departments yet.') }}</td></tr>
+                    <tr><td colspan="8" class="py-8 text-center text-sm text-default">{{ __('No departments yet.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -66,7 +76,7 @@
 
 <div id="add-department-modal" class="hs-overlay hidden fixed inset-0 z-50 overflow-x-hidden overflow-y-auto pointer-events-none">
     <div class="hs-overlay-open:opacity-100 hs-overlay-open:duration-500 opacity-0 transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-56px)] flex items-center">
-        <div class="pointer-events-auto bg-white border border-border-color rounded-md w-full">
+        <div class="pointer-events-auto bg-white border border-border-color rounded-md w-full shadow">
             <form method="POST" action="{{ route('app.hr.departments.store') }}">
                 @csrf
                 @include('hr::departments._form-fields', ['departments' => $departments, 'employees' => $employees, 'department' => null])
@@ -82,7 +92,7 @@
 @foreach ($departments as $department)
     <div id="edit-department-modal-{{ $department->id }}" class="hs-overlay hidden fixed inset-0 z-50 overflow-x-hidden overflow-y-auto pointer-events-none">
         <div class="hs-overlay-open:opacity-100 hs-overlay-open:duration-500 opacity-0 transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto min-h-[calc(100%-56px)] flex items-center">
-            <div class="pointer-events-auto bg-white border border-border-color rounded-md w-full">
+            <div class="pointer-events-auto bg-white border border-border-color rounded-md w-full shadow">
                 <form method="POST" action="{{ route('app.hr.departments.update', $department) }}">
                     @csrf
                     @method('PATCH')

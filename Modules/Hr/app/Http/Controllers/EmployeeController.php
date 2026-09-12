@@ -10,6 +10,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Hr\Models\Department;
 use Modules\Hr\Models\Employee;
+use Modules\Hr\Models\LeaveRequest;
 
 /**
  * hr.employee ekranı: her tenant kullanıcısına 1-1 HR profili (departman,
@@ -28,6 +29,20 @@ class EmployeeController extends Controller
                 ->orderBy('name')->get(),
             'departments' => Department::orderBy('name')->get(),
             'managers' => Employee::orderBy('first_name')->get(),
+        ]);
+    }
+
+    public function show(Employee $employee): View
+    {
+        $employee->load(['user', 'department', 'manager', 'subordinates.user']);
+
+        return view('hr::employees.show', [
+            'employee' => $employee,
+            'recentLeaves' => LeaveRequest::where('employee_id', $employee->id)
+                ->with(['leaveType', 'approval'])
+                ->latest()
+                ->limit(10)
+                ->get(),
         ]);
     }
 
