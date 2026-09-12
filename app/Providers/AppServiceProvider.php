@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Approval\Approval;
+use App\Models\Approval\ApprovalAction;
+use App\Models\Approval\ApprovalWorkflow;
+use App\Models\Approval\ApprovalWorkflowStep;
 use App\Models\LicensePackage;
 use App\Models\MailSetting;
 use App\Models\Module;
@@ -11,11 +15,14 @@ use App\Models\Tenant;
 use App\Models\TenantModuleActivation;
 use App\Models\TenantSubscription;
 use App\Models\User;
+use App\Services\Approval\ApprovalService;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\Payment;
+use Modules\Hr\Models\Department;
+use Modules\Hr\Models\Employee;
 use Modules\Inventory\Models\InventoryAdjustment;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Product;
@@ -49,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureMorphMap();
         $this->registerBladeDirectives();
+        ApprovalService::bootDefaultResolvers();
     }
 
     /**
@@ -96,6 +104,12 @@ class AppServiceProvider extends ServiceProvider
             'sales_order' => SalesOrder::class,
             'invoice' => Invoice::class,
             'payment' => Payment::class,
+            'approval_workflow' => ApprovalWorkflow::class,
+            'approval_workflow_step' => ApprovalWorkflowStep::class,
+            'approval' => Approval::class,
+            'approval_action' => ApprovalAction::class,
+            'department' => Department::class,
+            'employee' => Employee::class,
         ]);
     }
 }

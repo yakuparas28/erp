@@ -7,13 +7,13 @@ use Tests\TestCase;
 
 class ModuleScaffoldTest extends TestCase
 {
-    public function test_all_four_erp_modules_are_enabled(): void
+    public function test_all_erp_modules_are_enabled(): void
     {
         $enabled = array_keys(Module::allEnabled());
 
         sort($enabled);
 
-        $this->assertSame(['accounting', 'inventory', 'purchase', 'sales'], $enabled);
+        $this->assertSame(['accounting', 'hr', 'inventory', 'purchase', 'sales'], $enabled);
     }
 
     public function test_dependent_modules_declare_inventory_requirement(): void

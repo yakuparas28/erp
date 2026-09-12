@@ -358,6 +358,25 @@
                             @endcan
                         @endif
                         @endmodule
+                        @module('hr')
+                        @if (auth()->user()?->can('manage employees') || auth()->user()?->can('manage departments'))
+                            <li class="menu-title" aria-disabled="true"><span>{{ __('Human Resources') }}</span></li>
+                            @can('manage employees')
+                                <li>
+                                    <a href="{{ route('app.hr.employees.index') }}" class="{{ request()->routeIs('app.hr.employees.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-users-three"></i><span>{{ __('Employees') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('manage departments')
+                                <li>
+                                    <a href="{{ route('app.hr.departments.index') }}" class="{{ request()->routeIs('app.hr.departments.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-buildings"></i><span>{{ __('Departments') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                        @endif
+                        @endmodule
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>
                             @can('manage users')

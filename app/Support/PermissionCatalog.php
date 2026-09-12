@@ -49,6 +49,10 @@ final class PermissionCatalog
                 'post journal entries',
                 'register payments',
             ],
+            'hr' => [
+                'manage employees',
+                'manage departments',
+            ],
         ];
     }
 

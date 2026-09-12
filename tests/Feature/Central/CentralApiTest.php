@@ -67,7 +67,7 @@ class CentralApiTest extends TestCase
         ])->assertCreated();
 
         $this->assertSame(
-            3,
+            4,
             TenantModuleActivation::where('tenant_id', $tenant->id)->where('is_active', true)->count(),
         );
         $this->assertNotNull(Activity::where('description', 'subscription.assigned')->first());

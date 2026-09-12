@@ -14,6 +14,7 @@ class ModuleSeeder extends Seeder
             ['key' => 'sales', 'name' => 'Satış', 'description' => 'Satış siparişleri, rezervasyon ve teslimat', 'is_core' => false],
             ['key' => 'purchase', 'name' => 'Satınalma', 'description' => 'RFQ/PO, mal kabul ve yeniden sipariş', 'is_core' => false],
             ['key' => 'accounting', 'name' => 'Muhasebe', 'description' => 'Hesap planı, yevmiye, fatura ve ödemeler', 'is_core' => false],
+            ['key' => 'hr', 'name' => 'İnsan Kaynakları', 'description' => 'Personel, departman, izin yönetimi', 'is_core' => false],
         ];
 
         foreach ($modules as $attributes) {

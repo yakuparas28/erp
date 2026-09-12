@@ -20,10 +20,10 @@ class PlatformCatalogTest extends TestCase
         $this->seed([ModuleSeeder::class, LicensePackageSeeder::class]);
     }
 
-    public function test_four_modules_are_seeded_and_only_inventory_is_core(): void
+    public function test_all_erp_modules_are_seeded_and_only_inventory_is_core(): void
     {
         $this->assertSame(
-            ['accounting', 'inventory', 'purchase', 'sales'],
+            ['accounting', 'hr', 'inventory', 'purchase', 'sales'],
             Module::orderBy('key')->pluck('key')->all(),
         );
 
@@ -37,8 +37,8 @@ class PlatformCatalogTest extends TestCase
     {
         $expected = [
             'Başlangıç' => ['inventory'],
-            'Standart' => ['inventory', 'purchase', 'sales'],
-            'Premium' => ['accounting', 'inventory', 'purchase', 'sales'],
+            'Standart' => ['hr', 'inventory', 'purchase', 'sales'],
+            'Premium' => ['accounting', 'hr', 'inventory', 'purchase', 'sales'],
         ];
 
         foreach ($expected as $packageName => $moduleKeys) {
@@ -56,7 +56,7 @@ class PlatformCatalogTest extends TestCase
     {
         $this->seed([ModuleSeeder::class, LicensePackageSeeder::class]);
 
-        $this->assertSame(4, Module::count());
+        $this->assertSame(5, Module::count());
         $this->assertSame(3, LicensePackage::count());
     }
 }
