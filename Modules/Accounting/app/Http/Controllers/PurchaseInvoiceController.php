@@ -33,13 +33,13 @@ class PurchaseInvoiceController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'purchase_order_id' => ['required', 'exists:purchase_orders,id'],
+            'purchase_order_id' => ['required', Rule::exists('purchase_orders', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'currency_id' => [
                 'nullable',
-                Rule::exists('currencies', 'id')->where(fn ($query) => $query
-                    ->where('tenant_id', $request->user()->tenant_id)
-                    ->where('is_functional', false)),
+                Rule::exists('currencies', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)->where('is_functional', false)),
             ],
         ]);
 
@@ -73,11 +73,13 @@ class PurchaseInvoiceController extends Controller
 
     public function storeLine(Request $request, Invoice $invoice): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
+            'product_id' => ['required', Rule::exists('products', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'qty' => ['required', 'numeric', 'gt:0'],
             'unit_price' => ['required', 'numeric', 'min:0'],
-            'tax_rate_id' => ['nullable', 'exists:tax_rates,id'],
+            'tax_rate_id' => ['nullable', Rule::exists('tax_rates', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
         ]);
 
         try {

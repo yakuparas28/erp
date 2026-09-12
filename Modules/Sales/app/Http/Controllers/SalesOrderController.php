@@ -40,8 +40,8 @@ class SalesOrderController extends Controller
         $tenantId = $request->user()->tenant_id;
 
         $validated = $request->validate([
-            'partner_id' => ['required', 'exists:partners,id'],
-            'location_id' => ['required', 'exists:locations,id'],
+            'partner_id' => ['required', Rule::exists('partners', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'location_id' => ['required', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'route_id' => [
                 'nullable',
                 Rule::exists('routes', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
@@ -82,9 +82,11 @@ class SalesOrderController extends Controller
 
     public function storeLine(Request $request, SalesOrder $so): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
-            'uom_id' => ['required', 'exists:uoms,id'],
+            'product_id' => ['required', Rule::exists('products', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'uom_id' => ['required', Rule::exists('uoms', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'qty' => ['required', 'numeric', 'gt:0'],
             'unit_price' => ['required', 'numeric', 'min:0'],
             'custom_values' => ['nullable', 'array'],
@@ -120,7 +122,7 @@ class SalesOrderController extends Controller
             'attribute_value_ids.*' => [
                 Rule::exists('product_attribute_values', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
             ],
-            'uom_id' => ['required', 'exists:uoms,id'],
+            'uom_id' => ['required', Rule::exists('uoms', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'qty' => ['required', 'numeric', 'gt:0'],
             'unit_price' => ['required', 'numeric', 'min:0'],
             'custom_values' => ['nullable', 'array'],

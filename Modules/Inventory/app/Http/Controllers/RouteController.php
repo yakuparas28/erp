@@ -91,9 +91,11 @@ class RouteController extends Controller
 
     public function execute(Request $request, RouteModel $route): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
-            'uom_id' => ['required', 'exists:uoms,id'],
+            'product_id' => ['required', Rule::exists('products', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'uom_id' => ['required', Rule::exists('uoms', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'qty' => ['required', 'numeric', 'gt:0'],
         ]);
 

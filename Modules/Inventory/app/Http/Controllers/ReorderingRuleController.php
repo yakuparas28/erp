@@ -29,15 +29,17 @@ class ReorderingRuleController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $tenantId = auth()->user()->tenant_id;
+
         $validated = $request->validate([
             'product_id' => [
                 'required',
-                'exists:products,id',
+                Rule::exists('products', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
                 Rule::unique('reordering_rules', 'product_id')
-                    ->where('tenant_id', auth()->user()->tenant_id)
+                    ->where('tenant_id', $tenantId)
                     ->where('location_id', $request->input('location_id')),
             ],
-            'location_id' => ['required', 'exists:locations,id'],
+            'location_id' => ['required', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'min_qty' => ['required', 'numeric', 'min:0'],
             'max_qty' => ['required', 'numeric', 'gt:min_qty'],
             'trigger_type' => ['required', 'in:auto,manual'],

@@ -5,6 +5,7 @@ namespace Modules\Inventory\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Product;
@@ -25,11 +26,13 @@ class PutawayRuleController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'product_id' => ['nullable', 'exists:products,id'],
-            'product_category_id' => ['nullable', 'exists:product_categories,id'],
-            'source_location_id' => ['required', 'exists:locations,id'],
-            'dest_location_id' => ['required', 'exists:locations,id', 'different:source_location_id'],
+            'product_id' => ['nullable', Rule::exists('products', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'product_category_id' => ['nullable', Rule::exists('product_categories', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'source_location_id' => ['required', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'dest_location_id' => ['required', 'different:source_location_id', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'sequence' => ['required', 'integer', 'min:0'],
         ]);
 

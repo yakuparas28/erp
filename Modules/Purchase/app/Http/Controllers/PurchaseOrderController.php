@@ -29,9 +29,13 @@ class PurchaseOrderController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate(['partner_id' => ['required', 'exists:partners,id']]);
+        $tenantId = $request->user()->tenant_id;
 
-        $po = $this->purchaseOrders->create($request->user()->tenant_id, (int) $validated['partner_id'], $request->user());
+        $validated = $request->validate([
+            'partner_id' => ['required', Rule::exists('partners', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+        ]);
+
+        $po = $this->purchaseOrders->create($tenantId, (int) $validated['partner_id'], $request->user());
 
         return redirect()->route('app.purchase.orders.show', $po)->with('status', __('Purchase order created.'));
     }
@@ -48,9 +52,11 @@ class PurchaseOrderController extends Controller
 
     public function storeLine(Request $request, PurchaseOrder $po): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
-            'uom_id' => ['required', 'exists:uoms,id'],
+            'product_id' => ['required', Rule::exists('products', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'uom_id' => ['required', Rule::exists('uoms', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'qty' => ['required', 'numeric', 'gt:0'],
             'unit_price' => ['required', 'numeric', 'min:0'],
         ]);
@@ -105,9 +111,11 @@ class PurchaseOrderController extends Controller
 
     public function receive(Request $request, PurchaseOrderLine $line): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
             'qty' => ['required', 'numeric', 'gt:0'],
-            'receiving_location_id' => ['required', 'exists:locations,id'],
+            'receiving_location_id' => ['required', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
         ]);
 
         try {

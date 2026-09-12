@@ -124,8 +124,8 @@ class ProductController extends Controller
                     ->where(fn ($q) => $q->where('tenant_id', $tenantId))
                     ->ignore($productId),
             ],
-            'product_category_id' => ['nullable', 'exists:product_categories,id'],
-            'uom_id' => ['required', 'exists:uoms,id'],
+            'product_category_id' => ['nullable', Rule::exists('product_categories', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'uom_id' => ['required', Rule::exists('uoms', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'product_type' => ['required', 'in:stockable,consumable,service'],
             'track_by' => ['required', 'in:none,lot,serial'],
             'reservation_method' => ['nullable', 'in:at_confirmation,manual'],

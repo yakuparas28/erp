@@ -48,16 +48,16 @@ class PaymentController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'partner_id' => ['required', 'exists:partners,id'],
-            'journal_id' => ['required', 'exists:journals,id'],
+            'partner_id' => ['required', Rule::exists('partners', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'journal_id' => ['required', Rule::exists('journals', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'amount' => ['required', 'numeric', 'gt:0'],
             'payment_date' => ['required', 'date'],
             'currency_id' => [
                 'nullable',
-                Rule::exists('currencies', 'id')->where(fn ($query) => $query
-                    ->where('tenant_id', $request->user()->tenant_id)
-                    ->where('is_functional', false)),
+                Rule::exists('currencies', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)->where('is_functional', false)),
             ],
         ]);
 
@@ -121,8 +121,10 @@ class PaymentController extends Controller
 
     public function storeAllocation(Request $request, Payment $payment): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'invoice_id' => ['required', 'exists:invoices,id'],
+            'invoice_id' => ['required', Rule::exists('invoices', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'amount' => ['required', 'numeric', 'gt:0'],
         ]);
 

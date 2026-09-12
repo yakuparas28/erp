@@ -5,6 +5,7 @@ namespace Modules\Inventory\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductKitComponent;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -13,8 +14,14 @@ class KitComponentController extends Controller
 {
     public function store(Request $request, Product $product): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'component_product_id' => ['required', 'exists:products,id', 'different:product'],
+            'component_product_id' => [
+                'required',
+                Rule::exists('products', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId)),
+                Rule::notIn([$product->id]),
+            ],
             'qty' => ['required', 'numeric', 'gt:0'],
         ]);
 

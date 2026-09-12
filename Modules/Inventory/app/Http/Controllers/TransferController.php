@@ -5,6 +5,7 @@ namespace Modules\Inventory\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Product;
@@ -28,10 +29,12 @@ class TransferController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'from_location_id' => ['required', 'exists:locations,id', 'different:to_location_id'],
-            'to_location_id' => ['required', 'exists:locations,id'],
-            'product_id' => ['required', 'exists:products,id'],
+            'from_location_id' => ['required', 'different:to_location_id', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'to_location_id' => ['required', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'product_id' => ['required', Rule::exists('products', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'qty' => ['required', 'numeric', 'gt:0'],
         ]);
 

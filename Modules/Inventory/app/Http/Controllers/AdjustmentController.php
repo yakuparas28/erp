@@ -5,6 +5,7 @@ namespace Modules\Inventory\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Inventory\Models\InventoryAdjustment;
 use Modules\Inventory\Models\Location;
@@ -26,7 +27,11 @@ class AdjustmentController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate(['location_id' => ['required', 'exists:locations,id']]);
+        $tenantId = $request->user()->tenant_id;
+
+        $validated = $request->validate([
+            'location_id' => ['required', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+        ]);
 
         try {
             $adjustment = $this->adjustments->open($request->user()->tenant_id, $validated['location_id'], $request->user());
@@ -54,8 +59,10 @@ class AdjustmentController extends Controller
 
     public function addCount(Request $request, InventoryAdjustment $adjustment): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
+            'product_id' => ['required', Rule::exists('products', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'qty' => ['required', 'numeric', 'gt:0'],
         ]);
 

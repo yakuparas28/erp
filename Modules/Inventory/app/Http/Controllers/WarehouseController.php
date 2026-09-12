@@ -81,9 +81,11 @@ class WarehouseController extends Controller
 
     public function storeLocation(Request $request): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'warehouse_id' => ['required', 'exists:warehouses,id'],
-            'parent_id' => ['nullable', 'exists:locations,id'],
+            'warehouse_id' => ['required', Rule::exists('warehouses', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'parent_id' => ['nullable', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'name' => ['required', 'string', 'max:255'],
         ]);
 
