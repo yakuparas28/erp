@@ -4,10 +4,10 @@
 
 @section('content')
 <div class="flex flex-wrap items-center justify-between gap-3 mb-3 lg:mb-6">
-    <h1 class="text-gray-900 text-xl font-bold mb-0">{{ __('Sales Orders') }}</h1>
-    <button type="button" data-hs-overlay="#add-sales-order-modal" class="btn-sm bg-dark text-white border border-dark inline-flex items-center gap-2 hover:bg-primary-hover hover:border-primary-hover cursor-pointer">
-        <i class="ph ph-plus"></i> {{ __('New Sales Order') }}
-    </button>
+    <div>
+        <h1 class="text-gray-900 text-xl font-bold mb-1">{{ __('Sales Orders') }}</h1>
+        <p class="text-sm text-default mb-0">{{ __('Confirmed / delivered orders. Create new orders via the') }} <a href="{{ route('app.sales.quotations.index') }}" class="text-primary hover:underline">{{ __('Quotations') }}</a> {{ __('flow.') }}</p>
+    </div>
 </div>
 
 <div class="bg-white border border-border-color rounded-md">
@@ -45,37 +45,4 @@
     </div>
 </div>
 
-<div id="add-sales-order-modal" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
-    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-lg sm:w-full m-3 sm:mx-auto pointer-events-auto min-h-screen flex items-center justify-center">
-        <form method="POST" action="{{ route('app.sales.orders.store') }}" class="flex flex-col bg-white border shadow-sm rounded-md border-border-color w-full">
-            @csrf
-            <div class="flex justify-between items-center p-4 border-b border-border-color">
-                <h2 class="text-base font-bold text-title">{{ __('New Sales Order') }}</h2>
-                <button type="button" class="size-7 inline-flex justify-center items-center rounded-md border border-border-color hover:bg-light cursor-pointer" data-hs-overlay="#add-sales-order-modal" aria-label="{{ __('Cancel') }}"><i class="ph ph-x text-sm"></i></button>
-            </div>
-            <div class="p-4 flex flex-col gap-3">
-                <div>
-                    <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Customer') }} <span class="text-danger">*</span></label>
-                    <select name="partner_id" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
-                        @foreach ($customers as $customer)
-                            <option value="{{ $customer->id }}">{{ $customer->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Location') }} <span class="text-danger">*</span></label>
-                    <select name="location_id" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
-                        @foreach ($locations as $location)
-                            <option value="{{ $location->id }}">{{ $location->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            <div class="flex justify-end gap-2 p-4 border-t border-border-color">
-                <button type="button" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light cursor-pointer" data-hs-overlay="#add-sales-order-modal">{{ __('Cancel') }}</button>
-                <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover cursor-pointer">{{ __('Save') }}</button>
-            </div>
-        </form>
-    </div>
-</div>
 @endsection

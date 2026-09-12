@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Central\ImpersonationController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
+use Modules\Sales\Http\Controllers\PortalQuoteController;
 
 Route::get('/', fn () => redirect()->route('login'))->name('home');
 
@@ -20,6 +21,10 @@ Route::middleware('guest:central_web,web')->group(function (): void {
 Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
 Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('locale.update');
 Route::post('/impersonation/leave', [ImpersonationController::class, 'destroy'])->name('impersonation.leave');
+
+Route::get('/q/{token}', [PortalQuoteController::class, 'show'])->name('portal.quote');
+Route::post('/q/{token}/accept', [PortalQuoteController::class, 'accept'])->name('portal.quote.accept');
+Route::post('/q/{token}/decline', [PortalQuoteController::class, 'decline'])->name('portal.quote.decline');
 
 Route::middleware('auth:web')->prefix('app')->name('app.')->group(function (): void {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');

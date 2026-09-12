@@ -66,15 +66,38 @@ class SalesOrderScreensTest extends TenantTestCase
         return $this->service()->addLine($so, $this->product->id, $this->unit->id, '10', '5.0000');
     }
 
-    public function test_index_page_lists_sales_orders(): void
+    public function test_index_page_lists_confirmed_sales_orders(): void
     {
         $this->actingAs($this->rep);
         $so = $this->draftOrder();
+        $so->update(['status' => 'confirmed']);
 
         $response = $this->get(route('app.sales.orders.index'));
 
         $response->assertOk();
         $response->assertSee($this->customer->name);
+    }
+
+    public function test_index_page_hides_draft_and_sent_quotations(): void
+    {
+        $this->actingAs($this->rep);
+        $draft = $this->draftOrder();
+
+        $response = $this->get(route('app.sales.orders.index'));
+
+        $response->assertOk();
+        $response->assertDontSee('SO-'.str_pad((string) $draft->id, 5, '0', STR_PAD_LEFT));
+    }
+
+    public function test_quotations_index_lists_draft_and_sent(): void
+    {
+        $this->actingAs($this->rep);
+        $draft = $this->draftOrder();
+
+        $response = $this->get(route('app.sales.quotations.index'));
+
+        $response->assertOk();
+        $response->assertSee('SO-'.str_pad((string) $draft->id, 5, '0', STR_PAD_LEFT));
     }
 
     public function test_rep_can_create_a_draft_sales_order(): void
