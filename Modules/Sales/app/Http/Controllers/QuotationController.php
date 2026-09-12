@@ -5,6 +5,7 @@ namespace Modules\Sales\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Partner;
@@ -36,8 +37,8 @@ class QuotationController extends Controller
         $tenantId = $request->user()->tenant_id;
 
         $validated = $request->validate([
-            'partner_id' => ['required', 'exists:partners,id'],
-            'location_id' => ['required', 'exists:locations,id'],
+            'partner_id' => ['required', Rule::exists('partners', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'location_id' => ['required', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
         ]);
 
         $so = $this->salesOrders->create(
