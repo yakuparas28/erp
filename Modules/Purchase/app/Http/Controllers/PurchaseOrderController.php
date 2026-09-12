@@ -5,6 +5,7 @@ namespace Modules\Purchase\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Partner;
@@ -116,5 +117,27 @@ class PurchaseOrderController extends Controller
         }
 
         return redirect()->route('app.purchase.orders.show', $line->purchase_order_id)->with('status', __('Received.'));
+    }
+
+    public function returnReceipt(Request $request, PurchaseOrderLine $line): RedirectResponse
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        $validated = $request->validate([
+            'qty' => ['required', 'numeric', 'gt:0'],
+            'from_location_id' => [
+                'required',
+                Rule::exists('locations', 'id')
+                    ->where(fn ($q) => $q->where('tenant_id', $tenantId)->where('type', 'internal')),
+            ],
+        ]);
+
+        try {
+            $this->purchaseOrders->returnReceipt($line, (string) $validated['qty'], (int) $validated['from_location_id']);
+        } catch (HttpException $e) {
+            return back()->withErrors(['qty' => $e->getMessage()]);
+        }
+
+        return redirect()->route('app.purchase.orders.show', $line->purchase_order_id)->with('status', __('Return recorded.'));
     }
 }

@@ -12,6 +12,7 @@ Route::middleware(['auth:web'])->prefix('app/purchase')->name('app.purchase.')->
         Route::post('/orders/{po}/send-rfq', [PurchaseOrderController::class, 'sendRfq'])->name('orders.send-rfq');
         Route::post('/orders/{po}/cancel', [PurchaseOrderController::class, 'cancel'])->name('orders.cancel');
         Route::post('/lines/{line}/receive', [PurchaseOrderController::class, 'receive'])->name('lines.receive');
+        Route::post('/lines/{line}/return', [PurchaseOrderController::class, 'returnReceipt'])->name('lines.return');
     });
 
     Route::middleware('permission:confirm purchase orders,web')->group(function (): void {

@@ -3,8 +3,10 @@
 namespace Modules\Purchase\Services;
 
 use App\Models\User;
+use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\Uom;
+use Modules\Inventory\Models\Warehouse;
 use Modules\Inventory\Services\CostingService;
 use Modules\Inventory\Services\PutawayService;
 use Modules\Inventory\Services\StockMoveService;
@@ -99,11 +101,30 @@ class PurchaseOrderService
         $product = Product::withoutGlobalScopes()->findOrFail($line->product_id);
         $uom = $line->uom;
 
-        $move = $this->stockMoves->move(
+        $finalLocation = Location::withoutGlobalScopes()->findOrFail($receivingLocationId);
+        $warehouse = $finalLocation->warehouse_id
+            ? Warehouse::withoutGlobalScopes()->find($finalLocation->warehouse_id)
+            : null;
+
+        $steps = $warehouse?->reception_steps ?? 'one_step';
+
+        // Odoo multi-step reception: 1-step: direkt final; 2-step: input->final;
+        // 3-step: input->QC->final. Costing yalnızca ilk (mal kabul) hareketinde.
+        [$firstInboundTo, $intermediateChain] = match ($steps) {
+            'two_step' => $warehouse->input_location_id
+                ? [$warehouse->input_location_id, [$receivingLocationId]]
+                : [$receivingLocationId, []],
+            'three_step' => ($warehouse->input_location_id && $warehouse->quality_location_id)
+                ? [$warehouse->input_location_id, [$warehouse->quality_location_id, $receivingLocationId]]
+                : [$receivingLocationId, []],
+            default => [$receivingLocationId, []],
+        };
+
+        $firstMove = $this->stockMoves->move(
             tenantId: $po->tenant_id,
             product: $product,
             fromLocationId: null,
-            toLocationId: $receivingLocationId,
+            toLocationId: $firstInboundTo,
             qty: $qty,
             uom: $uom,
             referenceType: 'purchase_order_line',
@@ -111,37 +132,98 @@ class PurchaseOrderService
             lotId: $lotId,
         );
 
-        $this->costing->recordInbound($product, $move, $move->qty, $line->unit_price);
+        $this->costing->recordInbound($product, $firstMove, $firstMove->qty, $line->unit_price);
 
-        $destinationId = $this->putaway->resolveDestination($product, $receivingLocationId);
-
-        if ($destinationId !== null && $destinationId !== $receivingLocationId) {
+        $currentLocation = $firstInboundTo;
+        foreach ($intermediateChain as $nextLocation) {
             $this->stockMoves->move(
                 tenantId: $po->tenant_id,
                 product: $product,
-                fromLocationId: $receivingLocationId,
-                toLocationId: $destinationId,
-                qty: bcmul($move->qty, '-1', 4),
+                fromLocationId: $currentLocation,
+                toLocationId: $nextLocation,
+                qty: bcmul($firstMove->qty, '-1', 4),
                 uom: $product->uom,
                 referenceType: 'purchase_order_line',
                 referenceId: $line->id,
                 lotId: $lotId,
             );
-
             $this->stockMoves->move(
                 tenantId: $po->tenant_id,
                 product: $product,
-                fromLocationId: $receivingLocationId,
-                toLocationId: $destinationId,
-                qty: $move->qty,
+                fromLocationId: $currentLocation,
+                toLocationId: $nextLocation,
+                qty: $firstMove->qty,
                 uom: $product->uom,
                 referenceType: 'purchase_order_line',
                 referenceId: $line->id,
                 lotId: $lotId,
             );
+            $currentLocation = $nextLocation;
         }
 
-        PurchaseOrderLineReceived::dispatch($line, $move);
+        // Putaway sadece 1-step'te uygulanır — multi-step zaten hedefe zincirle taşıdı.
+        if ($steps === 'one_step') {
+            $destinationId = $this->putaway->resolveDestination($product, $receivingLocationId);
+
+            if ($destinationId !== null && $destinationId !== $receivingLocationId) {
+                $this->stockMoves->move(
+                    tenantId: $po->tenant_id,
+                    product: $product,
+                    fromLocationId: $receivingLocationId,
+                    toLocationId: $destinationId,
+                    qty: bcmul($firstMove->qty, '-1', 4),
+                    uom: $product->uom,
+                    referenceType: 'purchase_order_line',
+                    referenceId: $line->id,
+                    lotId: $lotId,
+                );
+
+                $this->stockMoves->move(
+                    tenantId: $po->tenant_id,
+                    product: $product,
+                    fromLocationId: $receivingLocationId,
+                    toLocationId: $destinationId,
+                    qty: $firstMove->qty,
+                    uom: $product->uom,
+                    referenceType: 'purchase_order_line',
+                    referenceId: $line->id,
+                    lotId: $lotId,
+                );
+            }
+        }
+
+        PurchaseOrderLineReceived::dispatch($line, $firstMove);
+    }
+
+    /**
+     * Odoo `stock.return.picking` denkliği: teslim alınmış bir kalemi
+     * tedarikçiye geri gönderir. Ters yönde stock_move üretir; kaynak
+     * ürün kabul edilmiş lokasyondan çıkar. Maliyet katmanı yeni bir
+     * çıkış olarak `consumeOutbound` ile tüketilir.
+     */
+    public function returnReceipt(PurchaseOrderLine $line, string $qty, int $fromLocationId, ?int $lotId = null): void
+    {
+        abort_if(bccomp($qty, '0', 4) <= 0, 422, __('Return quantity must be positive.'));
+
+        $received = $line->receivedQty();
+        abort_if(bccomp($qty, $received, 4) > 0, 422, __('Return quantity cannot exceed the received quantity.'));
+
+        $product = Product::withoutGlobalScopes()->findOrFail($line->product_id);
+        $uom = $line->uom;
+
+        $move = $this->stockMoves->move(
+            tenantId: $line->tenant_id,
+            product: $product,
+            fromLocationId: $fromLocationId,
+            toLocationId: null,
+            qty: '-'.$qty,
+            uom: $uom,
+            referenceType: 'purchase_order_line_return',
+            referenceId: $line->id,
+            lotId: $lotId,
+        );
+
+        $this->costing->consumeOutbound($product, $move, bcmul($move->qty, '-1', 4));
     }
 
     public function cancel(PurchaseOrder $po): void
