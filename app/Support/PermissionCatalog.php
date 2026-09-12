@@ -34,6 +34,7 @@ final class PermissionCatalog
                 'approve landed costs',
                 'manage routes',
                 'manage reordering rules',
+                'perform scrap operations',
             ],
             'sales' => [
                 'create sales orders',

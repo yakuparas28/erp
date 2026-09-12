@@ -50,6 +50,26 @@ Teşekkürler,
 {{uygulama_adi}}
 MD,
             ],
+            [
+                'key' => 'sales_order_quotation',
+                'name' => 'Satış Teklifi E-postası',
+                'subject' => '{{firma_adi}} — Teklif #{{teklif_no}}',
+                'body' => <<<'MD'
+# Sayın {{musteri_adi}},
+
+**{{firma_adi}}** olarak talebinize istinaden **#{{teklif_no}}** numaralı teklifimizi aşağıda sunuyoruz.
+
+- **Teklif Toplam:** {{toplam}}
+- **Geçerlilik Tarihi:** {{gecerlilik_tarihi}}
+
+Teklifi görüntülemek için [bu bağlantıya]({{teklif_baglantisi}}) tıklayabilirsiniz.
+
+Teklifiniz için teşekkür ederiz. Sorularınız için bize ulaşmaktan çekinmeyin.
+
+Saygılarımızla,
+{{firma_adi}}
+MD,
+            ],
         ];
 
         foreach ($templates as $attributes) {

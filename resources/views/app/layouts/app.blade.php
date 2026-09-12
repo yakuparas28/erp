@@ -103,69 +103,174 @@
                         </li>
                         @if (auth()->user()?->can('view stock') || auth()->user()?->can('manage products') || auth()->user()?->can('manage warehouses') || auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers') || auth()->user()?->can('manage partners') || auth()->user()?->can('manage routes') || auth()->user()?->can('manage reordering rules'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Inventory') }}</span></li>
+
+                            @if (auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers') || auth()->user()?->can('manage reordering rules') || auth()->user()?->can('perform scrap operations') || auth()->user()?->can('approve landed costs'))
+                                <li class="menu-title" aria-disabled="true"><span class="text-xs opacity-70">— {{ __('Operations') }}</span></li>
+                                @can('manage warehouse transfers')
+                                    <li>
+                                        <a href="{{ route('app.inventory.transfers.index') }}" class="{{ request()->routeIs('app.inventory.transfers.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-arrows-left-right"></i><span>{{ __('Transfers') }}</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('app.inventory.transfer-batches.index') }}" class="{{ request()->routeIs('app.inventory.transfer-batches.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-stack-plus"></i><span>{{ __('Batch Transfers') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+                                @can('perform stock counts')
+                                    <li>
+                                        <a href="{{ route('app.inventory.adjustments.index') }}" class="{{ request()->routeIs('app.inventory.adjustments.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-clipboard-text"></i><span>{{ __('Stock Counts') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+                                @can('perform scrap operations')
+                                    <li>
+                                        <a href="{{ route('app.inventory.scraps.index') }}" class="{{ request()->routeIs('app.inventory.scraps.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-trash"></i><span>{{ __('Scrap') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+                                @can('perform stock counts')
+                                    <li>
+                                        <a href="{{ route('app.inventory.barcode.index') }}" class="{{ request()->routeIs('app.inventory.barcode.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-barcode"></i><span>{{ __('Barcode Operator') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+                                @can('manage reordering rules')
+                                    <li>
+                                        <a href="{{ route('app.inventory.reordering.index') }}" class="{{ request()->routeIs('app.inventory.reordering.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-arrows-clockwise"></i><span>{{ __('Replenishment') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+                                @can('approve landed costs')
+                                    <li>
+                                        <a href="{{ route('app.inventory.landed-costs.index') }}" class="{{ request()->routeIs('app.inventory.landed-costs.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-cardholder"></i><span>{{ __('Landed Costs') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+                            @endif
+
                             @can('manage products')
+                                <li class="menu-title" aria-disabled="true"><span class="text-xs opacity-70">— {{ __('Products') }}</span></li>
                                 <li>
-                                    <a href="{{ route('app.inventory.products.index') }}" class="{{ request()->routeIs('app.inventory.products.*') ? 'active' : '' }}">
+                                    <a href="{{ route('app.inventory.products.index') }}" class="{{ request()->routeIs('app.inventory.products.*') || request()->routeIs('app.inventory.templates.*') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-package"></i><span>{{ __('Products') }}</span>
                                     </a>
                                 </li>
-                            @endcan
-                            @can('manage warehouses')
                                 <li>
-                                    <a href="{{ route('app.inventory.warehouses.index') }}" class="{{ request()->routeIs('app.inventory.warehouses.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-warehouse"></i><span>{{ __('Warehouses') }}</span>
+                                    <a href="{{ route('app.inventory.categories.index') }}" class="{{ request()->routeIs('app.inventory.categories.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-folders"></i><span>{{ __('Product Categories') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('app.inventory.attributes.index') }}" class="{{ request()->routeIs('app.inventory.attributes.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-swatches"></i><span>{{ __('Attributes') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('app.inventory.lots.index') }}" class="{{ request()->routeIs('app.inventory.lots.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-barcode"></i><span>{{ __('Lots / Serial Numbers') }}</span>
                                     </a>
                                 </li>
                             @endcan
+
                             @can('view stock')
+                                <li class="menu-title" aria-disabled="true"><span class="text-xs opacity-70">— {{ __('Reporting') }}</span></li>
                                 <li>
                                     <a href="{{ route('app.inventory.stock.index') }}" class="{{ request()->routeIs('app.inventory.stock.*') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-stack"></i><span>{{ __('Stock') }}</span>
                                     </a>
                                 </li>
-                            @endcan
-                            @can('perform stock counts')
                                 <li>
-                                    <a href="{{ route('app.inventory.adjustments.index') }}" class="{{ request()->routeIs('app.inventory.adjustments.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-clipboard-text"></i><span>{{ __('Stock Counts') }}</span>
+                                    <a href="{{ route('app.inventory.reports.moves') }}" class="{{ request()->routeIs('app.inventory.reports.moves') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-clock-counter-clockwise"></i><span>{{ __('Moves History') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('app.inventory.reports.valuation') }}" class="{{ request()->routeIs('app.inventory.reports.valuation') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-calculator"></i><span>{{ __('Inventory Valuation') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('app.inventory.reports.locations') }}" class="{{ request()->routeIs('app.inventory.reports.locations') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-map-pin"></i><span>{{ __('Locations Report') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('app.inventory.reports.forecasted') }}" class="{{ request()->routeIs('app.inventory.reports.forecasted') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-chart-line-up"></i><span>{{ __('Forecasted Report') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('app.inventory.reports.warehouse-analysis') }}" class="{{ request()->routeIs('app.inventory.reports.warehouse-analysis') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-chart-bar"></i><span>{{ __('Warehouse Analysis') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('app.inventory.reports.consignment') }}" class="{{ request()->routeIs('app.inventory.reports.consignment') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-handshake"></i><span>{{ __('Consignment Report') }}</span>
                                     </a>
                                 </li>
                             @endcan
-                            @can('manage warehouse transfers')
-                                <li>
-                                    <a href="{{ route('app.inventory.transfers.index') }}" class="{{ request()->routeIs('app.inventory.transfers.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-arrows-left-right"></i><span>{{ __('Transfers') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('manage partners')
-                                <li>
-                                    <a href="{{ route('app.inventory.partners.index') }}" class="{{ request()->routeIs('app.inventory.partners.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-handshake"></i><span>{{ __('Partners') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('manage routes')
-                                <li>
-                                    <a href="{{ route('app.inventory.putaway.index') }}" class="{{ request()->routeIs('app.inventory.putaway.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-map-pin-line"></i><span>{{ __('Putaway Rules') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('manage reordering rules')
-                                <li>
-                                    <a href="{{ route('app.inventory.reordering.index') }}" class="{{ request()->routeIs('app.inventory.reordering.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-arrows-clockwise"></i><span>{{ __('Reordering') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('manage routes')
-                                <li>
-                                    <a href="{{ route('app.inventory.routes.index') }}" class="{{ request()->routeIs('app.inventory.routes.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-flow-arrow"></i><span>{{ __('Routes') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
+
+                            @if (auth()->user()?->can('manage warehouses') || auth()->user()?->can('manage partners') || auth()->user()?->can('manage routes'))
+                                <li class="menu-title" aria-disabled="true"><span class="text-xs opacity-70">— {{ __('Configuration') }}</span></li>
+                                @can('manage warehouses')
+                                    <li>
+                                        <a href="{{ route('app.inventory.warehouses.index') }}" class="{{ request()->routeIs('app.inventory.warehouses.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-warehouse"></i><span>{{ __('Warehouses') }}</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('app.inventory.operation-types.index') }}" class="{{ request()->routeIs('app.inventory.operation-types.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-list-checks"></i><span>{{ __('Operation Types') }}</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('app.inventory.storage-categories.index') }}" class="{{ request()->routeIs('app.inventory.storage-categories.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-stack-simple"></i><span>{{ __('Storage Categories') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+                                @can('manage products')
+                                    <li>
+                                        <a href="{{ route('app.inventory.uoms.index') }}" class="{{ request()->routeIs('app.inventory.uoms.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-ruler"></i><span>{{ __('Units of Measure') }}</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('app.inventory.package-types.index') }}" class="{{ request()->routeIs('app.inventory.package-types.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-package"></i><span>{{ __('Package Types') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+                                @can('manage partners')
+                                    <li>
+                                        <a href="{{ route('app.inventory.partners.index') }}" class="{{ request()->routeIs('app.inventory.partners.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-handshake"></i><span>{{ __('Partners') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+                                @can('manage routes')
+                                    <li>
+                                        <a href="{{ route('app.inventory.routes.index') }}" class="{{ request()->routeIs('app.inventory.routes.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-flow-arrow"></i><span>{{ __('Routes') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+                                @can('manage routes')
+                                    <li>
+                                        <a href="{{ route('app.inventory.putaway.index') }}" class="{{ request()->routeIs('app.inventory.putaway.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-map-pin-line"></i><span>{{ __('Putaway Rules') }}</span>
+                                        </a>
+                                    </li>
+                                @endcan
+                            @endif
                         @endif
                         @if (auth()->user()?->can('create purchase orders') || auth()->user()?->can('confirm purchase orders'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Purchasing') }}</span></li>
@@ -178,10 +283,22 @@
                         @if (auth()->user()?->can('create sales orders') || auth()->user()?->can('confirm sales orders'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Sales') }}</span></li>
                             <li>
+                                <a href="{{ route('app.sales.quotations.index') }}" class="{{ request()->routeIs('app.sales.quotations.*') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-file-text"></i><span>{{ __('Quotations') }}</span>
+                                </a>
+                            </li>
+                            <li>
                                 <a href="{{ route('app.sales.orders.index') }}" class="{{ request()->routeIs('app.sales.orders.*') ? 'active' : '' }}">
                                     <i class="ph-duotone ph-receipt"></i><span>{{ __('Sales Orders') }}</span>
                                 </a>
                             </li>
+                            @can('create sales orders')
+                                <li>
+                                    <a href="{{ route('app.sales.carriers.index') }}" class="{{ request()->routeIs('app.sales.carriers.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-truck"></i><span>{{ __('Delivery Carriers') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
                         @endif
                         @if (auth()->user()?->can('manage chart of accounts') || auth()->user()?->can('post journal entries') || auth()->user()?->can('register payments'))
                             <li class="menu-title" aria-disabled="true"><span>{{ __('Accounting') }}</span></li>
@@ -189,6 +306,13 @@
                                 <li>
                                     <a href="{{ route('app.accounting.accounts.index') }}" class="{{ request()->routeIs('app.accounting.accounts.*') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-book-open-text"></i><span>{{ __('Chart of Accounts') }}</span>
+                                    </a>
+                                </li>
+                            @endcan
+                            @can('manage chart of accounts')
+                                <li>
+                                    <a href="{{ route('app.accounting.currencies.index') }}" class="{{ request()->routeIs('app.accounting.currencies.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-coin"></i><span>{{ __('Currencies') }}</span>
                                     </a>
                                 </li>
                             @endcan

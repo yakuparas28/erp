@@ -20,5 +20,9 @@ class DatabaseSeeder extends Seeder
             ['email' => 'admin@erp.test'],
             ['name' => 'Platform Yöneticisi', 'password' => 'password'],
         );
+
+        if (app()->environment(['local', 'development'])) {
+            $this->call(FullDemoSeeder::class);
+        }
     }
 }
