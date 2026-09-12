@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Inventory;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Product;
@@ -105,6 +106,7 @@ class RouteScreensTest extends TenantTestCase
             'from_location_id' => $dock->id,
             'to_location_id' => $shipping->id,
             'action' => 'push',
+            'procure_method' => 'make_to_stock',
             'sequence' => 1,
         ])->assertRedirect();
 
@@ -114,8 +116,112 @@ class RouteScreensTest extends TenantTestCase
             'from_location_id' => $dock->id,
             'to_location_id' => $shipping->id,
             'action' => 'push',
+            'procure_method' => 'make_to_stock',
             'sequence' => 1,
         ]);
+    }
+
+    public function test_rule_can_be_created_as_buy_action(): void
+    {
+        $route = Route::factory()->create(['tenant_id' => $this->tenant->id]);
+        $supplier = Location::factory()->create(['tenant_id' => $this->tenant->id, 'type' => 'supplier']);
+        $stock = $this->location('Stok');
+
+        $this->actingAs($this->tenantAdmin)->post("/app/inventory/routes/{$route->id}/rules", [
+            'name' => 'Tedarikçiden Al',
+            'from_location_id' => $supplier->id,
+            'to_location_id' => $stock->id,
+            'action' => 'buy',
+            'procure_method' => 'make_to_order',
+            'sequence' => 1,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('route_rules', [
+            'route_id' => $route->id,
+            'name' => 'Tedarikçiden Al',
+            'action' => 'buy',
+            'procure_method' => 'make_to_order',
+        ]);
+    }
+
+    public function test_cross_tenant_rule_update_returns_not_found(): void
+    {
+        $otherTenant = Tenant::factory()->create();
+        $route = Route::factory()->create(['tenant_id' => $otherTenant->id]);
+        $loc = Location::factory()->create(['tenant_id' => $otherTenant->id]);
+        $rule = RouteRule::factory()->create([
+            'tenant_id' => $otherTenant->id,
+            'route_id' => $route->id,
+            'from_location_id' => $loc->id,
+            'to_location_id' => $loc->id,
+            'action' => 'push',
+            'procure_method' => 'make_to_stock',
+            'sequence' => 1,
+        ]);
+
+        $this->actingAs($this->tenantAdmin)
+            ->patch("/app/inventory/routes/rules/{$rule->id}", [
+                'from_location_id' => $loc->id,
+                'to_location_id' => $loc->id,
+                'action' => 'push',
+                'procure_method' => 'make_to_stock',
+                'sequence' => 5,
+            ])
+            ->assertNotFound();
+
+        $this->assertSame(1, $rule->fresh()->sequence);
+    }
+
+    public function test_cross_tenant_rule_delete_returns_not_found(): void
+    {
+        $otherTenant = Tenant::factory()->create();
+        $route = Route::factory()->create(['tenant_id' => $otherTenant->id]);
+        $loc = Location::factory()->create(['tenant_id' => $otherTenant->id]);
+        $rule = RouteRule::factory()->create([
+            'tenant_id' => $otherTenant->id,
+            'route_id' => $route->id,
+            'from_location_id' => $loc->id,
+            'to_location_id' => $loc->id,
+            'action' => 'push',
+            'procure_method' => 'make_to_stock',
+            'sequence' => 1,
+        ]);
+
+        $this->actingAs($this->tenantAdmin)
+            ->delete("/app/inventory/routes/rules/{$rule->id}")
+            ->assertNotFound();
+
+        $this->assertNotNull($rule->fresh());
+    }
+
+    public function test_rule_can_be_updated_and_deleted(): void
+    {
+        $route = Route::factory()->create(['tenant_id' => $this->tenant->id]);
+        $dock = $this->location('Mal Kabul');
+        $stock = $this->location('Stok');
+        $rule = RouteRule::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'route_id' => $route->id,
+            'from_location_id' => $dock->id,
+            'to_location_id' => $stock->id,
+            'action' => 'push',
+            'procure_method' => 'make_to_stock',
+            'sequence' => 1,
+        ]);
+
+        $this->actingAs($this->tenantAdmin)->patch("/app/inventory/routes/rules/{$rule->id}", [
+            'name' => 'Güncel Ad',
+            'from_location_id' => $dock->id,
+            'to_location_id' => $stock->id,
+            'action' => 'pull',
+            'procure_method' => 'make_to_order',
+            'sequence' => 5,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('route_rules', ['id' => $rule->id, 'name' => 'Güncel Ad', 'action' => 'pull', 'sequence' => 5]);
+
+        $this->actingAs($this->tenantAdmin)->delete("/app/inventory/routes/rules/{$rule->id}")->assertRedirect();
+        $this->assertDatabaseMissing('route_rules', ['id' => $rule->id]);
     }
 
     public function test_executing_two_step_push_route_chains_moves_to_final_location(): void

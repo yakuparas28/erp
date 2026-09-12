@@ -19,7 +19,9 @@ class RouteRule extends Model
         'from_location_id',
         'to_location_id',
         'action',
+        'procure_method',
         'sequence',
+        'name',
     ];
 
     protected static function newFactory(): RouteRuleFactory

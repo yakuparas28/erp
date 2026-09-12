@@ -45,4 +45,39 @@ class RouteService
             );
         }
     }
+
+    /**
+     * Odoo `stock.rule.pull` denkliği: müşteri talebi (SO onayı gibi)
+     * tetiklendiğinde ilk kaynaktan son hedefe doğru zincirleme çıkar.
+     * Push'tan farkı yalnızca tetikleme noktası — Odoo push=makbuz sonrası,
+     * pull=talep öncesi. Fiziksel akış (dolayısıyla sequence yönü) aynı.
+     */
+    public function executePull(Route $route, Product $product, string $qty, Uom $uom): void
+    {
+        $rules = $route->rules()->where('action', 'pull')->orderBy('sequence')->get();
+
+        foreach ($rules as $rule) {
+            $this->stockMoves->move(
+                tenantId: $route->tenant_id,
+                product: $product,
+                fromLocationId: $rule->from_location_id,
+                toLocationId: $rule->to_location_id,
+                qty: bcmul($qty, '-1', 4),
+                uom: $uom,
+                referenceType: 'route_rule',
+                referenceId: $rule->id,
+            );
+
+            $this->stockMoves->move(
+                tenantId: $route->tenant_id,
+                product: $product,
+                fromLocationId: $rule->from_location_id,
+                toLocationId: $rule->to_location_id,
+                qty: $qty,
+                uom: $uom,
+                referenceType: 'route_rule',
+                referenceId: $rule->id,
+            );
+        }
+    }
 }

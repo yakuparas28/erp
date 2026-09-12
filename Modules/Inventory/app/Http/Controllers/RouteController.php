@@ -5,10 +5,12 @@ namespace Modules\Inventory\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\Route as RouteModel;
+use Modules\Inventory\Models\RouteRule;
 use Modules\Inventory\Models\Uom;
 use Modules\Inventory\Services\RouteService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -45,16 +47,46 @@ class RouteController extends Controller
 
     public function storeRule(Request $request, RouteModel $route): RedirectResponse
     {
+        $tenantId = $request->user()->tenant_id;
+
         $validated = $request->validate([
-            'from_location_id' => ['required', 'exists:locations,id'],
-            'to_location_id' => ['required', 'exists:locations,id', 'different:from_location_id'],
-            'action' => ['required', 'in:push,pull'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'from_location_id' => ['required', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'to_location_id' => ['required', 'different:from_location_id', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'action' => ['required', 'in:push,pull,manufacture,buy'],
+            'procure_method' => ['required', 'in:make_to_stock,make_to_order'],
             'sequence' => ['required', 'integer', 'min:0'],
         ]);
 
         $route->rules()->create($validated);
 
         return redirect()->route('app.inventory.routes.show', $route)->with('status', __('Route rule added.'));
+    }
+
+    public function updateRule(Request $request, RouteRule $rule): RedirectResponse
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        $validated = $request->validate([
+            'name' => ['nullable', 'string', 'max:255'],
+            'from_location_id' => ['required', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'to_location_id' => ['required', 'different:from_location_id', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'action' => ['required', 'in:push,pull,manufacture,buy'],
+            'procure_method' => ['required', 'in:make_to_stock,make_to_order'],
+            'sequence' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $rule->update($validated);
+
+        return redirect()->route('app.inventory.routes.show', $rule->route_id)->with('status', __('Route rule updated.'));
+    }
+
+    public function destroyRule(RouteRule $rule): RedirectResponse
+    {
+        $routeId = $rule->route_id;
+        $rule->delete();
+
+        return redirect()->route('app.inventory.routes.show', $routeId)->with('status', __('Route rule removed.'));
     }
 
     public function execute(Request $request, RouteModel $route): RedirectResponse
