@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Hr\Http\Controllers\ConsumptionRuleController;
 use Modules\Hr\Http\Controllers\DepartmentController;
 use Modules\Hr\Http\Controllers\EmployeeController;
 use Modules\Hr\Http\Controllers\LeaveApprovalController;
@@ -60,5 +61,11 @@ Route::middleware(['auth:web', 'module:hr'])->prefix('app/hr')->name('app.hr.')-
         Route::post('/leave-config/critical-dates', [LeaveConfigController::class, 'storeCriticalDate'])->name('leave-config.critical-dates.store');
         Route::delete('/leave-config/critical-dates/{criticalDate}', [LeaveConfigController::class, 'destroyCriticalDate'])->name('leave-config.critical-dates.destroy');
         Route::post('/leave-config/hour-configs', [LeaveConfigController::class, 'storeHourConfig'])->name('leave-config.hour-configs.store');
+        Route::delete('/leave-config/hour-configs/{leaveHourConfig}', [LeaveConfigController::class, 'destroyHourConfig'])->name('leave-config.hour-configs.destroy');
+
+        Route::get('/consumption-rules', [ConsumptionRuleController::class, 'index'])->name('consumption-rules.index');
+        Route::post('/consumption-rules', [ConsumptionRuleController::class, 'store'])->name('consumption-rules.store');
+        Route::patch('/consumption-rules/{consumptionRule}', [ConsumptionRuleController::class, 'update'])->name('consumption-rules.update');
+        Route::delete('/consumption-rules/{consumptionRule}', [ConsumptionRuleController::class, 'destroy'])->name('consumption-rules.destroy');
     });
 });

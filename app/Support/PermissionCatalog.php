@@ -57,6 +57,7 @@ final class PermissionCatalog
                 'view leave monitoring',
                 'manage leave balances',
                 'manage leave configuration',
+                'manage consumption rules',
             ],
         ];
     }

@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Modules\Hr\Models\CriticalDate;
 use Modules\Hr\Models\Employee;
+use Modules\Hr\Models\LeaveHourConfig;
 use Modules\Hr\Models\LeaveRequest;
 use Modules\Hr\Models\LeaveType;
 
@@ -98,6 +99,20 @@ class LeaveRequestService
     private function assertBalanceAvailable(Employee $employee, LeaveType $type, string $totalDays): void
     {
         if (! $type->deducts_from_balance) {
+            return;
+        }
+
+        // Departman-özel veya platform geneli negative_balance_policy: 'lenient'
+        // ise personelin bakiyesi eksiye düşebilir (bir sonraki hakedişten
+        // mahsup edilir); 'strict' varsayılan davranıştır.
+        $config = LeaveHourConfig::where('tenant_id', $employee->tenant_id)
+            ->where(function ($q) use ($employee) {
+                $q->where('department_id', $employee->department_id)->orWhereNull('department_id');
+            })
+            ->orderByRaw('CASE WHEN department_id IS NULL THEN 1 ELSE 0 END')
+            ->first();
+
+        if ($config?->negative_balance_policy === 'lenient') {
             return;
         }
 

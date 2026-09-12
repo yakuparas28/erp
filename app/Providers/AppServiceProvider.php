@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\Payment;
+use Modules\Hr\Models\ConsumptionRule;
 use Modules\Hr\Models\CriticalDate;
 use Modules\Hr\Models\Department;
 use Modules\Hr\Models\Employee;
@@ -122,6 +123,7 @@ class AppServiceProvider extends ServiceProvider
             'leave_hour_config' => LeaveHourConfig::class,
             'holiday' => Holiday::class,
             'critical_date' => CriticalDate::class,
+            'consumption_rule' => ConsumptionRule::class,
         ]);
     }
 }

@@ -457,6 +457,11 @@
                                                 <i class="ph-duotone ph-gear-six"></i><span>{{ __('Leave Configuration') }}</span>
                                             </a>
                                         </li>
+                                        <li>
+                                            <a href="{{ route('app.hr.consumption-rules.index') }}" class="{{ request()->routeIs('app.hr.consumption-rules.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-scroll"></i><span>{{ __('Consumption & Accrual Rules') }}</span>
+                                            </a>
+                                        </li>
                                     @endcan
                                 </ul>
                             </li>
