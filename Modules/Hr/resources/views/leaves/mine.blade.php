@@ -103,7 +103,7 @@
                 <div class="p-4 space-y-3">
                     <div>
                         <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Type') }} <span class="text-danger">*</span></label>
-                        <select name="leave_type_id" class="form-control" required>
+                        <select name="leave_type_id" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
                             <option value="">{{ __('Select type') }}</option>
                             @foreach ($leaveTypes as $t)
                                 <option value="{{ $t->id }}">{{ $t->name }}</option>
@@ -113,16 +113,16 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('From') }} <span class="text-danger">*</span></label>
-                            <input type="date" name="start_date" class="form-control" required>
+                            <input type="date" name="start_date" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('To') }} <span class="text-danger">*</span></label>
-                            <input type="date" name="end_date" class="form-control" required>
+                            <input type="date" name="end_date" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
                         </div>
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Half day') }}</label>
-                        <select name="half_day_type" class="form-control">
+                        <select name="half_day_type" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
                             <option value="">—</option>
                             <option value="morning">{{ __('Morning') }}</option>
                             <option value="afternoon">{{ __('Afternoon') }}</option>
@@ -130,7 +130,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Reason') }}</label>
-                        <textarea name="reason" rows="3" class="form-control" placeholder="{{ __('Optional description') }}"></textarea>
+                        <textarea name="reason" rows="3" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" placeholder="{{ __('Optional description') }}"></textarea>
                     </div>
                     <label class="flex items-center gap-2 text-sm">
                         <input type="hidden" name="travel_allowance_requested" value="0">

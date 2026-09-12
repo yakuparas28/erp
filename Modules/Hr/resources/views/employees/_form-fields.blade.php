@@ -4,7 +4,7 @@
 <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
     <div class="sm:col-span-2">
         <label class="block text-sm text-gray-900 mb-1">{{ __('System User') }} <span class="text-danger">*</span></label>
-        <select name="user_id" class="form-control" required>
+        <select name="user_id" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
             <option value="">{{ __('Select user') }}</option>
             @foreach ($availableUsers as $u)
                 <option value="{{ $u->id }}" @selected($employee?->user_id === $u->id)>{{ $u->name }} — {{ $u->email }}</option>
@@ -13,19 +13,19 @@
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('First Name') }} <span class="text-danger">*</span></label>
-        <input type="text" name="first_name" value="{{ old('first_name', $employee?->first_name) }}" class="form-control" required maxlength="100">
+        <input type="text" name="first_name" value="{{ old('first_name', $employee?->first_name) }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required maxlength="100">
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('Last Name') }} <span class="text-danger">*</span></label>
-        <input type="text" name="last_name" value="{{ old('last_name', $employee?->last_name) }}" class="form-control" required maxlength="100">
+        <input type="text" name="last_name" value="{{ old('last_name', $employee?->last_name) }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required maxlength="100">
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('Title') }}</label>
-        <input type="text" name="title" value="{{ old('title', $employee?->title) }}" class="form-control" maxlength="100">
+        <input type="text" name="title" value="{{ old('title', $employee?->title) }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" maxlength="100">
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('Department') }}</label>
-        <select name="department_id" class="form-control">
+        <select name="department_id" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
             <option value="">—</option>
             @foreach ($departments as $d)
                 <option value="{{ $d->id }}" @selected($employee?->department_id === $d->id)>{{ $d->name }}</option>
@@ -34,7 +34,7 @@
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('Manager') }}</label>
-        <select name="manager_id" class="form-control">
+        <select name="manager_id" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
             <option value="">—</option>
             @foreach ($managers as $m)
                 <option value="{{ $m->id }}" @selected($employee?->manager_id === $m->id)>{{ $m->full_name }}</option>
@@ -43,23 +43,23 @@
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('Hire Date') }}</label>
-        <input type="date" name="hire_date" value="{{ old('hire_date', $employee?->hire_date?->format('Y-m-d')) }}" class="form-control">
+        <input type="date" name="hire_date" value="{{ old('hire_date', $employee?->hire_date?->format('Y-m-d')) }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('Birth Date') }}</label>
-        <input type="date" name="birth_date" value="{{ old('birth_date', $employee?->birth_date?->format('Y-m-d')) }}" class="form-control">
+        <input type="date" name="birth_date" value="{{ old('birth_date', $employee?->birth_date?->format('Y-m-d')) }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('National ID') }}</label>
-        <input type="text" name="national_id" value="{{ old('national_id', $employee?->national_id) }}" class="form-control" maxlength="20">
+        <input type="text" name="national_id" value="{{ old('national_id', $employee?->national_id) }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" maxlength="20">
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('Mobile') }}</label>
-        <input type="text" name="mobile" value="{{ old('mobile', $employee?->mobile) }}" class="form-control" maxlength="30">
+        <input type="text" name="mobile" value="{{ old('mobile', $employee?->mobile) }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" maxlength="30">
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('Annual Leave Balance') }}</label>
-        <input type="number" step="0.5" min="0" name="annual_leave_balance" value="{{ old('annual_leave_balance', $employee?->annual_leave_balance ?? 14) }}" class="form-control">
+        <input type="number" step="0.5" min="0" name="annual_leave_balance" value="{{ old('annual_leave_balance', $employee?->annual_leave_balance ?? 14) }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
     </div>
     <div class="flex items-center gap-2 pt-6">
         <input type="hidden" name="second_level_approval_required" value="0">

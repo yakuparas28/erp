@@ -9,7 +9,7 @@
         <p class="text-sm text-default mb-0">{{ __('Year') }}: <strong class="text-title">{{ $year }}</strong></p>
     </div>
     <form method="GET" class="flex items-center gap-2">
-        <input type="number" name="year" value="{{ $year }}" min="2020" max="2100" class="form-control w-24 h-8 text-sm">
+        <input type="number" name="year" value="{{ $year }}" min="2020" max="2100" class="w-24 h-8 px-3 py-1 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
         <button type="submit" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light">{{ __('Filter') }}</button>
     </form>
 </div>
@@ -82,19 +82,19 @@
                     <div class="p-4 space-y-3">
                         <div>
                             <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Carried from previous') }}</label>
-                            <input type="number" step="0.5" name="carried_from_previous" value="{{ $b?->carried_from_previous ?? 0 }}" class="form-control">
+                            <input type="number" step="0.5" name="carried_from_previous" value="{{ $b?->carried_from_previous ?? 0 }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Annual Entitlement') }} <span class="text-danger">*</span></label>
-                            <input type="number" step="0.5" name="current_year_entitlement" value="{{ $b?->current_year_entitlement ?? 14 }}" class="form-control" required>
+                            <input type="number" step="0.5" name="current_year_entitlement" value="{{ $b?->current_year_entitlement ?? 14 }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Manual Adjustment') }}</label>
-                            <input type="number" step="0.5" name="manual_adjustment" value="{{ $b?->manual_adjustment ?? 0 }}" class="form-control">
+                            <input type="number" step="0.5" name="manual_adjustment" value="{{ $b?->manual_adjustment ?? 0 }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
                         </div>
                         <div>
                             <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Adjustment Reason') }}</label>
-                            <textarea name="adjustment_reason" rows="2" class="form-control">{{ $b?->adjustment_reason }}</textarea>
+                            <textarea name="adjustment_reason" rows="2" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">{{ $b?->adjustment_reason }}</textarea>
                         </div>
                     </div>
                     <div class="flex items-center justify-end gap-2 p-4 border-t border-border-color">

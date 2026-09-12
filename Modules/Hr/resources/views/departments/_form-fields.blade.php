@@ -4,11 +4,11 @@
 <div class="p-4 space-y-3">
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('Name') }} <span class="text-danger">*</span></label>
-        <input type="text" name="name" value="{{ old('name', $department?->name) }}" class="form-control" required maxlength="100">
+        <input type="text" name="name" value="{{ old('name', $department?->name) }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required maxlength="100">
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('Parent') }}</label>
-        <select name="parent_id" class="form-control">
+        <select name="parent_id" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
             <option value="">—</option>
             @foreach ($departments as $d)
                 <option value="{{ $d->id }}" @selected($department?->parent_id === $d->id)>{{ $d->name }}</option>
@@ -17,7 +17,7 @@
     </div>
     <div>
         <label class="block text-sm text-gray-900 mb-1">{{ __('Manager') }}</label>
-        <select name="manager_employee_id" class="form-control">
+        <select name="manager_employee_id" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
             <option value="">—</option>
             @foreach ($employees as $e)
                 <option value="{{ $e->id }}" @selected($department?->manager_employee_id === $e->id)>{{ $e->full_name }}</option>

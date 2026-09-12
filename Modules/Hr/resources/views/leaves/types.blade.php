@@ -87,15 +87,15 @@
                 <div class="p-4 grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Key') }} <span class="text-danger">*</span></label>
-                        <input type="text" name="key" class="form-control" required maxlength="40" placeholder="yillik">
+                        <input type="text" name="key" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required maxlength="40" placeholder="yillik">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Name') }} <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" required maxlength="100" placeholder="Yıllık İzin">
+                        <input type="text" name="name" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required maxlength="100" placeholder="Yıllık İzin">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Unit') }} <span class="text-danger">*</span></label>
-                        <select name="unit" class="form-control" required>
+                        <select name="unit" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
                             <option value="day">{{ __('day') }}</option>
                             <option value="half_day">{{ __('half_day') }}</option>
                             <option value="hour">{{ __('hour') }}</option>
@@ -103,7 +103,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Max Days/Year') }}</label>
-                        <input type="number" name="max_days_per_year" min="0" class="form-control">
+                        <input type="number" name="max_days_per_year" min="0" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
                     </div>
                     <div class="col-span-2 space-y-2 text-sm">
                         <label class="flex items-center gap-2"><input type="hidden" name="deducts_from_balance" value="0"><input type="checkbox" name="deducts_from_balance" value="1" checked> {{ __('Deducts from balance') }}</label>

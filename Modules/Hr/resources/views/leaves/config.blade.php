@@ -23,8 +23,8 @@
         <h2 class="text-base font-bold text-title mb-3">{{ __('Holidays') }}</h2>
         <form method="POST" action="{{ route('app.hr.leave-config.holidays.store') }}" class="grid grid-cols-3 gap-2 mb-3">
             @csrf
-            <input type="date" name="date" class="form-control" required>
-            <input type="text" name="name" placeholder="{{ __('Holiday name') }}" class="form-control" required>
+            <input type="date" name="date" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
+            <input type="text" name="name" placeholder="{{ __('Holiday name') }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
             <button type="submit" class="btn-sm bg-dark text-white">{{ __('Add') }}</button>
         </form>
         <table class="w-full text-sm">
@@ -49,10 +49,10 @@
         <h2 class="text-base font-bold text-title mb-3">{{ __('Critical Dates') }}</h2>
         <form method="POST" action="{{ route('app.hr.leave-config.critical-dates.store') }}" class="space-y-2 mb-3">
             @csrf
-            <input type="text" name="name" placeholder="{{ __('Name') }}" class="form-control" required>
+            <input type="text" name="name" placeholder="{{ __('Name') }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
             <div class="grid grid-cols-2 gap-2">
-                <input type="date" name="start_date" class="form-control" required>
-                <input type="date" name="end_date" class="form-control" required>
+                <input type="date" name="start_date" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
+                <input type="date" name="end_date" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
             </div>
             <label class="flex items-center gap-2 text-sm">
                 <input type="hidden" name="block_leave_requests" value="0">
@@ -84,14 +84,14 @@
         <h2 class="text-base font-bold text-title mb-3">{{ __('Hourly Leave Settings') }}</h2>
         <form method="POST" action="{{ route('app.hr.leave-config.hour-configs.store') }}" class="grid grid-cols-4 gap-2 mb-3">
             @csrf
-            <select name="department_id" class="form-control">
+            <select name="department_id" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
                 <option value="">{{ __('Default (all)') }}</option>
                 @foreach ($departments as $d)
                     <option value="{{ $d->id }}">{{ $d->name }}</option>
                 @endforeach
             </select>
-            <input type="number" step="0.5" name="daily_work_hours" placeholder="{{ __('Daily hours') }}" class="form-control" required>
-            <input type="number" step="0.5" name="monthly_leave_hours" placeholder="{{ __('Monthly leave hours') }}" class="form-control" required>
+            <input type="number" step="0.5" name="daily_work_hours" placeholder="{{ __('Daily hours') }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
+            <input type="number" step="0.5" name="monthly_leave_hours" placeholder="{{ __('Monthly leave hours') }}" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0" required>
             <button type="submit" class="btn-sm bg-dark text-white">{{ __('Save') }}</button>
         </form>
         <table class="w-full text-sm">
