@@ -102,7 +102,13 @@
                             </a>
                         </li>
                         @if (auth()->user()?->can('view stock') || auth()->user()?->can('manage products') || auth()->user()?->can('manage warehouses') || auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers') || auth()->user()?->can('manage partners') || auth()->user()?->can('manage routes') || auth()->user()?->can('manage reordering rules'))
-                            <li class="menu-title" aria-disabled="true"><span>{{ __('Inventory') }}</span></li>
+                            @php $inventoryActive = request()->routeIs('app.inventory.*'); @endphp
+                            <li class="submenu {{ $inventoryActive ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="{{ $inventoryActive ? 'active subdrop' : '' }}">
+                                    <i class="ph-duotone ph-package"></i><span>{{ __('Inventory') }}</span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <ul>
 
                             @if (auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers') || auth()->user()?->can('manage reordering rules') || auth()->user()?->can('perform scrap operations') || auth()->user()?->can('approve landed costs'))
                                 <li class="menu-title" aria-disabled="true"><span class="text-xs opacity-70">— {{ __('Operations') }}</span></li>
@@ -271,42 +277,66 @@
                                     </li>
                                 @endcan
                             @endif
+                                </ul>
+                            </li>
                         @endif
                         @module('purchase')
                         @if (auth()->user()?->can('create purchase orders') || auth()->user()?->can('confirm purchase orders'))
-                            <li class="menu-title" aria-disabled="true"><span>{{ __('Purchasing') }}</span></li>
-                            <li>
-                                <a href="{{ route('app.purchase.orders.index') }}" class="{{ request()->routeIs('app.purchase.orders.*') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-shopping-cart"></i><span>{{ __('Purchase Orders') }}</span>
+                            @php $purchaseActive = request()->routeIs('app.purchase.*'); @endphp
+                            <li class="submenu {{ $purchaseActive ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="{{ $purchaseActive ? 'active subdrop' : '' }}">
+                                    <i class="ph-duotone ph-shopping-cart"></i><span>{{ __('Purchasing') }}</span>
+                                    <span class="menu-arrow"></span>
                                 </a>
+                                <ul>
+                                    <li>
+                                        <a href="{{ route('app.purchase.orders.index') }}" class="{{ request()->routeIs('app.purchase.orders.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-shopping-cart"></i><span>{{ __('Purchase Orders') }}</span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         @endif
                         @endmodule
                         @module('sales')
                         @if (auth()->user()?->can('create sales orders') || auth()->user()?->can('confirm sales orders'))
-                            <li class="menu-title" aria-disabled="true"><span>{{ __('Sales') }}</span></li>
-                            <li>
-                                <a href="{{ route('app.sales.quotations.index') }}" class="{{ request()->routeIs('app.sales.quotations.*') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-file-text"></i><span>{{ __('Quotations') }}</span>
+                            @php $salesActive = request()->routeIs('app.sales.*'); @endphp
+                            <li class="submenu {{ $salesActive ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="{{ $salesActive ? 'active subdrop' : '' }}">
+                                    <i class="ph-duotone ph-receipt"></i><span>{{ __('Sales') }}</span>
+                                    <span class="menu-arrow"></span>
                                 </a>
+                                <ul>
+                                    <li>
+                                        <a href="{{ route('app.sales.quotations.index') }}" class="{{ request()->routeIs('app.sales.quotations.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-file-text"></i><span>{{ __('Quotations') }}</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('app.sales.orders.index') }}" class="{{ request()->routeIs('app.sales.orders.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-receipt"></i><span>{{ __('Sales Orders') }}</span>
+                                        </a>
+                                    </li>
+                                    @can('create sales orders')
+                                        <li>
+                                            <a href="{{ route('app.sales.carriers.index') }}" class="{{ request()->routeIs('app.sales.carriers.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-truck"></i><span>{{ __('Delivery Carriers') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                </ul>
                             </li>
-                            <li>
-                                <a href="{{ route('app.sales.orders.index') }}" class="{{ request()->routeIs('app.sales.orders.*') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-receipt"></i><span>{{ __('Sales Orders') }}</span>
-                                </a>
-                            </li>
-                            @can('create sales orders')
-                                <li>
-                                    <a href="{{ route('app.sales.carriers.index') }}" class="{{ request()->routeIs('app.sales.carriers.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-truck"></i><span>{{ __('Delivery Carriers') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
                         @endif
                         @endmodule
                         @module('accounting')
                         @if (auth()->user()?->can('manage chart of accounts') || auth()->user()?->can('post journal entries') || auth()->user()?->can('register payments'))
-                            <li class="menu-title" aria-disabled="true"><span>{{ __('Accounting') }}</span></li>
+                            @php $accountingActive = request()->routeIs('app.accounting.*'); @endphp
+                            <li class="submenu {{ $accountingActive ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="{{ $accountingActive ? 'active subdrop' : '' }}">
+                                    <i class="ph-duotone ph-book-open-text"></i><span>{{ __('Accounting') }}</span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <ul>
                             @can('manage chart of accounts')
                                 <li>
                                     <a href="{{ route('app.accounting.accounts.index') }}" class="{{ request()->routeIs('app.accounting.accounts.*') ? 'active' : '' }}">
@@ -356,101 +386,125 @@
                                     </a>
                                 </li>
                             @endcan
+                                </ul>
+                            </li>
                         @endif
                         @endmodule
                         @module('hr')
-                        @if (auth()->user()?->can('manage employees') || auth()->user()?->can('manage departments'))
-                            <li class="menu-title" aria-disabled="true"><span>{{ __('Human Resources') }}</span></li>
-                            @can('manage employees')
-                                <li>
-                                    <a href="{{ route('app.hr.employees.index') }}" class="{{ request()->routeIs('app.hr.employees.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-users-three"></i><span>{{ __('Employees') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('manage departments')
-                                <li>
-                                    <a href="{{ route('app.hr.departments.index') }}" class="{{ request()->routeIs('app.hr.departments.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-buildings"></i><span>{{ __('Departments') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-                        @endif
-                        <li class="menu-title" aria-disabled="true"><span>{{ __('Leave') }}</span></li>
-                        <li>
-                            <a href="{{ route('app.hr.leaves.mine') }}" class="{{ request()->routeIs('app.hr.leaves.*') ? 'active' : '' }}">
-                                <i class="ph-duotone ph-calendar-check"></i><span>{{ __('My Leave Requests') }}</span>
-                            </a>
-                        </li>
-                        @can('approve leave first level')
-                            <li>
-                                <a href="{{ route('app.hr.leave-approvals.first') }}" class="{{ request()->routeIs('app.hr.leave-approvals.first') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-user-check"></i><span>{{ __('Unit Manager Approvals') }}</span>
+                            @php $hrActive = request()->routeIs('app.hr.*'); @endphp
+                            <li class="submenu {{ $hrActive ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="{{ $hrActive ? 'active subdrop' : '' }}">
+                                    <i class="ph-duotone ph-users"></i><span>{{ __('Human Resources') }}</span>
+                                    <span class="menu-arrow"></span>
                                 </a>
+                                <ul>
+                                    @can('manage employees')
+                                        <li>
+                                            <a href="{{ route('app.hr.employees.index') }}" class="{{ request()->routeIs('app.hr.employees.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-users-three"></i><span>{{ __('Employees') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('manage departments')
+                                        <li>
+                                            <a href="{{ route('app.hr.departments.index') }}" class="{{ request()->routeIs('app.hr.departments.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-buildings"></i><span>{{ __('Departments') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    <li class="menu-title" aria-disabled="true"><span class="text-xs opacity-70">— {{ __('Leave') }}</span></li>
+                                    <li>
+                                        <a href="{{ route('app.hr.leaves.mine') }}" class="{{ request()->routeIs('app.hr.leaves.mine') || request()->routeIs('app.hr.leaves.store') || request()->routeIs('app.hr.leaves.cancel') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-calendar-check"></i><span>{{ __('My Leave Requests') }}</span>
+                                        </a>
+                                    </li>
+                                    @can('approve leave first level')
+                                        <li>
+                                            <a href="{{ route('app.hr.leave-approvals.first') }}" class="{{ request()->routeIs('app.hr.leave-approvals.first') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-user-check"></i><span>{{ __('Unit Manager Approvals') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('approve leave second level')
+                                        <li>
+                                            <a href="{{ route('app.hr.leave-approvals.second') }}" class="{{ request()->routeIs('app.hr.leave-approvals.second') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-check-square"></i><span>{{ __('General Manager Approvals') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('view leave monitoring')
+                                        <li>
+                                            <a href="{{ route('app.hr.leave-monitoring.index') }}" class="{{ request()->routeIs('app.hr.leave-monitoring.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-eye"></i><span>{{ __('Leave Monitoring') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('manage leave balances')
+                                        <li>
+                                            <a href="{{ route('app.hr.leave-balances.index') }}" class="{{ request()->routeIs('app.hr.leave-balances.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-scales"></i><span>{{ __('Leave Balances') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('manage leave configuration')
+                                        <li>
+                                            <a href="{{ route('app.hr.leave-types.index') }}" class="{{ request()->routeIs('app.hr.leave-types.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-tag"></i><span>{{ __('Leave Types') }}</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('app.hr.leave-config.index') }}" class="{{ request()->routeIs('app.hr.leave-config.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-gear-six"></i><span>{{ __('Leave Configuration') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                </ul>
                             </li>
-                        @endcan
-                        @can('approve leave second level')
-                            <li>
-                                <a href="{{ route('app.hr.leave-approvals.second') }}" class="{{ request()->routeIs('app.hr.leave-approvals.second') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-check-square"></i><span>{{ __('General Manager Approvals') }}</span>
-                                </a>
-                            </li>
-                        @endcan
-                        @can('view leave monitoring')
-                            <li>
-                                <a href="{{ route('app.hr.leave-monitoring.index') }}" class="{{ request()->routeIs('app.hr.leave-monitoring.*') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-eye"></i><span>{{ __('Leave Monitoring') }}</span>
-                                </a>
-                            </li>
-                        @endcan
-                        @can('manage leave balances')
-                            <li>
-                                <a href="{{ route('app.hr.leave-balances.index') }}" class="{{ request()->routeIs('app.hr.leave-balances.*') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-scales"></i><span>{{ __('Leave Balances') }}</span>
-                                </a>
-                            </li>
-                        @endcan
-                        @can('manage leave configuration')
-                            <li>
-                                <a href="{{ route('app.hr.leave-types.index') }}" class="{{ request()->routeIs('app.hr.leave-types.*') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-tag"></i><span>{{ __('Leave Types') }}</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('app.hr.leave-config.index') }}" class="{{ request()->routeIs('app.hr.leave-config.*') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-gear-six"></i><span>{{ __('Leave Configuration') }}</span>
-                                </a>
-                            </li>
-                        @endcan
                         @endmodule
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
-                            <li class="menu-title" aria-disabled="true"><span>{{ __('Administration') }}</span></li>
-                            @can('manage users')
-                                <li>
-                                    <a href="{{ route('app.users.index') }}" class="{{ request()->routeIs('app.users.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-users"></i><span>{{ __('Users') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
-                            @can('manage roles')
-                                <li>
-                                    <a href="{{ route('app.roles.index') }}" class="{{ request()->routeIs('app.roles.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-shield-check"></i><span>{{ __('Roles & Permissions') }}</span>
-                                    </a>
-                                </li>
-                            @endcan
+                            @php $adminActive = request()->routeIs('app.users.*') || request()->routeIs('app.roles.*'); @endphp
+                            <li class="submenu {{ $adminActive ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="{{ $adminActive ? 'active subdrop' : '' }}">
+                                    <i class="ph-duotone ph-user-gear"></i><span>{{ __('Administration') }}</span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <ul>
+                                    @can('manage users')
+                                        <li>
+                                            <a href="{{ route('app.users.index') }}" class="{{ request()->routeIs('app.users.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-users"></i><span>{{ __('Users') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('manage roles')
+                                        <li>
+                                            <a href="{{ route('app.roles.index') }}" class="{{ request()->routeIs('app.roles.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-shield-check"></i><span>{{ __('Roles & Permissions') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                </ul>
+                            </li>
                         @endif
                         @if (auth()->user()?->hasRole('Tenant Admin'))
-                            <li class="menu-title" aria-disabled="true"><span>{{ __('Settings') }}</span></li>
-                            <li>
-                                <a href="{{ route('app.settings.mail') }}" class="{{ request()->routeIs('app.settings.mail*') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-envelope-simple"></i><span>{{ __('Email Settings') }}</span>
+                            @php $settingsActive = request()->routeIs('app.settings.*'); @endphp
+                            <li class="submenu {{ $settingsActive ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="{{ $settingsActive ? 'active subdrop' : '' }}">
+                                    <i class="ph-duotone ph-gear"></i><span>{{ __('Settings') }}</span>
+                                    <span class="menu-arrow"></span>
                                 </a>
-                            </li>
-                            <li>
-                                <a href="{{ route('app.settings.templates') }}" class="{{ request()->routeIs('app.settings.templates*') ? 'active' : '' }}">
-                                    <i class="ph-duotone ph-file-text"></i><span>{{ __('Notification Templates') }}</span>
-                                </a>
+                                <ul>
+                                    <li>
+                                        <a href="{{ route('app.settings.mail') }}" class="{{ request()->routeIs('app.settings.mail*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-envelope-simple"></i><span>{{ __('Email Settings') }}</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ route('app.settings.templates') }}" class="{{ request()->routeIs('app.settings.templates*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-file-text"></i><span>{{ __('Notification Templates') }}</span>
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         @endif
                     </ul>
