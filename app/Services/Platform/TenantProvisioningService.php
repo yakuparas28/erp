@@ -10,6 +10,7 @@ use App\Services\Mail\TenantMailer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Modules\Accounting\Services\AccountingDefaultsService;
+use Modules\Hr\Services\HrDefaultsService;
 use Modules\Inventory\Services\InventoryDefaultsService;
 
 class TenantProvisioningService
@@ -19,6 +20,7 @@ class TenantProvisioningService
         private readonly TenantMailer $mailer,
         private readonly InventoryDefaultsService $inventoryDefaults,
         private readonly AccountingDefaultsService $accountingDefaults,
+        private readonly HrDefaultsService $hrDefaults,
     ) {}
 
     /**
@@ -48,6 +50,7 @@ class TenantProvisioningService
 
             $this->inventoryDefaults->provision($tenant);
             $this->accountingDefaults->provision($tenant);
+            $this->hrDefaults->provision($tenant);
 
             return [$tenant, $adminUser, $password];
         });
