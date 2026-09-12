@@ -17,6 +17,7 @@ class ProductCategory extends Model
 
     protected $fillable = [
         'tenant_id',
+        'parent_id',
         'name',
         'stock_input_account_id',
         'stock_output_account_id',
@@ -27,6 +28,16 @@ class ProductCategory extends Model
     protected static function newFactory(): ProductCategoryFactory
     {
         return ProductCategoryFactory::new();
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_id');
     }
 
     public function products(): HasMany
