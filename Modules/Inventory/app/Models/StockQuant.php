@@ -18,6 +18,7 @@ class StockQuant extends Model
         'product_id',
         'location_id',
         'lot_id',
+        'owner_partner_id',
         'qty',
         'reserved_qty',
     ];
@@ -48,5 +49,10 @@ class StockQuant extends Model
     public function lot(): BelongsTo
     {
         return $this->belongsTo(ProductLot::class, 'lot_id');
+    }
+
+    public function ownerPartner(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class, 'owner_partner_id');
     }
 }

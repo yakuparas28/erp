@@ -21,6 +21,9 @@ class Partner extends Model
     protected $fillable = [
         'tenant_id',
         'name',
+        'email',
+        'phone',
+        'address',
         'tax_number',
         'is_customer',
         'is_supplier',
