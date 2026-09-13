@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Hr;
 
-use App\Models\Tenant;
 use App\Models\User;
 use Modules\Hr\Models\Employee;
 use Tests\TenantTestCase;
@@ -24,53 +23,57 @@ class EmployeeScreensTest extends TenantTestCase
             ->assertSee('Ayşe Yılmaz');
     }
 
-    public function test_can_create_employee_for_existing_user(): void
+    public function test_create_employee_also_creates_the_system_user(): void
     {
-        $user = User::factory()->for($this->tenant)->create();
-
         $this->actingAs($this->tenantAdmin)
             ->post(route('app.hr.employees.store'), [
-                'user_id' => $user->id,
+                'email' => 'mehmet.demir@example.test',
                 'first_name' => 'Mehmet',
                 'last_name' => 'Demir',
                 'title' => 'Depo Sorumlusu',
                 'annual_leave_balance' => 14,
+                'temp_password' => 'gizli-parola-1234',
             ])
             ->assertRedirect(route('app.hr.employees.index'));
 
+        $this->assertDatabaseHas('users', [
+            'email' => 'mehmet.demir@example.test',
+            'name' => 'Mehmet Demir',
+            'tenant_id' => $this->tenant->id,
+        ]);
         $this->assertDatabaseHas('employees', [
-            'user_id' => $user->id,
             'first_name' => 'Mehmet',
+            'last_name' => 'Demir',
             'title' => 'Depo Sorumlusu',
+            'tenant_id' => $this->tenant->id,
         ]);
     }
 
-    public function test_cannot_create_two_employees_for_same_user(): void
+    public function test_email_must_be_unique_across_users(): void
     {
-        $user = User::factory()->for($this->tenant)->create();
-        Employee::factory()->create(['tenant_id' => $this->tenant->id, 'user_id' => $user->id]);
+        User::factory()->for($this->tenant)->create(['email' => 'in-use@example.test']);
 
         $this->actingAs($this->tenantAdmin)
             ->post(route('app.hr.employees.store'), [
-                'user_id' => $user->id,
+                'email' => 'in-use@example.test',
                 'first_name' => 'X',
                 'last_name' => 'Y',
+                'temp_password' => 'gizli-parola-1234',
             ])
-            ->assertSessionHasErrors(['user_id']);
+            ->assertSessionHasErrors(['email']);
     }
 
-    public function test_cannot_reference_user_from_another_tenant(): void
+    public function test_temp_password_is_auto_generated_when_missing(): void
     {
-        $otherTenant = Tenant::factory()->create();
-        $otherUser = User::factory()->for($otherTenant)->create();
-
         $this->actingAs($this->tenantAdmin)
             ->post(route('app.hr.employees.store'), [
-                'user_id' => $otherUser->id,
-                'first_name' => 'X',
-                'last_name' => 'Y',
+                'email' => 'auto.pass@example.test',
+                'first_name' => 'Auto',
+                'last_name' => 'Pass',
             ])
-            ->assertSessionHasErrors(['user_id']);
+            ->assertRedirect(route('app.hr.employees.index'));
+
+        $this->assertDatabaseHas('users', ['email' => 'auto.pass@example.test']);
     }
 
     public function test_manager_cannot_be_self(): void
@@ -82,7 +85,6 @@ class EmployeeScreensTest extends TenantTestCase
 
         $this->actingAs($this->tenantAdmin)
             ->patch(route('app.hr.employees.update', $employee), [
-                'user_id' => $employee->user_id,
                 'first_name' => $employee->first_name,
                 'last_name' => $employee->last_name,
                 'manager_id' => $employee->id,
@@ -101,7 +103,6 @@ class EmployeeScreensTest extends TenantTestCase
 
         $this->actingAs($this->tenantAdmin)
             ->patch(route('app.hr.employees.update', $employee), [
-                'user_id' => $employee->user_id,
                 'first_name' => 'Yeni',
                 'last_name' => 'Ad',
             ]);

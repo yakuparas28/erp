@@ -95,7 +95,7 @@
         <div class="pointer-events-auto bg-white border border-border-color rounded-md w-full shadow">
             <form method="POST" action="{{ route('app.hr.employees.store') }}">
                 @csrf
-                @include('hr::employees._form-fields', ['availableUsers' => $availableUsers, 'departments' => $departments, 'managers' => $managers, 'employee' => null])
+                @include('hr::employees._form-fields', ['departments' => $departments, 'managers' => $managers, 'employee' => null])
                 <div class="flex items-center justify-end gap-2 p-4 border-t border-border-color">
                     <button type="button" data-hs-overlay="#add-employee-modal" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light">{{ __('Cancel') }}</button>
                     <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover">{{ __('Save') }}</button>
@@ -112,7 +112,7 @@
                 <form method="POST" action="{{ route('app.hr.employees.update', $employee) }}">
                     @csrf
                     @method('PATCH')
-                    @include('hr::employees._form-fields', ['availableUsers' => $availableUsers->push($employee->user)->unique('id'), 'departments' => $departments, 'managers' => $managers->reject(fn ($m) => $m->id === $employee->id), 'employee' => $employee])
+                    @include('hr::employees._form-fields', ['departments' => $departments, 'managers' => $managers->reject(fn ($m) => $m->id === $employee->id), 'employee' => $employee])
                     <div class="flex items-center justify-end gap-2 p-4 border-t border-border-color">
                         <button type="button" data-hs-overlay="#edit-employee-modal-{{ $employee->id }}" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light">{{ __('Cancel') }}</button>
                         <button type="submit" class="btn-sm bg-dark text-white border border-dark hover:bg-primary-hover">{{ __('Update') }}</button>
