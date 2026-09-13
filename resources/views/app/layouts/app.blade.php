@@ -433,11 +433,13 @@
                                             </a>
                                         </li>
                                     @endcan
-                                    <li>
-                                        <a href="{{ route('app.hr.leaves.mine') }}" class="{{ request()->routeIs('app.hr.leaves.mine') || request()->routeIs('app.hr.leaves.store') || request()->routeIs('app.hr.leaves.cancel') ? 'active' : '' }}">
-                                            <i class="ph-duotone ph-calendar-check"></i><span>{{ __('My Leave Requests') }}</span>
-                                        </a>
-                                    </li>
+                                    @can('submit own leave')
+                                        <li>
+                                            <a href="{{ route('app.hr.leaves.mine') }}" class="{{ request()->routeIs('app.hr.leaves.mine') || request()->routeIs('app.hr.leaves.store') || request()->routeIs('app.hr.leaves.cancel') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-calendar-check"></i><span>{{ __('My Leave Requests') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
                                     @can('approve leave first level')
                                         <li>
                                             <a href="{{ route('app.hr.leave-approvals.first') }}" class="{{ request()->routeIs('app.hr.leave-approvals.first') ? 'active' : '' }}">

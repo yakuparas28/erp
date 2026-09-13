@@ -26,10 +26,13 @@ Route::middleware(['auth:web', 'module:hr'])->prefix('app/hr')->name('app.hr.')-
         Route::delete('/departments/{department}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
     });
 
-    // Personel: her tenant kullanıcısı kendi taleplerini görebilir.
-    Route::get('/leaves/mine', [LeaveRequestController::class, 'index'])->name('leaves.mine');
-    Route::post('/leaves', [LeaveRequestController::class, 'store'])->name('leaves.store');
-    Route::post('/leaves/{leave}/cancel', [LeaveRequestController::class, 'cancel'])->name('leaves.cancel');
+    // Personel: 'submit own leave' izniyle sınırlı; Tenant Admin bu izne
+    // PermissionCatalog::all() üzerinden zaten sahip.
+    Route::middleware('permission:submit own leave,web')->group(function (): void {
+        Route::get('/leaves/mine', [LeaveRequestController::class, 'index'])->name('leaves.mine');
+        Route::post('/leaves', [LeaveRequestController::class, 'store'])->name('leaves.store');
+        Route::post('/leaves/{leave}/cancel', [LeaveRequestController::class, 'cancel'])->name('leaves.cancel');
+    });
 
     Route::middleware('permission:approve leave first level,web')->group(function (): void {
         Route::get('/leave-approvals/first-level', [LeaveApprovalController::class, 'firstLevelIndex'])->name('leave-approvals.first');

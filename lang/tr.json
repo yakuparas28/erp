@@ -213,6 +213,7 @@
     "Email": "E-posta",
     "A system user with this email will be created automatically.": "Bu e-posta ile bir sistem kullanıcısı otomatik oluşturulur.",
     ":name added; invitation email has been sent.": ":name eklendi; davet e-postası gönderildi.",
+    "permission.submit own leave": "Kendi izin taleplerini yönet",
     "(and :count more errors)": "(ve :count hata daha var)|(ve :count hata daha var)|(ve :count hata daha var)",
     ":name added.": ":name eklendi.",
     ":name created; administrator credentials were sent to :email.": ":name oluşturuldu; yönetici bilgileri :email adresine gönderildi.",

@@ -50,6 +50,7 @@ final class PermissionCatalog
                 'register payments',
             ],
             'hr' => [
+                'submit own leave',
                 'manage employees',
                 'manage departments',
                 'approve leave first level',
@@ -100,5 +101,13 @@ final class PermissionCatalog
     public static function accountantDefaults(): array
     {
         return ['manage chart of accounts', 'post journal entries', 'register payments'];
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function employeeDefaults(): array
+    {
+        return ['submit own leave'];
     }
 }
