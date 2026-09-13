@@ -14,20 +14,25 @@
     <link rel="stylesheet" href="{{ asset('template/v1/assets/libs/simplebar/simplebar.min.css') }}">
     <link rel="stylesheet" href="{{ asset('template/v1/assets/css/style.css') }}">
     <style>
-        /* Sidebar accordion polish */
-        #sidebar-menu, #sidebar-menu *,
-        #sidebar-menu ul, #sidebar-menu .submenu ul,
-        #sidebar-menu li {
+        /* Kill every list bullet under the sidebar. The nested .submenu ul was
+           still rendering ::marker even after list-style: none because <li> has
+           display: list-item by default — switching those inner li elements to
+           display: block prevents the marker from being generated at all. */
+        #sidebar-menu ul, #sidebar-menu .submenu ul {
             list-style: none !important;
             list-style-type: none !important;
+            padding-left: 0 !important;
+            margin-left: 0 !important;
         }
-        #sidebar-menu ul { padding-left: 0 !important; margin-left: 0 !important; }
+        #sidebar-menu li,
+        #sidebar-menu .submenu ul li {
+            list-style: none !important;
+            list-style-type: none !important;
+            list-style-image: none !important;
+            display: block !important;
+        }
         #sidebar-menu li::marker { content: '' !important; display: none !important; }
         #sidebar-menu li::before { content: none !important; }
-        /* Template's own submenus render inner items text-only — the icons we added
-           look like bullet dots when the phosphor font hiccups. Hide them, keep the
-           top-level module icon (which is outside .submenu ul) intact. */
-        #sidebar-menu .submenu ul li a > i { display: none !important; }
     </style>
 </head>
 <body>
