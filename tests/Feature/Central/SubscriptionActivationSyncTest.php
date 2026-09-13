@@ -45,7 +45,7 @@ class SubscriptionActivationSyncTest extends TestCase
             'license_package_id' => LicensePackage::where('name', 'Standart')->firstOrFail()->id,
         ]);
 
-        $this->assertSame(['hr', 'inventory', 'purchase', 'sales'], $this->activeModuleKeys($tenant));
+        $this->assertSame(['fleet', 'hr', 'inventory', 'purchase', 'sales'], $this->activeModuleKeys($tenant));
         $this->assertSame(
             ['package'],
             TenantModuleActivation::where('tenant_id', $tenant->id)->distinct()->pluck('source')->all(),

@@ -493,6 +493,106 @@
                                 </ul>
                             </li>
                         @endmodule
+                        @module('fleet')
+                            @php $fleetActive = request()->routeIs('app.fleet.*'); @endphp
+                            <li class="submenu {{ $fleetActive ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="{{ $fleetActive ? 'active subdrop' : '' }}">
+                                    <i class="ph-duotone ph-car"></i><span>{{ __('Fleet') }}</span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <ul>
+                                    @can('view fleet dashboard')
+                                        <li>
+                                            <a href="{{ route('app.fleet.dashboard') }}" class="{{ request()->routeIs('app.fleet.dashboard') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-gauge"></i><span>{{ __('Fleet Dashboard') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('view fleet calendar')
+                                        <li>
+                                            <a href="{{ route('app.fleet.calendar.index') }}" class="{{ request()->routeIs('app.fleet.calendar.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-calendar"></i><span>{{ __('Fleet Calendar') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('reserve vehicle')
+                                        <li>
+                                            <a href="{{ route('app.fleet.reservations.create') }}" class="{{ request()->routeIs('app.fleet.reservations.create') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-plus-circle"></i><span>{{ __('New Reservation') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('view own reservations')
+                                        <li>
+                                            <a href="{{ route('app.fleet.reservations.index') }}" class="{{ request()->routeIs('app.fleet.reservations.index') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-ticket"></i><span>{{ __('My Reservations') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('approve-vehicle-request')
+                                        <li>
+                                            <a href="{{ route('app.fleet.approvals.index') }}" class="{{ request()->routeIs('app.fleet.approvals.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-check-square"></i><span>{{ __('Pending Approvals') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('confirm vehicle delivery')
+                                        <li>
+                                            <a href="{{ route('app.fleet.deliveries.index') }}" class="{{ request()->routeIs('app.fleet.deliveries.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-key"></i><span>{{ __('Key Handover') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('manage vehicles')
+                                        <li>
+                                            <a href="{{ route('app.fleet.vehicles.index') }}" class="{{ request()->routeIs('app.fleet.vehicles.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-clipboard-text"></i><span>{{ __('Vehicles') }}</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ route('app.fleet.projects.index') }}" class="{{ request()->routeIs('app.fleet.projects.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-folders"></i><span>{{ __('Projects') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('manage vehicle calendar')
+                                        <li>
+                                            <a href="{{ route('app.fleet.vehicle-calendar.index') }}" class="{{ request()->routeIs('app.fleet.vehicle-calendar.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-calendar-plus"></i><span>{{ __('Vehicle Calendar') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('manage maintenance records')
+                                        <li>
+                                            <a href="{{ route('app.fleet.maintenance.index') }}" class="{{ request()->routeIs('app.fleet.maintenance.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-wrench"></i><span>{{ __('Maintenance Records') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('manage usage rules')
+                                        <li>
+                                            <a href="{{ route('app.fleet.usage-rules.show') }}" class="{{ request()->routeIs('app.fleet.usage-rules.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-book-open"></i><span>{{ __('Usage Rules') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('view usage report')
+                                        <li>
+                                            <a href="{{ route('app.fleet.reports.usage') }}" class="{{ request()->routeIs('app.fleet.reports.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-chart-bar"></i><span>{{ __('Usage Report') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('manage fleet task settings')
+                                        <li>
+                                            <a href="{{ route('app.fleet.settings.tasks') }}" class="{{ request()->routeIs('app.fleet.settings.tasks*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-timer"></i><span>{{ __('Scheduled Tasks') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                </ul>
+                            </li>
+                        @endmodule
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             @php $adminActive = request()->routeIs('app.users.*') || request()->routeIs('app.roles.*'); @endphp
                             <li class="submenu {{ $adminActive ? 'active' : '' }}">

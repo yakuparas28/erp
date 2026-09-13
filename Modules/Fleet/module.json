@@ -1,0 +1,12 @@
+{
+    "name": "Fleet",
+    "alias": "fleet",
+    "description": "Araç Yönetimi: filo, rezervasyon, bakım, kullanım raporu",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Fleet\\Providers\\FleetServiceProvider"
+    ],
+    "files": [],
+    "requires": ["Hr"]
+}

@@ -97,7 +97,7 @@ class TenantPagesTest extends TestCase
             ->assertRedirect();
 
         $this->assertSame(
-            4,
+            5,
             TenantModuleActivation::where('tenant_id', $tenant->id)->where('is_active', true)->count(),
         );
     }

@@ -163,6 +163,188 @@ MD,
 MD,
             ],
             [
+                'key' => 'fleet_reservation_created',
+                'name' => 'Filo — Yeni Rezervasyon Talebi (Filo Yöneticisine)',
+                'subject' => '{{firma_adi}} — {{aktif_sofor}} kişisinin araç talebi ({{plaka}})',
+                'body' => <<<'MD'
+# Yeni Araç Rezervasyon Talebi
+
+- **Talep No:** #{{reservation_id}}
+- **Talep Eden:** {{aktif_sofor}}
+- **Araç:** {{plaka}} — {{marka_model}}
+- **Proje:** {{proje}}
+- **Planlanan Alış:** {{planlanan_alis}}
+- **Planlanan Teslim:** {{planlanan_teslim}}
+- **Talep Tarihi:** {{talep_tarihi}}
+
+[Onay ekranını]({{onay_baglantisi}}) açın.
+
+{{uygulama_adi}}
+MD,
+            ],
+            [
+                'key' => 'fleet_reservation_approved',
+                'name' => 'Filo — Rezervasyon Onaylandı (Şoförlere)',
+                'subject' => '{{firma_adi}} — Araç talebiniz onaylandı ({{plaka}})',
+                'body' => <<<'MD'
+# Rezervasyon Onaylandı
+
+Sayın **{{recipient_name}}**,
+
+- **Araç:** {{plaka}} — {{marka_model}}
+- **Proje:** {{proje}}
+- **Planlanan Alış:** {{planlanan_alis}}
+- **Planlanan Teslim:** {{planlanan_teslim}}
+
+Alış zamanında [alış ekranını]({{alis_baglantisi}}) açarak KM'yi teyit edin.
+
+{{uygulama_adi}}
+MD,
+            ],
+            [
+                'key' => 'fleet_reservation_rejected',
+                'name' => 'Filo — Rezervasyon Reddedildi (Talep sahibine)',
+                'subject' => '{{firma_adi}} — Araç talebiniz reddedildi ({{plaka}})',
+                'body' => <<<'MD'
+# Rezervasyon Reddedildi
+
+Sayın **{{recipient_name}}**,
+
+- **Araç:** {{plaka}} — {{marka_model}}
+- **Proje:** {{proje}}
+
+**Sebep:** {{red_aciklamasi}}
+
+{{uygulama_adi}}
+MD,
+            ],
+            [
+                'key' => 'fleet_pickup_confirmed',
+                'name' => 'Filo — Alış Yapıldı (Filo Yöneticisine)',
+                'subject' => '{{firma_adi}} — Alış yapıldı: {{plaka}}',
+                'body' => <<<'MD'
+# Araç Alışı Tamamlandı
+
+- **Şoför:** {{aktif_sofor}}
+- **Araç:** {{plaka}} — {{marka_model}}
+- **Alış KM:** {{alis_km}}
+- **Alış Tarihi:** {{alis_tarihi}}
+
+{{uygulama_adi}}
+MD,
+            ],
+            [
+                'key' => 'fleet_mileage_deviation',
+                'name' => 'Filo — KM Sapması Bildirimi',
+                'subject' => '{{firma_adi}} — KM Sapması: {{plaka}}',
+                'body' => <<<'MD'
+# KM Sapması Tespit Edildi
+
+- **Şoför:** {{aktif_sofor}}
+- **Araç:** {{plaka}} — {{marka_model}}
+- **Sistem KM:** {{sistem_km}}
+- **Okunan KM:** {{okunan_km}}
+- **Sapma:** {{sapma}} km
+
+{{uygulama_adi}}
+MD,
+            ],
+            [
+                'key' => 'fleet_delivery_completed',
+                'name' => 'Filo — Teslim Tamamlandı (Filo Yöneticisine)',
+                'subject' => '{{firma_adi}} — Teslim tamamlandı: {{plaka}}',
+                'body' => <<<'MD'
+# Araç Teslimi Tamamlandı
+
+- **Şoför:** {{aktif_sofor}}
+- **Araç:** {{plaka}} — {{marka_model}}
+- **Teslim KM:** {{teslim_km}}
+- **Teslim Tarihi:** {{teslim_tarihi}}
+- **Beyan:** {{beyan_durumu}}
+
+{{uygulama_adi}}
+MD,
+            ],
+            [
+                'key' => 'fleet_vehicle_blocked',
+                'name' => 'Filo — Araç Bakıma Çekildi',
+                'subject' => '{{firma_adi}} — Araç bakıma çekildi: {{plaka}}',
+                'body' => <<<'MD'
+# Araç Bakıma Çekildi
+
+- **Araç:** {{plaka}} — {{marka_model}}
+- **Bloklayan:** {{blocked_by}}
+- **Blok Tarihi:** {{blocked_at}}
+
+{{uygulama_adi}}
+MD,
+            ],
+            [
+                'key' => 'fleet_vehicle_unblocked',
+                'name' => 'Filo — Bakım Kaydı Eklendi',
+                'subject' => '{{firma_adi}} — Bakım kaydı eklendi: {{plaka}}',
+                'body' => <<<'MD'
+# Bakım Kaydı Eklendi
+
+- **Araç:** {{plaka}} — {{marka_model}}
+- **İşlem Türü:** {{islem_turu}}
+- **Yapılan İşlemler:** {{yapilan_islemler}}
+- **Yeni Bakım Tarihi:** {{yeni_bakim_tarihi}}
+- **Yeni Muayene Tarihi:** {{yeni_muayene_tarihi}}
+
+{{uygulama_adi}}
+MD,
+            ],
+            [
+                'key' => 'fleet_vehicle_critical_window',
+                'name' => 'Filo — Bakım/Muayene Kritik Pencere Uyarısı',
+                'subject' => '{{firma_adi}} — {{tur}} uyarısı: {{plaka}} ({{kalan_gun}} gün kaldı)',
+                'body' => <<<'MD'
+# Kritik Pencere Uyarısı
+
+- **Araç:** {{plaka}} — {{marka_model}}
+- **İşlem Türü:** {{tur}}
+- **Hedef Tarih:** {{hedef_tarih}}
+- **Kalan Gün:** {{kalan_gun}}
+
+Lütfen bakım/muayene randevusunu planlayın.
+
+{{uygulama_adi}}
+MD,
+            ],
+            [
+                'key' => 'fleet_vehicle_mtv_30_days',
+                'name' => 'Filo — MTV 30 Gün Uyarısı',
+                'subject' => '{{firma_adi}} — MTV uyarısı: {{plaka}} ({{kalan_gun}} gün kaldı)',
+                'body' => <<<'MD'
+# MTV Ödeme Uyarısı
+
+- **Araç:** {{plaka}} — {{marka_model}}
+- **MTV Tarihi:** {{mtv_tarih}}
+- **Kalan Gün:** {{kalan_gun}}
+
+Ödemenin son gününden önce yapılması önerilir.
+
+{{uygulama_adi}}
+MD,
+            ],
+            [
+                'key' => 'fleet_vehicle_mtv_overdue',
+                'name' => 'Filo — MTV Gecikti',
+                'subject' => '{{firma_adi}} — MTV GECİKTİ: {{plaka}} ({{gecikme_gun}} gün)',
+                'body' => <<<'MD'
+# MTV Ödemesi Geçmişte Kaldı
+
+- **Araç:** {{plaka}} — {{marka_model}}
+- **MTV Tarihi:** {{mtv_tarih}}
+- **Gecikme (gün):** {{gecikme_gun}}
+
+Cezalı ödeme oluşabilir; lütfen bir an önce işleme alın.
+
+{{uygulama_adi}}
+MD,
+            ],
+            [
                 'key' => 'sales_order_quotation',
                 'name' => 'Satış Teklifi E-postası',
                 'subject' => '{{firma_adi}} — Teklif #{{teklif_no}}',

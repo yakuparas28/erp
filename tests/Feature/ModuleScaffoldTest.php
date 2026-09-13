@@ -13,7 +13,7 @@ class ModuleScaffoldTest extends TestCase
 
         sort($enabled);
 
-        $this->assertSame(['accounting', 'hr', 'inventory', 'purchase', 'sales'], $enabled);
+        $this->assertSame(['accounting', 'fleet', 'hr', 'inventory', 'purchase', 'sales'], $enabled);
     }
 
     public function test_dependent_modules_declare_inventory_requirement(): void
@@ -22,6 +22,7 @@ class ModuleScaffoldTest extends TestCase
             'Sales' => ['Inventory'],
             'Purchase' => ['Inventory'],
             'Accounting' => ['Inventory', 'Purchase', 'Sales'],
+            'Fleet' => ['Hr'],
         ];
 
         foreach ($expectedRequirements as $name => $requires) {

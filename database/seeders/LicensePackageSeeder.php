@@ -12,8 +12,8 @@ class LicensePackageSeeder extends Seeder
     {
         $packages = [
             'Başlangıç' => ['monthly_price' => 499, 'modules' => ['inventory']],
-            'Standart' => ['monthly_price' => 999, 'modules' => ['inventory', 'sales', 'purchase', 'hr']],
-            'Premium' => ['monthly_price' => 1999, 'modules' => ['inventory', 'sales', 'purchase', 'accounting', 'hr']],
+            'Standart' => ['monthly_price' => 999, 'modules' => ['inventory', 'sales', 'purchase', 'hr', 'fleet']],
+            'Premium' => ['monthly_price' => 1999, 'modules' => ['inventory', 'sales', 'purchase', 'accounting', 'hr', 'fleet']],
         ];
 
         foreach ($packages as $name => $definition) {

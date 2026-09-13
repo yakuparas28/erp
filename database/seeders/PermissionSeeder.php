@@ -26,5 +26,6 @@ class PermissionSeeder extends Seeder
         Role::findByName('Sales Representative', 'web')->syncPermissions(PermissionCatalog::salesRepresentativeDefaults());
         Role::findByName('Accountant', 'web')->syncPermissions(PermissionCatalog::accountantDefaults());
         Role::findByName('Employee', 'web')->syncPermissions(PermissionCatalog::employeeDefaults());
+        Role::findByName('Fleet Manager', 'web')->syncPermissions(PermissionCatalog::fleetManagerDefaults());
     }
 }

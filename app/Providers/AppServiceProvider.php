@@ -18,9 +18,17 @@ use App\Models\User;
 use App\Services\Approval\ApprovalService;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\Payment;
+use Modules\Fleet\Models\FleetTaskSetting;
+use Modules\Fleet\Models\MaintenanceRecord;
+use Modules\Fleet\Models\Project;
+use Modules\Fleet\Models\Reservation;
+use Modules\Fleet\Models\Vehicle;
+use Modules\Fleet\Models\VehicleCalendarBlock;
+use Modules\Fleet\Models\VehicleUsageRule;
 use Modules\Hr\Models\ConsumptionRule;
 use Modules\Hr\Models\CriticalDate;
 use Modules\Hr\Models\Department;
@@ -63,7 +71,19 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->configureMorphMap();
         $this->registerBladeDirectives();
+        $this->registerGates();
         ApprovalService::bootDefaultResolvers();
+    }
+
+    /**
+     * Fleet approval için tek adım Gate. Demodaki `approve-vehicle-request`
+     * ile birebir; `Fleet Manager` rolüne ait kullanıcılar onay verir.
+     */
+    private function registerGates(): void
+    {
+        Gate::define('approve-vehicle-request', function ($user): bool {
+            return method_exists($user, 'hasRole') && $user->hasRole('Fleet Manager');
+        });
     }
 
     /**
@@ -124,6 +144,13 @@ class AppServiceProvider extends ServiceProvider
             'holiday' => Holiday::class,
             'critical_date' => CriticalDate::class,
             'consumption_rule' => ConsumptionRule::class,
+            'project' => Project::class,
+            'vehicle' => Vehicle::class,
+            'vehicle_reservation' => Reservation::class,
+            'maintenance_record' => MaintenanceRecord::class,
+            'vehicle_calendar_block' => VehicleCalendarBlock::class,
+            'vehicle_usage_rule' => VehicleUsageRule::class,
+            'fleet_task_setting' => FleetTaskSetting::class,
         ]);
     }
 }

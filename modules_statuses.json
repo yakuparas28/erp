@@ -3,5 +3,6 @@
     "Sales": true,
     "Purchase": true,
     "Accounting": true,
-    "Hr": true
+    "Hr": true,
+    "Fleet": true
 }

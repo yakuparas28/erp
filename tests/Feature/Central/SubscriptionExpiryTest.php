@@ -36,7 +36,7 @@ class SubscriptionExpiryTest extends TestCase
             'license_package_id' => LicensePackage::where('name', 'Standart')->firstOrFail()->id,
         ]);
 
-        $this->assertSame(4, $this->activeCount($tenant));
+        $this->assertSame(5, $this->activeCount($tenant));
 
         $subscription->update(['status' => 'cancelled']);
 
@@ -53,7 +53,7 @@ class SubscriptionExpiryTest extends TestCase
             'ends_at' => now()->addDay()->toDateString(),
         ]);
 
-        $this->assertSame(4, $this->activeCount($tenant));
+        $this->assertSame(5, $this->activeCount($tenant));
 
         $this->travel(3)->days();
 
@@ -102,6 +102,6 @@ class SubscriptionExpiryTest extends TestCase
 
         $subscription->update(['status' => 'active', 'ends_at' => now()->addYear()->toDateString()]);
 
-        $this->assertSame(4, $this->activeCount($tenant));
+        $this->assertSame(5, $this->activeCount($tenant));
     }
 }

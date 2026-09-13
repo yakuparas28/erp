@@ -60,6 +60,24 @@ final class PermissionCatalog
                 'manage leave configuration',
                 'manage consumption rules',
             ],
+            'fleet' => [
+                'view fleet calendar',
+                'reserve vehicle',
+                'view own reservations',
+                'confirm own pickup',
+                'submit own delivery',
+                'manage vehicles',
+                'approve vehicle reservation',
+                'confirm vehicle delivery',
+                'manage vehicle calendar',
+                'manage usage rules',
+                'view usage report',
+                'export usage report',
+                'view fleet dashboard',
+                'manage fleet task settings',
+                'run critical window',
+                'manage maintenance records',
+            ],
         ];
     }
 
@@ -108,6 +126,36 @@ final class PermissionCatalog
      */
     public static function employeeDefaults(): array
     {
-        return ['submit own leave'];
+        return [
+            'submit own leave',
+            'view fleet calendar',
+            'reserve vehicle',
+            'view own reservations',
+            'confirm own pickup',
+            'submit own delivery',
+        ];
+    }
+
+    /** @return list<string> */
+    public static function fleetManagerDefaults(): array
+    {
+        return [
+            'view fleet calendar',
+            'view fleet dashboard',
+            'reserve vehicle',
+            'view own reservations',
+            'confirm own pickup',
+            'submit own delivery',
+            'manage vehicles',
+            'approve vehicle reservation',
+            'confirm vehicle delivery',
+            'manage vehicle calendar',
+            'manage usage rules',
+            'view usage report',
+            'export usage report',
+            'manage fleet task settings',
+            'run critical window',
+            'manage maintenance records',
+        ];
     }
 }
