@@ -14,9 +14,18 @@
     <link rel="stylesheet" href="{{ asset('template/v1/assets/libs/simplebar/simplebar.min.css') }}">
     <link rel="stylesheet" href="{{ asset('template/v1/assets/css/style.css') }}">
     <style>
-        /* Accordion inner submenu items should have no list bullet — template's own submenus don't render one. */
-        #sidebar-menu .submenu ul { list-style: none; padding-left: 0; margin-left: 0; }
-        #sidebar-menu .submenu ul li::marker { content: none; }
+        /* Sidebar accordion nested ul must not render bullets — the template's own
+           reset does not cover these because they were injected by our accordion. */
+        #sidebar-menu ul,
+        #sidebar-menu .submenu ul {
+            list-style: none !important;
+            list-style-type: none !important;
+            padding-left: 0 !important;
+            margin-left: 0 !important;
+        }
+        #sidebar-menu li { list-style: none !important; }
+        #sidebar-menu li::marker { content: '' !important; }
+        #sidebar-menu li::before { content: none !important; }
     </style>
 </head>
 <body>
