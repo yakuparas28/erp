@@ -20,7 +20,10 @@ use Modules\Hr\Models\LeaveType;
  */
 class LeaveRequestService
 {
-    public function __construct(private readonly ApprovalService $approvals) {}
+    public function __construct(
+        private readonly ApprovalService $approvals,
+        private readonly LeaveNotificationService $notifications,
+    ) {}
 
     public function submit(Employee $employee, array $data): LeaveRequest
     {
@@ -38,8 +41,8 @@ class LeaveRequestService
         $this->assertBalanceAvailable($employee, $leaveType, $totalDays);
         $this->assertNotBlockedByCriticalDate($employee, $data['start_date'], $data['end_date']);
 
-        return DB::transaction(function () use ($employee, $data, $leaveType, $totalDays): LeaveRequest {
-            $request = LeaveRequest::create([
+        $request = DB::transaction(function () use ($employee, $data, $leaveType, $totalDays): LeaveRequest {
+            $r = LeaveRequest::create([
                 'tenant_id' => $employee->tenant_id,
                 'employee_id' => $employee->id,
                 'leave_type_id' => $leaveType->id,
@@ -56,10 +59,14 @@ class LeaveRequestService
                 'document_path' => $data['document_path'] ?? null,
             ]);
 
-            $this->approvals->submit($request, $employee->user);
+            $this->approvals->submit($r, $employee->user);
 
-            return $request->fresh(['leaveType', 'employee']);
+            return $r->fresh(['leaveType', 'employee']);
         });
+
+        $this->notifications->notifySubmitted($request);
+
+        return $request;
     }
 
     /**

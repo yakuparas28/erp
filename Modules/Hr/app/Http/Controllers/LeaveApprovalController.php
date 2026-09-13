@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Modules\Hr\Models\LeaveRequest;
+use Modules\Hr\Services\LeaveNotificationService;
 use Modules\Hr\Services\LeaveRequestService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -24,6 +25,7 @@ class LeaveApprovalController extends Controller
     public function __construct(
         private readonly ApprovalService $approvals,
         private readonly LeaveRequestService $leaves,
+        private readonly LeaveNotificationService $notifications,
     ) {}
 
     public function firstLevelIndex(Request $request): View
@@ -72,6 +74,11 @@ class LeaveApprovalController extends Controller
             $this->leaves->afterDecision($leave);
         } catch (HttpException $e) {
             return back()->withErrors(['approval' => $e->getMessage()]);
+        }
+
+        // Personele bildirim: onay ilerledi ve karar kesin (approved/rejected) ise gönder.
+        if ($leave->fresh()->approval?->status !== 'pending') {
+            $this->notifications->notifyDecided($leave, $action, $comment);
         }
 
         return back()->with('status', $action === 'approve' ? __('Leave approved.') : __('Leave rejected.'));

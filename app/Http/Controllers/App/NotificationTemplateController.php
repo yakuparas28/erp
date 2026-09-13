@@ -10,13 +10,23 @@ use Illuminate\View\View;
 
 class NotificationTemplateController extends Controller
 {
+    /**
+     * Süperadmin'in tenant açarken gönderdiği davet template'i platforma
+     * özeldir; tenant admin'in düzenleme yetkisi ya da anlamı yok.
+     *
+     * @var list<string>
+     */
+    private const PLATFORM_ONLY_KEYS = ['tenant_admin_invitation'];
+
     public function index(Request $request): View
     {
         $tenantId = $request->user()->tenant_id;
 
         $overrides = NotificationTemplate::where('tenant_id', $tenantId)->get()->keyBy('key');
 
-        $templates = NotificationTemplate::whereNull('tenant_id')->orderBy('name')->get()
+        $templates = NotificationTemplate::whereNull('tenant_id')
+            ->whereNotIn('key', self::PLATFORM_ONLY_KEYS)
+            ->orderBy('name')->get()
             ->map(fn (NotificationTemplate $default) => [
                 'default' => $default,
                 'override' => $overrides->get($default->key),
@@ -27,6 +37,8 @@ class NotificationTemplateController extends Controller
 
     public function update(Request $request, string $key): RedirectResponse
     {
+        abort_if(in_array($key, self::PLATFORM_ONLY_KEYS, true), 404);
+
         $default = NotificationTemplate::whereNull('tenant_id')->where('key', $key)->firstOrFail();
 
         $validated = $request->validate([
@@ -51,6 +63,8 @@ class NotificationTemplateController extends Controller
 
     public function destroy(Request $request, string $key): RedirectResponse
     {
+        abort_if(in_array($key, self::PLATFORM_ONLY_KEYS, true), 404);
+
         NotificationTemplate::where('tenant_id', $request->user()->tenant_id)
             ->where('key', $key)
             ->delete();

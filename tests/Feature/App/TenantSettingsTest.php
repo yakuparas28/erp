@@ -68,27 +68,49 @@ class TenantSettingsTest extends TestCase
         $this->actingAs($this->tenantAdmin, 'web')
             ->get('/app/settings/notification-templates')
             ->assertOk()
-            ->assertSee('Tenant Yöneticisi Davet E-postası')
+            ->assertSee('Kullanıcı Davet E-postası')
             ->assertSee('Platform varsayılanı');
+    }
+
+    public function test_tenant_admin_invitation_template_is_hidden_from_tenant(): void
+    {
+        $this->actingAs($this->tenantAdmin, 'web')
+            ->get('/app/settings/notification-templates')
+            ->assertOk()
+            ->assertDontSee('Tenant Yöneticisi Davet E-postası');
     }
 
     public function test_saving_a_template_creates_tenant_override(): void
     {
         $this->actingAs($this->tenantAdmin, 'web')
-            ->put('/app/settings/notification-templates/tenant_admin_invitation', [
+            ->put('/app/settings/notification-templates/user_invitation', [
                 'subject' => 'Bizim Firmaya Özel Konu',
-                'body' => 'Özel gövde {{yonetici_adi}}',
+                'body' => 'Özel gövde {{kullanici_adi}}',
             ])->assertRedirect();
 
         $this->assertDatabaseHas('notification_templates', [
             'tenant_id' => $this->tenant->id,
-            'key' => 'tenant_admin_invitation',
+            'key' => 'user_invitation',
             'subject' => 'Bizim Firmaya Özel Konu',
         ]);
 
         // Platform varsayılanı değişmedi
         $this->assertDatabaseHas('notification_templates', [
             'tenant_id' => null,
+            'key' => 'user_invitation',
+        ]);
+    }
+
+    public function test_platform_only_template_cannot_be_updated_by_tenant(): void
+    {
+        $this->actingAs($this->tenantAdmin, 'web')
+            ->put('/app/settings/notification-templates/tenant_admin_invitation', [
+                'subject' => 'Hack denemesi',
+                'body' => 'Hack denemesi',
+            ])->assertNotFound();
+
+        $this->assertDatabaseMissing('notification_templates', [
+            'tenant_id' => $this->tenant->id,
             'key' => 'tenant_admin_invitation',
         ]);
     }
@@ -97,16 +119,16 @@ class TenantSettingsTest extends TestCase
     {
         NotificationTemplate::factory()->create([
             'tenant_id' => $this->tenant->id,
-            'key' => 'tenant_admin_invitation',
+            'key' => 'user_invitation',
         ]);
 
         $this->actingAs($this->tenantAdmin, 'web')
-            ->delete('/app/settings/notification-templates/tenant_admin_invitation')
+            ->delete('/app/settings/notification-templates/user_invitation')
             ->assertRedirect();
 
         $this->assertDatabaseMissing('notification_templates', [
             'tenant_id' => $this->tenant->id,
-            'key' => 'tenant_admin_invitation',
+            'key' => 'user_invitation',
         ]);
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\View\View;
 use Modules\Hr\Models\Employee;
 use Modules\Hr\Models\LeaveRequest;
 use Modules\Hr\Models\LeaveType;
+use Modules\Hr\Services\LeaveNotificationService;
 use Modules\Hr\Services\LeaveRequestService;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -73,6 +74,8 @@ class LeaveRequestController extends Controller
         } catch (HttpException $e) {
             return back()->withErrors(['leave' => $e->getMessage()]);
         }
+
+        app(LeaveNotificationService::class)->notifyCancelled($leave);
 
         return redirect()->route('app.hr.leaves.mine')->with('status', __('Leave request cancelled.'));
     }
