@@ -13,6 +13,11 @@
     <link rel="stylesheet" href="{{ asset('template/v1/assets/libs/lucide-static/font/lucide.css') }}">
     <link rel="stylesheet" href="{{ asset('template/v1/assets/libs/simplebar/simplebar.min.css') }}">
     <link rel="stylesheet" href="{{ asset('template/v1/assets/css/style.css') }}">
+    <style>
+        /* Accordion inner submenu items should have no list bullet — template's own submenus don't render one. */
+        #sidebar-menu .submenu ul { list-style: none; padding-left: 0; margin-left: 0; }
+        #sidebar-menu .submenu ul li::marker { content: none; }
+    </style>
 </head>
 <body>
     <div class="main-wrapper">
@@ -412,7 +417,6 @@
                                             </a>
                                         </li>
                                     @endcan
-                                    <li class="menu-title" aria-disabled="true"><span class="text-xs opacity-70">— {{ __('Leave') }}</span></li>
                                     <li>
                                         <a href="{{ route('app.hr.leaves.mine') }}" class="{{ request()->routeIs('app.hr.leaves.mine') || request()->routeIs('app.hr.leaves.store') || request()->routeIs('app.hr.leaves.cancel') ? 'active' : '' }}">
                                             <i class="ph-duotone ph-calendar-check"></i><span>{{ __('My Leave Requests') }}</span>
