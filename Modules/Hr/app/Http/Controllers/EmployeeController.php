@@ -3,9 +3,14 @@
 namespace Modules\Hr\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Mail\TemplatedMail;
+use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Mail\NotificationTemplateService;
+use App\Services\Mail\TenantMailer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -21,6 +26,11 @@ use Modules\Hr\Models\LeaveRequest;
  */
 class EmployeeController extends Controller
 {
+    public function __construct(
+        private readonly NotificationTemplateService $templates,
+        private readonly TenantMailer $mailer,
+    ) {}
+
     public function index(): View
     {
         return view('hr::employees.index', [
@@ -48,30 +58,52 @@ class EmployeeController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $this->validatedForCreate($request);
+        $tenantId = $request->user()->tenant_id;
+        $tempPassword = $validated['temp_password'];
 
-        $employee = \DB::transaction(function () use ($validated, $request): Employee {
-            $tenantId = $request->user()->tenant_id;
-
+        [$employee, $user] = DB::transaction(function () use ($validated, $tenantId, $tempPassword): array {
             $user = new User([
                 'name' => "{$validated['first_name']} {$validated['last_name']}",
                 'email' => $validated['email'],
-                'password' => $validated['temp_password'],
+                'password' => $tempPassword,
             ]);
             $user->tenant_id = $tenantId;
             $user->save();
+
+            // Personele yalnızca en az yetkili "Employee" rolü verilir; Tenant Admin
+            // gibi yükseltmeler Yönetim > Kullanıcılar ekranından manuel yapılır.
             setPermissionsTeamId($tenantId);
-            $user->assignRole('Tenant Admin'); // Personel varsayılan olarak platform kullanıcısı sayılır; rol Yönetim > Kullanıcılar'dan sonra düzenlenebilir.
+            $user->assignRole('Employee');
 
             unset($validated['email'], $validated['temp_password']);
+            $employee = Employee::create($validated + ['tenant_id' => $tenantId, 'user_id' => $user->id]);
 
-            return Employee::create($validated + ['tenant_id' => $tenantId, 'user_id' => $user->id]);
+            return [$employee, $user];
         });
 
+        // Geçici şifre yalnızca yeni personele e-posta ile iletilir; oluşturan
+        // kullanıcının session flash'ına veya loglara asla düşmez.
+        $this->sendInvitation($request->user()->tenant, $user, $tempPassword);
+
         return redirect()->route('app.hr.employees.index')
-            ->with('status', __(':name added. Temporary password: :password', [
-                'name' => $employee->full_name,
-                'password' => $request->input('temp_password'),
-            ]));
+            ->with('status', __(':name added; invitation email has been sent.', ['name' => $employee->full_name]));
+    }
+
+    private function sendInvitation(Tenant $tenant, User $user, string $tempPassword): void
+    {
+        try {
+            $rendered = $this->templates->render('user_invitation', $tenant->id, [
+                'kullanici_adi' => $user->name,
+                'kullanici_email' => $user->email,
+                'firma_adi' => $tenant->name,
+                'gecici_sifre' => $tempPassword,
+                'uygulama_adi' => config('app.name'),
+            ]);
+            $this->mailer->send($tenant->id, $user->email, new TemplatedMail($rendered['subject'], $rendered['body']));
+        } catch (\Throwable $e) {
+            // E-posta ayarı yoksa personel yine de oluşur; sysadmin ayarı sonradan yapıp Kullanıcılar ekranından şifre sıfırlayabilir.
+            report($e);
+        }
     }
 
     public function update(Request $request, Employee $employee): RedirectResponse

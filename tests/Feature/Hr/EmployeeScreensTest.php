@@ -3,6 +3,7 @@
 namespace Tests\Feature\Hr;
 
 use App\Models\User;
+use Database\Seeders\NotificationTemplateSeeder;
 use Modules\Hr\Models\Employee;
 use Tests\TenantTestCase;
 
@@ -25,7 +26,9 @@ class EmployeeScreensTest extends TenantTestCase
 
     public function test_create_employee_also_creates_the_system_user(): void
     {
-        $this->actingAs($this->tenantAdmin)
+        $this->seed(NotificationTemplateSeeder::class);
+
+        $response = $this->actingAs($this->tenantAdmin)
             ->post(route('app.hr.employees.store'), [
                 'email' => 'mehmet.demir@example.test',
                 'first_name' => 'Mehmet',
@@ -33,8 +36,8 @@ class EmployeeScreensTest extends TenantTestCase
                 'title' => 'Depo Sorumlusu',
                 'annual_leave_balance' => 14,
                 'temp_password' => 'gizli-parola-1234',
-            ])
-            ->assertRedirect(route('app.hr.employees.index'));
+            ]);
+        $response->assertRedirect(route('app.hr.employees.index'));
 
         $this->assertDatabaseHas('users', [
             'email' => 'mehmet.demir@example.test',
@@ -47,6 +50,39 @@ class EmployeeScreensTest extends TenantTestCase
             'title' => 'Depo Sorumlusu',
             'tenant_id' => $this->tenant->id,
         ]);
+    }
+
+    public function test_temporary_password_is_not_leaked_via_session_flash(): void
+    {
+        $this->seed(NotificationTemplateSeeder::class);
+
+        $this->actingAs($this->tenantAdmin)
+            ->post(route('app.hr.employees.store'), [
+                'email' => 'no.leak@example.test',
+                'first_name' => 'No',
+                'last_name' => 'Leak',
+                'temp_password' => 'ultra-gizli-secret-9',
+            ]);
+
+        $this->assertStringNotContainsString('ultra-gizli-secret-9', (string) session('status'));
+    }
+
+    public function test_new_employee_gets_only_the_low_privilege_role(): void
+    {
+        $this->seed(NotificationTemplateSeeder::class);
+
+        $this->actingAs($this->tenantAdmin)
+            ->post(route('app.hr.employees.store'), [
+                'email' => 'low.priv@example.test',
+                'first_name' => 'Low',
+                'last_name' => 'Priv',
+                'temp_password' => 'gizli-parola-1234',
+            ]);
+
+        $user = User::where('email', 'low.priv@example.test')->firstOrFail();
+        setPermissionsTeamId($this->tenant->id);
+        $this->assertTrue($user->hasRole('Employee'));
+        $this->assertFalse($user->hasRole('Tenant Admin'));
     }
 
     public function test_email_must_be_unique_across_users(): void

@@ -212,7 +212,7 @@
     "Platform-wide row cannot be deleted; edit it instead.": "Platform geneli satır silinemez; düzenleyin.",
     "Email": "E-posta",
     "A system user with this email will be created automatically.": "Bu e-posta ile bir sistem kullanıcısı otomatik oluşturulur.",
-    ":name added. Temporary password: :password": ":name eklendi. Geçici şifre: :password",
+    ":name added; invitation email has been sent.": ":name eklendi; davet e-postası gönderildi.",
     "(and :count more errors)": "(ve :count hata daha var)|(ve :count hata daha var)|(ve :count hata daha var)",
     ":name added.": ":name eklendi.",
     ":name created; administrator credentials were sent to :email.": ":name oluşturuldu; yönetici bilgileri :email adresine gönderildi.",
