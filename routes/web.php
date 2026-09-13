@@ -45,7 +45,7 @@ Route::middleware('auth:web')->prefix('app')->name('app.')->group(function (): v
         Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
     });
 
-    Route::middleware('role:Tenant Admin,web')->group(function (): void {
+    Route::middleware('permission:manage settings,web')->group(function (): void {
         Route::get('/settings/mail', [MailSettingController::class, 'edit'])->name('settings.mail');
         Route::put('/settings/mail', [MailSettingController::class, 'update'])->name('settings.mail.update');
 

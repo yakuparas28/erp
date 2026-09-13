@@ -518,8 +518,8 @@
                                 </ul>
                             </li>
                         @endif
-                        @if (auth()->user()?->hasRole('Tenant Admin'))
-                            @php $settingsActive = request()->routeIs('app.settings.*'); @endphp
+                        @can('manage settings')
+                            @php $settingsActive = request()->routeIs('app.settings.*') || request()->routeIs('app.approval-workflows.*'); @endphp
                             <li class="submenu {{ $settingsActive ? 'active' : '' }}">
                                 <a href="javascript:void(0);" class="{{ $settingsActive ? 'active subdrop' : '' }}">
                                     <i class="ph-duotone ph-gear"></i><span>{{ __('Settings') }}</span>
@@ -543,7 +543,7 @@
                                     </li>
                                 </ul>
                             </li>
-                        @endif
+                        @endcan
                     </ul>
                 </div>
             </div>
