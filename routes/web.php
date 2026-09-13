@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\App\ApprovalWorkflowController;
 use App\Http\Controllers\App\DashboardController;
 use App\Http\Controllers\App\MailSettingController;
 use App\Http\Controllers\App\NotificationTemplateController;
@@ -51,5 +52,13 @@ Route::middleware('auth:web')->prefix('app')->name('app.')->group(function (): v
         Route::get('/settings/notification-templates', [NotificationTemplateController::class, 'index'])->name('settings.templates');
         Route::put('/settings/notification-templates/{key}', [NotificationTemplateController::class, 'update'])->name('settings.templates.update');
         Route::delete('/settings/notification-templates/{key}', [NotificationTemplateController::class, 'destroy'])->name('settings.templates.reset');
+
+        Route::get('/approval-workflows', [ApprovalWorkflowController::class, 'index'])->name('approval-workflows.index');
+        Route::post('/approval-workflows', [ApprovalWorkflowController::class, 'store'])->name('approval-workflows.store');
+        Route::get('/approval-workflows/{workflow}', [ApprovalWorkflowController::class, 'show'])->name('approval-workflows.show');
+        Route::patch('/approval-workflows/{workflow}', [ApprovalWorkflowController::class, 'update'])->name('approval-workflows.update');
+        Route::delete('/approval-workflows/{workflow}', [ApprovalWorkflowController::class, 'destroy'])->name('approval-workflows.destroy');
+        Route::post('/approval-workflows/{workflow}/steps', [ApprovalWorkflowController::class, 'storeStep'])->name('approval-workflows.steps.store');
+        Route::delete('/approval-workflows/{workflow}/steps/{step}', [ApprovalWorkflowController::class, 'destroyStep'])->name('approval-workflows.steps.destroy');
     });
 });

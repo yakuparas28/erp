@@ -536,6 +536,11 @@
                                             <i class="ph-duotone ph-file-text"></i><span>{{ __('Notification Templates') }}</span>
                                         </a>
                                     </li>
+                                    <li>
+                                        <a href="{{ route('app.approval-workflows.index') }}" class="{{ request()->routeIs('app.approval-workflows.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-flow-arrow"></i><span>{{ __('Approval Workflows') }}</span>
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
                         @endif
