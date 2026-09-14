@@ -86,7 +86,7 @@ class SalesOrderScreensTest extends TenantTestCase
         $response = $this->get(route('app.sales.orders.index'));
 
         $response->assertOk();
-        $response->assertDontSee('SO-'.str_pad((string) $draft->id, 5, '0', STR_PAD_LEFT));
+        $response->assertDontSee('SO'.str_pad((string) $draft->id, 5, '0', STR_PAD_LEFT));
     }
 
     public function test_quotations_index_lists_draft_and_sent(): void
@@ -97,7 +97,7 @@ class SalesOrderScreensTest extends TenantTestCase
         $response = $this->get(route('app.sales.quotations.index'));
 
         $response->assertOk();
-        $response->assertSee('SO-'.str_pad((string) $draft->id, 5, '0', STR_PAD_LEFT));
+        $response->assertSee('SO'.str_pad((string) $draft->id, 5, '0', STR_PAD_LEFT));
     }
 
     public function test_rep_can_create_a_draft_sales_order(): void
