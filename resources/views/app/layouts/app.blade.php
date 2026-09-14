@@ -315,6 +315,15 @@
                                             <i class="ph-duotone ph-shopping-cart"></i><span>{{ __('Purchase Orders') }}</span>
                                         </a>
                                     </li>
+                                    @can('post journal entries')
+                                        @module('accounting')
+                                            <li>
+                                                <a href="{{ route('app.accounting.purchase-invoices.index') }}" class="{{ request()->routeIs('app.accounting.purchase-invoices.*') ? 'active' : '' }}">
+                                                    <i class="ph-duotone ph-file-text"></i><span>{{ __('Purchase Invoices') }}</span>
+                                                </a>
+                                            </li>
+                                        @endmodule
+                                    @endcan
                                 </ul>
                             </li>
                         @endif
@@ -344,6 +353,15 @@
                                                 <i class="ph-duotone ph-truck"></i><span>{{ __('Delivery Carriers') }}</span>
                                             </a>
                                         </li>
+                                    @endcan
+                                    @can('post journal entries')
+                                        @module('accounting')
+                                            <li>
+                                                <a href="{{ route('app.accounting.sales-invoices.index') }}" class="{{ request()->routeIs('app.accounting.sales-invoices.*') ? 'active' : '' }}">
+                                                    <i class="ph-duotone ph-receipt"></i><span>{{ __('Sales Invoices') }}</span>
+                                                </a>
+                                            </li>
+                                        @endmodule
                                     @endcan
                                 </ul>
                             </li>
