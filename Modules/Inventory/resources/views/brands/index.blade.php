@@ -37,7 +37,8 @@
                         <td class="py-2.5 px-2 text-sm text-default font-mono">{{ $brand->code ?: '—' }}</td>
                         <td class="py-2.5 px-2 text-sm font-semibold text-title">{{ $brand->name }}</td>
                         <td class="py-2.5 px-2 text-sm text-default">
-                            @if ($brand->website)<a href="{{ $brand->website }}" target="_blank" class="hover:text-primary">{{ $brand->website }}</a>@else — @endif
+                            @php $safeUrl = \Illuminate\Support\Str::startsWith(strtolower((string) $brand->website), ['http://', 'https://']) ? $brand->website : null; @endphp
+                            @if ($safeUrl)<a href="{{ $safeUrl }}" target="_blank" rel="noopener noreferrer nofollow" class="hover:text-primary">{{ $brand->website }}</a>@else — @endif
                         </td>
                         <td class="py-2.5 px-2 text-sm text-default text-center">{{ $brand->products_count }}</td>
                         <td class="py-2.5 px-2 text-sm">

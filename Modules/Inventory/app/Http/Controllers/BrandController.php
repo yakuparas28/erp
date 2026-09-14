@@ -57,7 +57,7 @@ class BrandController extends Controller
                     ->where(fn ($q) => $q->where('tenant_id', $tenantId)),
             ],
             'code' => ['nullable', 'string', 'max:32'],
-            'website' => ['nullable', 'url', 'max:255'],
+            'website' => ['nullable', 'url:http,https', 'max:255'],
             'description' => ['nullable', 'string', 'max:2000'],
             'is_active' => ['nullable', 'boolean'],
         ]);
