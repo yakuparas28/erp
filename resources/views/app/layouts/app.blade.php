@@ -202,6 +202,11 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a href="{{ route('app.inventory.brands.index') }}" class="{{ request()->routeIs('app.inventory.brands.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-copyright"></i><span>{{ __('Brands') }}</span>
+                                    </a>
+                                </li>
+                                <li>
                                     <a href="{{ route('app.inventory.attributes.index') }}" class="{{ request()->routeIs('app.inventory.attributes.*') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-swatches"></i><span>{{ __('Attributes') }}</span>
                                     </a>

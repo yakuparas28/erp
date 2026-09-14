@@ -1611,5 +1611,17 @@
     "Contact & Address": "İletişim & Adres",
     "Financial": "Finansal",
     "Code": "Kod",
-    "Company": "Firma"
+    "Company": "Firma",
+    "Brand": "Marka",
+    "Brands": "Markalar",
+    "Brand added.": "Marka eklendi.",
+    "Brand updated.": "Marka güncellendi.",
+    "Brand deleted.": "Marka silindi.",
+    "New Brand": "Yeni Marka",
+    "Edit Brand": "Marka Düzenle",
+    "No brands yet.": "Henüz marka yok.",
+    "Manage product brands used across inventory and sales.": "Envanter ve satışta kullanılan ürün markalarını yönetin.",
+    "This brand is used by products and cannot be deleted.": "Bu marka ürünlerde kullanıldığı için silinemez.",
+    "Website": "Web Sitesi",
+    "Products": "Ürünler"
 }

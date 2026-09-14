@@ -17,6 +17,7 @@ class Product extends Model
     protected $fillable = [
         'tenant_id',
         'product_category_id',
+        'product_brand_id',
         'default_supplier_id',
         'uom_id',
         'product_template_id',
@@ -93,6 +94,11 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class, 'product_category_id');
+    }
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(ProductBrand::class, 'product_brand_id');
     }
 
     public function barcodes(): HasMany

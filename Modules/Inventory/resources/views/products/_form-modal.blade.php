@@ -44,6 +44,15 @@
                             @endforeach
                         </select>
                     </div>
+                    <div class="col-span-12 sm:col-span-6">
+                        <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Brand') }}</label>
+                        <select name="product_brand_id" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                            <option value="">—</option>
+                            @foreach ($brands as $brand)
+                                <option value="{{ $brand->id }}" @selected($product?->product_brand_id === $brand->id)>{{ $brand->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <h3 class="text-sm font-semibold text-title mb-2">{{ __('Inventory') }}</h3>

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Inventory\Http\Controllers\AdjustmentController;
 use Modules\Inventory\Http\Controllers\AttributeController;
 use Modules\Inventory\Http\Controllers\BarcodeController;
+use Modules\Inventory\Http\Controllers\BrandController;
 use Modules\Inventory\Http\Controllers\CategoryController;
 use Modules\Inventory\Http\Controllers\KitComponentController;
 use Modules\Inventory\Http\Controllers\LandedCostController;
@@ -37,6 +38,11 @@ Route::middleware(['auth:web'])->prefix('app/inventory')->name('app.inventory.')
         Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
         Route::patch('/categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
         Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+
+        Route::get('/brands', [BrandController::class, 'index'])->name('brands.index');
+        Route::post('/brands', [BrandController::class, 'store'])->name('brands.store');
+        Route::put('/brands/{brand}', [BrandController::class, 'update'])->name('brands.update');
+        Route::delete('/brands/{brand}', [BrandController::class, 'destroy'])->name('brands.destroy');
 
         Route::get('/package-types', [PackageTypeController::class, 'index'])->name('package-types.index');
         Route::post('/package-types', [PackageTypeController::class, 'store'])->name('package-types.store');

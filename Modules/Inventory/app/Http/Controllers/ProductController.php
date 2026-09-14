@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\ProductBrand;
 use Modules\Inventory\Models\ProductCategory;
 use Modules\Inventory\Models\ProductTemplate;
 use Modules\Inventory\Models\Uom;
@@ -28,6 +29,7 @@ class ProductController extends Controller
             'standaloneProducts' => $products->whereNull('product_template_id')->values(),
             'templates' => ProductTemplate::withCount('variants')->has('variants')->with('variants.uom')->orderBy('name')->get(),
             'categories' => ProductCategory::orderBy('name')->get(),
+            'brands' => ProductBrand::where('is_active', true)->orderBy('name')->get(),
             'uoms' => Uom::where('is_reference', true)->orderBy('name')->get(),
             'nonKitProducts' => $products->where('is_kit', false),
         ]);
@@ -125,6 +127,7 @@ class ProductController extends Controller
                     ->ignore($productId),
             ],
             'product_category_id' => ['nullable', Rule::exists('product_categories', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'product_brand_id' => ['nullable', Rule::exists('product_brands', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'uom_id' => ['required', Rule::exists('uoms', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
             'product_type' => ['required', 'in:stockable,consumable,service'],
             'track_by' => ['required', 'in:none,lot,serial'],
