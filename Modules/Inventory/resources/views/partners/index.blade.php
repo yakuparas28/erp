@@ -55,10 +55,13 @@
         <table class="w-full text-sm">
             <thead>
                 <tr class="text-sm text-default border-b border-border-color">
+                    <th class="text-left py-2 px-2 font-semibold text-gray-900">{{ __('Code') }}</th>
                     <th class="text-left py-2 px-2 font-semibold text-gray-900">{{ __('Name') }}</th>
                     <th class="text-left py-2 px-2 font-semibold text-gray-900">{{ __('Tax Number') }}</th>
+                    <th class="text-left py-2 px-2 font-semibold text-gray-900">{{ __('City') }}</th>
                     <th class="text-left py-2 px-2 font-semibold text-gray-900">{{ __('Role') }}</th>
                     <th class="text-center py-2 px-2 font-semibold text-gray-900">{{ __('Payment Term (days)') }}</th>
+                    <th class="text-right py-2 px-2 font-semibold text-gray-900">{{ __('Credit Limit') }}</th>
                     <th class="text-right py-2 px-2 font-semibold text-gray-900">{{ __('Action') }}</th>
                 </tr>
             </thead>
@@ -69,9 +72,19 @@
                         if ($partner->is_customer) { $roles[] = 'customer'; }
                         if ($partner->is_supplier) { $roles[] = 'supplier'; }
                     @endphp
-                    <tr class="border-b border-border-color hover:bg-light/50" data-p-row data-roles="{{ implode(' ', $roles) }}" data-search="{{ strtolower($partner->name.' '.$partner->tax_number) }}">
-                        <td class="py-2.5 px-2 text-sm font-semibold text-title">{{ $partner->name }}</td>
+                    <tr class="border-b border-border-color hover:bg-light/50" data-p-row data-roles="{{ implode(' ', $roles) }}" data-search="{{ strtolower(($partner->partner_code ?? '').' '.$partner->name.' '.$partner->tax_number.' '.($partner->city ?? '')) }}">
+                        <td class="py-2.5 px-2 text-sm text-default font-mono">{{ $partner->partner_code ?: '—' }}</td>
+                        <td class="py-2.5 px-2 text-sm font-semibold text-title">
+                            {{ $partner->name }}
+                            @if ($partner->e_invoice_status !== 'none' && $partner->e_invoice_status !== null)
+                                <span class="text-[9px] bg-primary-transparent text-primary px-1 py-0.5 rounded ms-1 uppercase">{{ str_replace('e_', 'e-', $partner->e_invoice_status) }}</span>
+                            @endif
+                            @if (! $partner->is_active)
+                                <span class="text-[9px] bg-light text-default px-1 py-0.5 rounded ms-1">{{ __('Inactive') }}</span>
+                            @endif
+                        </td>
                         <td class="py-2.5 px-2 text-sm text-default font-mono">{{ $partner->tax_number ?: '—' }}</td>
+                        <td class="py-2.5 px-2 text-sm text-default">{{ $partner->city ?: '—' }}</td>
                         <td class="py-2.5 px-2 text-sm">
                             <div class="flex items-center gap-1 flex-wrap">
                                 @if ($partner->is_customer)
@@ -86,6 +99,13 @@
                             </div>
                         </td>
                         <td class="py-2.5 px-2 text-sm text-default text-center">{{ $partner->payment_term_days }}</td>
+                        <td class="py-2.5 px-2 text-sm text-title font-semibold text-right">
+                            @if ((float) $partner->credit_limit > 0)
+                                {{ number_format((float) $partner->credit_limit, 2) }} <span class="text-[10px] text-default">{{ $partner->currency_code }}</span>
+                            @else
+                                <span class="text-default">—</span>
+                            @endif
+                        </td>
                         <td class="py-2.5 px-2 text-right">
                             <div class="hs-dropdown [--placement:bottom-right] [--auto-close:inside] relative inline-flex">
                                 <button type="button" class="hs-dropdown-toggle cursor-pointer btn-sm size-7 bg-white border border-border-color text-gray-600 inline-flex items-center justify-center hover:bg-light hover:text-gray-900 focus:outline-hidden">
@@ -102,7 +122,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="py-8 text-center text-sm text-default">{{ __('No partners yet.') }}</td></tr>
+                    <tr><td colspan="8" class="py-8 text-center text-sm text-default">{{ __('No partners yet.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>
