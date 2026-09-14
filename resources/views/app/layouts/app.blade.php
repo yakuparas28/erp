@@ -122,6 +122,13 @@
                                 <i class="ph-duotone ph-squares-four"></i><span>{{ __('Dashboard') }}</span>
                             </a>
                         </li>
+                        @can('manage partners')
+                            <li>
+                                <a href="{{ route('app.inventory.partners.index') }}" class="{{ request()->routeIs('app.inventory.partners.*') ? 'active' : '' }}">
+                                    <i class="ph-duotone ph-users-three"></i><span>{{ __('Contacts') }}</span>
+                                </a>
+                            </li>
+                        @endcan
                         @if (auth()->user()?->can('view stock') || auth()->user()?->can('manage products') || auth()->user()?->can('manage warehouses') || auth()->user()?->can('perform stock counts') || auth()->user()?->can('manage warehouse transfers') || auth()->user()?->can('manage partners') || auth()->user()?->can('manage routes') || auth()->user()?->can('manage reordering rules'))
                             @php $inventoryActive = request()->routeIs('app.inventory.*'); @endphp
                             <li class="submenu {{ $inventoryActive ? 'active' : '' }}">
@@ -273,13 +280,6 @@
                                     <li>
                                         <a href="{{ route('app.inventory.package-types.index') }}" class="{{ request()->routeIs('app.inventory.package-types.*') ? 'active' : '' }}">
                                             <i class="ph-duotone ph-package"></i><span>{{ __('Package Types') }}</span>
-                                        </a>
-                                    </li>
-                                @endcan
-                                @can('manage partners')
-                                    <li>
-                                        <a href="{{ route('app.inventory.partners.index') }}" class="{{ request()->routeIs('app.inventory.partners.*') ? 'active' : '' }}">
-                                            <i class="ph-duotone ph-handshake"></i><span>{{ __('Partners') }}</span>
                                         </a>
                                     </li>
                                 @endcan

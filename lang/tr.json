@@ -1578,5 +1578,8 @@
     "SO ID": "SO No",
     "Sales Quote": "Satış Teklifi",
     "flow.": "akışından oluşturun.",
-    "Invoice Date": "Fatura Tarihi"
+    "Invoice Date": "Fatura Tarihi",
+    "Contacts": "Cariler",
+    "Customers and suppliers used across sales, purchase and accounting.": "Satış, satınalma ve muhasebede kullanılan müşteri ve tedarikçiler.",
+    "Role": "Rol"
 }
