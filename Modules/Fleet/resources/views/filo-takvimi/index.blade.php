@@ -168,14 +168,13 @@
 </div>
 
 @if ($canReserve)
-<button type="button" id="fleet-reserve-trigger" data-hs-overlay="#fleet-reserve-modal" class="hidden">open</button>
-<div id="fleet-reserve-modal" class="hs-overlay hidden fixed top-0 start-0 w-full h-full z-[70] overflow-x-hidden overflow-y-auto pointer-events-none">
-    <div class="opacity-0 transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto flex items-center min-h-[calc(100%-56px)]">
-        <div class="w-full bg-white border rounded-xl pointer-events-auto shadow-lg">
-            <div class="flex justify-between items-center py-3 px-4 border-b bg-primary-transparent">
-                <h3 class="font-bold text-primary flex items-center gap-2"><i class="ph ph-calendar-plus"></i> Araç Rezervasyonu</h3>
-                <button type="button" data-hs-overlay="#fleet-reserve-modal" class="size-8 inline-flex items-center justify-center rounded-full bg-white border"><i class="ph ph-x"></i></button>
-            </div>
+<div id="fleet-reserve-modal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4">
+    <div id="fleet-reserve-backdrop" class="absolute inset-0 bg-black/50"></div>
+    <div class="relative w-full sm:max-w-2xl bg-white border rounded-xl shadow-xl max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center py-3 px-4 border-b bg-primary-transparent">
+            <h3 class="font-bold text-primary flex items-center gap-2"><i class="ph ph-calendar-plus"></i> Araç Rezervasyonu</h3>
+            <button type="button" data-fleet-modal-close class="size-8 inline-flex items-center justify-center rounded-full bg-white border hover:bg-gray-100"><i class="ph ph-x"></i></button>
+        </div>
             <form method="POST" action="{{ route('app.fleet.calendar.reserve') }}" id="fleet-reserve-form">
                 @csrf
                 <input type="hidden" name="arac_id" data-input="arac_id">
@@ -224,12 +223,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="flex justify-end gap-2 py-3 px-4 border-t bg-gray-50">
-                    <button type="button" data-hs-overlay="#fleet-reserve-modal" class="btn-sm border border-border-color">İptal</button>
+                <div class="flex justify-end gap-2 py-3 px-4 border-t bg-light-500">
+                    <button type="button" data-fleet-modal-close class="btn-sm border border-border-color">İptal</button>
                     <button class="btn-sm bg-primary text-white inline-flex items-center gap-1"><i class="ph ph-paper-plane-tilt"></i> Talebi Gönder</button>
                 </div>
             </form>
-        </div>
     </div>
 </div>
 
@@ -269,23 +267,28 @@
         const fmt = (d) => new Date(d).toLocaleDateString('tr-TR', {day:'2-digit', month:'long', year:'numeric'});
         modalEl.querySelector('[data-display="alis"]').textContent = fmt(state.pickup.date);
         modalEl.querySelector('[data-display="teslim"]').textContent = fmt(state.delivery.date);
-        openOverlay(modalEl);
+        showModal();
     };
 
-    // Preline'ın internal state'ine bakıp doğru API'yi seçer. `HSOverlay.open`
-    // static'i autoInit koleksiyonuna kayıtlı modaller için çalışır; olmazsa
-    // instance oluşturup direkt açar; son çare gizli tetikleyiciye click atar.
-    const openOverlay = (el) => {
-        try {
-            const HS = window.HSOverlay;
-            if (!HS) return document.getElementById('fleet-reserve-trigger')?.click();
-            const inst = HS.getInstance?.(el, true);
-            if (inst && inst.element && typeof inst.element.open === 'function') { inst.element.open(); return; }
-            if (typeof HS.open === 'function') { HS.open(el); return; }
-            if (typeof HS === 'function') { new HS(el).open(); return; }
-        } catch (e) { console.error('[fleet-calendar] modal open failed', e); }
-        document.getElementById('fleet-reserve-trigger')?.click();
+    // Preline'a bağımlı olmayan yerel modal göster/gizle. Backdrop, ESC ve
+    // "İptal / X" butonları kapatır. body scroll'u modal açıkken kilitlenir.
+    const showModal = () => {
+        modalEl.classList.remove('hidden');
+        modalEl.classList.add('flex');
+        document.body.style.overflow = 'hidden';
     };
+    const hideModal = () => {
+        modalEl.classList.add('hidden');
+        modalEl.classList.remove('flex');
+        document.body.style.overflow = '';
+        const sel = form.querySelector('select[name="proje_id"]');
+        if (sel) sel.value = '';
+        const ek = form.querySelector('select[name="ek_soforler[]"]');
+        if (ek) Array.from(ek.options).forEach(o => o.selected = false);
+    };
+    modalEl.querySelectorAll('[data-fleet-modal-close]').forEach(b => b.addEventListener('click', hideModal));
+    document.getElementById('fleet-reserve-backdrop')?.addEventListener('click', hideModal);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !modalEl.classList.contains('hidden')) hideModal(); });
 
     document.querySelectorAll('.fleet-cell-reservable').forEach(cell => {
         cell.addEventListener('click', () => {
@@ -321,12 +324,6 @@
         }
     });
 
-    modalEl.addEventListener('close.hs.overlay', () => {
-        const sel = form.querySelector('select[name="proje_id"]');
-        if (sel) sel.value = '';
-        const ek = form.querySelector('select[name="ek_soforler[]"]');
-        if (ek) Array.from(ek.options).forEach(o => o.selected = false);
-    });
 })();
 </script>
 @endif
