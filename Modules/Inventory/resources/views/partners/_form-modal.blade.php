@@ -10,21 +10,19 @@
             </div>
 
             <div class="p-4 border-b border-border-color">
-                <nav class="flex flex-wrap gap-1" role="tablist">
+                <nav class="flex flex-wrap gap-1" role="tablist" data-partner-tabs="{{ $id }}">
                     @foreach (['basic' => ['Basic Info','ph-identification-card'], 'legal' => ['Tax & e-Invoice','ph-scales'], 'contact' => ['Contact & Address','ph-map-pin'], 'financial' => ['Financial','ph-wallet']] as $tab => [$label, $icon])
-                        <button type="button" class="hs-tab-active:bg-dark hs-tab-active:text-white btn-sm border border-border-color inline-flex items-center gap-2 cursor-pointer hover:bg-light {{ $tab === 'basic' ? 'active bg-dark text-white' : 'bg-white text-gray-700' }}"
-                            id="{{ $id }}-tab-{{ $tab }}"
-                            data-hs-tab="#{{ $id }}-panel-{{ $tab }}"
-                            aria-controls="{{ $id }}-panel-{{ $tab }}" role="tab">
+                        <button type="button" data-partner-tab-btn="{{ $tab }}"
+                            class="btn-sm border border-border-color inline-flex items-center gap-2 cursor-pointer transition-colors {{ $tab === 'basic' ? 'is-active bg-dark text-white border-dark' : 'bg-white text-title hover:bg-light' }}">
                             <i class="ph {{ $icon }}"></i> {{ __($label) }}
                         </button>
                     @endforeach
                 </nav>
             </div>
 
-            <div class="p-4 max-h-[60vh] overflow-y-auto">
+            <div class="p-4 max-h-[60vh] overflow-y-auto" data-partner-panels="{{ $id }}">
                 {{-- 1) Temel Bilgiler --}}
-                <div id="{{ $id }}-panel-basic" role="tabpanel" aria-labelledby="{{ $id }}-tab-basic">
+                <div data-partner-tab-panel="basic">
                     <div class="grid grid-cols-12 gap-3">
                         <div class="col-span-12 sm:col-span-4">
                             <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Partner Code') }}</label>
@@ -69,7 +67,7 @@
                 </div>
 
                 {{-- 2) Vergi & e-Belge --}}
-                <div id="{{ $id }}-panel-legal" role="tabpanel" aria-labelledby="{{ $id }}-tab-legal" class="hidden">
+                <div data-partner-tab-panel="legal" class="hidden">
                     <div class="grid grid-cols-12 gap-3">
                         <div class="col-span-12 sm:col-span-6">
                             <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Tax Office') }}</label>
@@ -103,7 +101,7 @@
                 </div>
 
                 {{-- 3) İletişim & Adres --}}
-                <div id="{{ $id }}-panel-contact" role="tabpanel" aria-labelledby="{{ $id }}-tab-contact" class="hidden">
+                <div data-partner-tab-panel="contact" class="hidden">
                     <div class="grid grid-cols-12 gap-3">
                         <div class="col-span-12 sm:col-span-6">
                             <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Contact Person') }}</label>
@@ -144,7 +142,7 @@
                 </div>
 
                 {{-- 4) Finansal & Muhasebe --}}
-                <div id="{{ $id }}-panel-financial" role="tabpanel" aria-labelledby="{{ $id }}-tab-financial" class="hidden">
+                <div data-partner-tab-panel="financial" class="hidden">
                     <div class="grid grid-cols-12 gap-3">
                         <div class="col-span-12 sm:col-span-6">
                             <label class="text-sm font-semibold text-gray-900 mb-1 block">{{ __('Receivable Account Code') }}</label>
@@ -187,3 +185,28 @@
         </form>
     </div>
 </div>
+<script>
+(function () {
+    const tablist = document.querySelector('[data-partner-tabs="{{ $id }}"]');
+    const panels = document.querySelector('[data-partner-panels="{{ $id }}"]');
+    if (!tablist || !panels) return;
+    tablist.querySelectorAll('[data-partner-tab-btn]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.partnerTabBtn;
+            tablist.querySelectorAll('[data-partner-tab-btn]').forEach(b => {
+                const active = b.dataset.partnerTabBtn === target;
+                b.classList.toggle('is-active', active);
+                b.classList.toggle('bg-dark', active);
+                b.classList.toggle('text-white', active);
+                b.classList.toggle('border-dark', active);
+                b.classList.toggle('bg-white', !active);
+                b.classList.toggle('text-title', !active);
+                b.classList.toggle('hover:bg-light', !active);
+            });
+            panels.querySelectorAll('[data-partner-tab-panel]').forEach(p => {
+                p.classList.toggle('hidden', p.dataset.partnerTabPanel !== target);
+            });
+        });
+    });
+})();
+</script>
