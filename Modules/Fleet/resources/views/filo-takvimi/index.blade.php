@@ -269,6 +269,21 @@
         const fmt = (d) => new Date(d).toLocaleDateString('tr-TR', {day:'2-digit', month:'long', year:'numeric'});
         modalEl.querySelector('[data-display="alis"]').textContent = fmt(state.pickup.date);
         modalEl.querySelector('[data-display="teslim"]').textContent = fmt(state.delivery.date);
+        openOverlay(modalEl);
+    };
+
+    // Preline'ın internal state'ine bakıp doğru API'yi seçer. `HSOverlay.open`
+    // static'i autoInit koleksiyonuna kayıtlı modaller için çalışır; olmazsa
+    // instance oluşturup direkt açar; son çare gizli tetikleyiciye click atar.
+    const openOverlay = (el) => {
+        try {
+            const HS = window.HSOverlay;
+            if (!HS) return document.getElementById('fleet-reserve-trigger')?.click();
+            const inst = HS.getInstance?.(el, true);
+            if (inst && inst.element && typeof inst.element.open === 'function') { inst.element.open(); return; }
+            if (typeof HS.open === 'function') { HS.open(el); return; }
+            if (typeof HS === 'function') { new HS(el).open(); return; }
+        } catch (e) { console.error('[fleet-calendar] modal open failed', e); }
         document.getElementById('fleet-reserve-trigger')?.click();
     };
 
