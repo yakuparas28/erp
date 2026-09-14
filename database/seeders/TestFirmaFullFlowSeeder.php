@@ -12,6 +12,7 @@ use Modules\Accounting\Services\PaymentService;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Partner;
 use Modules\Inventory\Models\Product;
+use Modules\Inventory\Models\ProductBrand;
 use Modules\Inventory\Models\ProductCategory;
 use Modules\Inventory\Models\StockQuant;
 use Modules\Inventory\Models\Uom;
@@ -150,16 +151,31 @@ class TestFirmaFullFlowSeeder extends Seeder
             );
         }
 
+        $brandData = [
+            ['HP', 'HP', 'https://www.hp.com/tr-tr/', 'HP Inc.'],
+            ['Copimax', 'CPX', 'https://www.copimax.com', 'Yerli fotokopi kağıdı üreticisi'],
+            ['Assan Alüminyum', 'ASSAN', 'https://www.assanaluminyum.com', 'Kibar Holding'],
+            ['UHU', 'UHU', 'https://www.uhu.com', 'Yapıştırıcı ve zamk'],
+            ['Marshall Boya', 'MRS', 'https://www.marshallboya.com', 'AkzoNobel grup'],
+        ];
+        $brands = [];
+        foreach ($brandData as [$name, $code, $website, $description]) {
+            $brands[$name] = ProductBrand::updateOrCreate(
+                ['tenant_id' => $tenant->id, 'name' => $name],
+                ['code' => $code, 'website' => $website, 'description' => $description, 'is_active' => true],
+            );
+        }
+
         $productData = [
-            ['A4 Fotokopi Kağıdı 80gr', 'ofis-a4-80gr', 'Ofis Malzemeleri', 60.00, 45.00, 500],
-            ['Kartuş HP 305A Siyah', 'kartus-hp-305a', 'Ofis Malzemeleri', 850.00, 620.00, 40],
-            ['Alüminyum Sac 2mm', 'aluminyum-sac-2mm', 'Ham Madde', 320.00, 250.00, 120],
-            ['Sıvı Yapıştırıcı 500ml', 'sivi-yapistirici-500ml', 'Yardımcı Malzeme', 45.00, 30.00, 200],
-            ['Endüstriyel Boya Kırmızı 5lt', 'boya-kirmizi-5lt', 'Yardımcı Malzeme', 480.00, 380.00, 80],
+            ['A4 Fotokopi Kağıdı 80gr', 'ofis-a4-80gr', 'Ofis Malzemeleri', 'Copimax', 60.00, 45.00, 500],
+            ['Kartuş HP 305A Siyah', 'kartus-hp-305a', 'Ofis Malzemeleri', 'HP', 850.00, 620.00, 40],
+            ['Alüminyum Sac 2mm', 'aluminyum-sac-2mm', 'Ham Madde', 'Assan Alüminyum', 320.00, 250.00, 120],
+            ['Sıvı Yapıştırıcı 500ml', 'sivi-yapistirici-500ml', 'Yardımcı Malzeme', 'UHU', 45.00, 30.00, 200],
+            ['Endüstriyel Boya Kırmızı 5lt', 'boya-kirmizi-5lt', 'Yardımcı Malzeme', 'Marshall Boya', 480.00, 380.00, 80],
         ];
 
         $products = [];
-        foreach ($productData as [$name, $sku, $catName, $salePrice, $cost, $initialStock]) {
+        foreach ($productData as [$name, $sku, $catName, $brandName, $salePrice, $cost, $initialStock]) {
             $product = Product::withoutGlobalScopes()->updateOrCreate(
                 ['tenant_id' => $tenant->id, 'sku' => $sku],
                 [
@@ -167,6 +183,7 @@ class TestFirmaFullFlowSeeder extends Seeder
                     'product_type' => 'stockable',
                     'uom_id' => $uom->id,
                     'product_category_id' => $categories[$catName]->id,
+                    'product_brand_id' => $brands[$brandName]->id,
                     'list_price' => $salePrice,
                     'standard_cost' => $cost,
                     'cost_method' => 'standard',
