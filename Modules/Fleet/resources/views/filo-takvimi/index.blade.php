@@ -168,6 +168,7 @@
 </div>
 
 @if ($canReserve)
+<button type="button" id="fleet-reserve-trigger" data-hs-overlay="#fleet-reserve-modal" class="hidden">open</button>
 <div id="fleet-reserve-modal" class="hs-overlay hidden fixed top-0 start-0 w-full h-full z-[70] overflow-x-hidden overflow-y-auto pointer-events-none">
     <div class="opacity-0 transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto flex items-center min-h-[calc(100%-56px)]">
         <div class="w-full bg-white border rounded-xl pointer-events-auto shadow-lg">
@@ -268,7 +269,7 @@
         const fmt = (d) => new Date(d).toLocaleDateString('tr-TR', {day:'2-digit', month:'long', year:'numeric'});
         modalEl.querySelector('[data-display="alis"]').textContent = fmt(state.pickup.date);
         modalEl.querySelector('[data-display="teslim"]').textContent = fmt(state.delivery.date);
-        if (window.HSOverlay) HSOverlay.open(modalEl);
+        document.getElementById('fleet-reserve-trigger')?.click();
     };
 
     document.querySelectorAll('.fleet-cell-reservable').forEach(cell => {
