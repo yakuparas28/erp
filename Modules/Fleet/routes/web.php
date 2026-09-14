@@ -37,6 +37,9 @@ Route::middleware(['auth:web', 'module:fleet'])->prefix('app/fleet')->name('app.
     Route::middleware('permission:view fleet calendar,web')->group(function (): void {
         Route::get('/calendar', [FleetCalendarController::class, 'index'])->name('calendar.index');
     });
+    Route::middleware('permission:reserve vehicle,web')->group(function (): void {
+        Route::post('/calendar/reserve', [FleetCalendarController::class, 'reserve'])->name('calendar.reserve');
+    });
 
     // Admin: Filo Yöneticisi
     Route::middleware('permission:view fleet dashboard,web')->group(function (): void {
