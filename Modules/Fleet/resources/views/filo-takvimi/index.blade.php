@@ -4,7 +4,9 @@
 
 @section('content')
 @php
-    // Hücre durumu: bloke > aktif > bekleyen > boş
+    // Hücre durumu: bloke > aktif > bekleyen > boş.
+    // Renkler proje CSS'inde tanımlı `bg-*-100 text-* border-*` utility'leriyle
+    // ifade edildi (arbitrary tailwind sınıfları precompiled stylesheet'te yok).
     $cellFor = function ($vehicle, $day) use ($reservations, $blocks) {
         $dStr = $day->toDateString();
         $blok = ($blocks[$vehicle->id] ?? collect())->first(fn ($b) => $dStr >= $b->start_date->toDateString() && $dStr <= $b->end_date->toDateString());
@@ -21,7 +23,7 @@
                 'type' => $blok->block_type,
                 'label' => $tur,
                 'icon' => $iconMap[$blok->block_type] ?? 'ph-lock',
-                'class' => 'bg-red-50 text-red-700 border-red-200',
+                'class' => 'bg-danger-100 text-danger border-danger',
                 'tip' => "{$vehicle->plaka} — ".$day->format('d.m.Y').' · '.$tur.($blok->aciklama ? ': '.$blok->aciklama : ''),
             ];
         }
@@ -33,7 +35,7 @@
                     'type' => 'aktif',
                     'label' => 'Kullanımda',
                     'icon' => 'ph-car',
-                    'class' => 'bg-slate-200 text-slate-700 border-slate-300',
+                    'class' => 'fleet-cell-aktif',
                     'tip' => "{$vehicle->plaka} — ".$day->format('d.m.Y').' · Kullanımda: '.($rez->aktifSofor?->name ?? '—').($rez->project ? ' ('.$rez->project->ad.')' : ''),
                 ];
             }
@@ -42,7 +44,7 @@
                 'type' => 'bekliyor',
                 'label' => 'Onay bekliyor',
                 'icon' => 'ph-hourglass',
-                'class' => 'bg-amber-50 text-amber-700 border-amber-200',
+                'class' => 'bg-warning-100 text-warning border-warning',
                 'tip' => "{$vehicle->plaka} — ".$day->format('d.m.Y').' · Onay bekliyor: '.($rez->aktifSofor?->name ?? '—'),
             ];
         }
@@ -51,7 +53,7 @@
             'type' => 'bos',
             'label' => 'Garajda',
             'icon' => '',
-            'class' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            'class' => 'bg-success-100 text-success border-success',
             'tip' => "{$vehicle->plaka} — ".$day->format('d.m.Y').' · Garajda',
         ];
     };
@@ -64,16 +66,22 @@
 @endphp
 
 <style>
-    .fleet-cal-cell { min-width: 30px; height: 32px; padding: 2px; border: 1px solid transparent; font-size: 11px; line-height: 1; }
+    .fleet-cal-cell { min-width: 30px; height: 32px; padding: 2px; border: 1px solid; font-size: 11px; line-height: 1; }
+    .fleet-cell-aktif { background:#e2e8f0; color:#334155; border-color:#cbd5e1; }
     .fleet-cell-reservable { cursor: pointer; }
     .fleet-cell-reservable:hover { outline: 2px solid #2563eb; outline-offset: -2px; }
-    .fleet-cell-selected { background-color: #bfdbfe !important; color: #1e3a8a !important; font-weight: bold; }
-    .fleet-cell-selected-range { background-color: #dbeafe !important; color: #1d4ed8 !important; }
+    .fleet-cell-selected { background-color: #bfdbfe !important; color: #1e3a8a !important; font-weight: bold; border-color: #60a5fa !important; }
+    .fleet-cell-selected-range { background-color: #dbeafe !important; color: #1d4ed8 !important; border-color: #93c5fd !important; }
     .fleet-cal-day-head { min-width: 30px; padding: 4px 2px; font-size: 11px; }
     .fleet-cal-today-head { background: #dbeafe; color: #1d4ed8; font-weight: bold; }
     .fleet-cal-weekend-head { color: #9ca3af; }
     .fleet-cal-sticky { position: sticky; left: 0; z-index: 2; background: white; }
     .fleet-cal-sticky-head { position: sticky; left: 0; z-index: 3; background: #f9fafb; }
+    /* Legend swatch renkleri (compiled stylesheet'e uygun) */
+    .fleet-legend-garajda { background:#dcfce7; color:#166534; border:1px solid #86efac; }
+    .fleet-legend-aktif { background:#e2e8f0; color:#334155; border:1px solid #cbd5e1; }
+    .fleet-legend-blokeli { background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; }
+    .fleet-legend-bekliyor { background:#fef3c7; color:#b45309; border:1px solid #fcd34d; }
 </style>
 
 <div class="bg-white border border-border-color rounded-md">
@@ -99,9 +107,9 @@
     @endif
 
     @if ($canReserve)
-        <div class="bg-blue-50 border-b border-blue-200 text-blue-800 px-4 py-2 text-sm flex items-center justify-between gap-3" data-selection-info>
+        <div class="bg-info-transparent border-b border-info text-info px-4 py-2 text-sm flex items-center justify-between gap-3" data-selection-info>
             <span><i class="ph ph-hand-pointing"></i> <strong>Hızlı rezervasyon:</strong> Boş (yeşil) bir hücreye tıklayın — 1. tık <strong>alış</strong>, 2. tık <strong>teslim</strong> tarihini belirler.</span>
-            <button type="button" class="btn-sm border border-blue-300 bg-white text-blue-800 px-2 py-1 hidden" data-clear-selection><i class="ph ph-x"></i> Seçimi Temizle</button>
+            <button type="button" class="btn-sm border border-border-color bg-white px-2 py-1 hidden" data-clear-selection><i class="ph ph-x"></i> Seçimi Temizle</button>
         </div>
     @endif
 
@@ -149,12 +157,12 @@
         </table>
     </div>
 
-    <div class="border-t border-border-color bg-gray-50 px-4 py-3 flex flex-wrap gap-4 text-xs text-default items-center">
-        <strong class="text-gray-700">Renk kodu:</strong>
-        <span class="inline-flex items-center gap-1"><span class="inline-flex items-center justify-center w-6 h-6 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px]"><i class="ph ph-check"></i></span> Garajda</span>
-        <span class="inline-flex items-center gap-1"><span class="inline-flex items-center justify-center w-6 h-6 rounded bg-slate-200 text-slate-700 border border-slate-300 text-[10px]"><i class="ph ph-car"></i></span> Kullanımda</span>
-        <span class="inline-flex items-center gap-1"><span class="inline-flex items-center justify-center w-6 h-6 rounded bg-red-50 text-red-700 border border-red-200 text-[10px]"><i class="ph ph-wrench"></i></span> Bakımda / Blokeli</span>
-        <span class="inline-flex items-center gap-1"><span class="inline-flex items-center justify-center w-6 h-6 rounded bg-amber-50 text-amber-700 border border-amber-200 text-[10px]"><i class="ph ph-hourglass"></i></span> Onay bekliyor</span>
+    <div class="border-t border-border-color bg-light-500 px-4 py-3 flex flex-wrap gap-4 text-xs text-default items-center">
+        <strong class="text-title">Renk kodu:</strong>
+        <span class="inline-flex items-center gap-1"><span class="inline-flex items-center justify-center w-6 h-6 rounded fleet-legend-garajda text-[10px]"><i class="ph ph-check"></i></span> Garajda</span>
+        <span class="inline-flex items-center gap-1"><span class="inline-flex items-center justify-center w-6 h-6 rounded fleet-legend-aktif text-[10px]"><i class="ph ph-car"></i></span> Kullanımda</span>
+        <span class="inline-flex items-center gap-1"><span class="inline-flex items-center justify-center w-6 h-6 rounded fleet-legend-blokeli text-[10px]"><i class="ph ph-wrench"></i></span> Bakımda / Blokeli</span>
+        <span class="inline-flex items-center gap-1"><span class="inline-flex items-center justify-center w-6 h-6 rounded fleet-legend-bekliyor text-[10px]"><i class="ph ph-hourglass"></i></span> Onay bekliyor</span>
         <span class="ms-auto text-[10px] text-default"><i class="ph ph-info"></i> Hücre üzerine gelin: plaka, tarih, şoför/proje bilgisi görünür.</span>
     </div>
 </div>
@@ -163,8 +171,8 @@
 <div id="fleet-reserve-modal" class="hs-overlay hidden fixed top-0 start-0 w-full h-full z-[70] overflow-x-hidden overflow-y-auto pointer-events-none">
     <div class="opacity-0 transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto flex items-center min-h-[calc(100%-56px)]">
         <div class="w-full bg-white border rounded-xl pointer-events-auto shadow-lg">
-            <div class="flex justify-between items-center py-3 px-4 border-b bg-blue-50">
-                <h3 class="font-bold text-blue-800 flex items-center gap-2"><i class="ph ph-calendar-plus"></i> Araç Rezervasyonu</h3>
+            <div class="flex justify-between items-center py-3 px-4 border-b bg-primary-transparent">
+                <h3 class="font-bold text-primary flex items-center gap-2"><i class="ph ph-calendar-plus"></i> Araç Rezervasyonu</h3>
                 <button type="button" data-hs-overlay="#fleet-reserve-modal" class="size-8 inline-flex items-center justify-center rounded-full bg-white border"><i class="ph ph-x"></i></button>
             </div>
             <form method="POST" action="{{ route('app.fleet.calendar.reserve') }}" id="fleet-reserve-form">
@@ -178,15 +186,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
                         <div>
                             <label class="text-xs text-default">Araç</label>
-                            <div class="p-2 bg-gray-100 rounded text-sm font-medium" data-display="arac">—</div>
+                            <div class="p-2 bg-light-500 rounded text-sm font-medium" data-display="arac">—</div>
                         </div>
                         <div>
                             <label class="text-xs text-default">Alış Tarihi</label>
-                            <div class="p-2 bg-emerald-50 text-emerald-700 rounded text-sm font-medium" data-display="alis">—</div>
+                            <div class="p-2 bg-success-transparent text-success rounded text-sm font-medium" data-display="alis">—</div>
                         </div>
                         <div>
                             <label class="text-xs text-default">Teslim Tarihi</label>
-                            <div class="p-2 bg-amber-50 text-amber-700 rounded text-sm font-medium" data-display="teslim">—</div>
+                            <div class="p-2 bg-warning-transparent text-warning rounded text-sm font-medium" data-display="teslim">—</div>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
