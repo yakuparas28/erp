@@ -1623,5 +1623,12 @@
     "Manage product brands used across inventory and sales.": "Envanter ve satışta kullanılan ürün markalarını yönetin.",
     "This brand is used by products and cannot be deleted.": "Bu marka ürünlerde kullanıldığı için silinemez.",
     "Website": "Web Sitesi",
-    "Products": "Ürünler"
+    "Products": "Ürünler",
+    "Assemble other products into a kit": "Diğer ürünleri birleştirerek kit oluştur",
+    "Auto-generate": "Otomatik üret",
+    "Yes — appears in purchase flow": "Evet — satınalma akışında görünür",
+    "Yes — appears in sales flow": "Evet — satış akışında görünür",
+    "General Info": "Genel Bilgiler",
+    "Inventory & Stock": "Envanter & Stok",
+    "Description & Customs": "Açıklama & Gümrük"
 }
