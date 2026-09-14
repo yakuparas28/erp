@@ -261,7 +261,7 @@ class FleetDemoSeeder extends Seeder
         Reservation::create([
             'tenant_id' => $tenant->id,
             'arac_id' => $vehicles[0]->id,
-            'aktif_sofor_id' => $drivers[4] ?? $drivers[1],
+            'aktif_sofor_id' => ($drivers[4] ?? $drivers[1])->id,
             'proje_id' => $projectList[3]->id,
             'planlanan_alis_at' => $now->copy()->subDays(12),
             'planlanan_teslim_at' => $now->copy()->subDays(10),
