@@ -171,7 +171,7 @@ class TestFirmaFullFlowSeeder extends Seeder
                     'standard_cost' => $cost,
                     'cost_method' => 'standard',
                     'track_by' => 'none',
-                    'reservation_method' => 'auto',
+                    'reservation_method' => 'at_confirmation',
                     'is_kit' => false,
                     'sale_ok' => true,
                     'purchase_ok' => true,
