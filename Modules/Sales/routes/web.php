@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Sales\Http\Controllers\DeliveryCarrierController;
+use Modules\Sales\Http\Controllers\DeliveryNoteController;
 use Modules\Sales\Http\Controllers\QuotationController;
 use Modules\Sales\Http\Controllers\SalesOrderController;
 
@@ -27,6 +28,9 @@ Route::middleware(['auth:web', 'module:sales'])->prefix('app/sales')->name('app.
         Route::post('/lines/{line}/reserve', [SalesOrderController::class, 'reserveLine'])->name('lines.reserve');
         Route::post('/lines/{line}/unreserve', [SalesOrderController::class, 'unreserveLine'])->name('lines.unreserve');
         Route::get('/orders/{so}/delivery-slip', [SalesOrderController::class, 'deliverySlip'])->name('orders.delivery-slip');
+
+        Route::get('/delivery-notes', [DeliveryNoteController::class, 'index'])->name('delivery-notes.index');
+        Route::get('/delivery-notes/{note}', [DeliveryNoteController::class, 'show'])->name('delivery-notes.show');
     });
 
     Route::middleware('permission:confirm sales orders,web')->group(function (): void {

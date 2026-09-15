@@ -7,9 +7,11 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Modules\Accounting\Models\Invoice;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Partner;
 use Modules\Inventory\Models\Product;
+use Modules\Purchase\Models\GoodsReceipt;
 use Modules\Purchase\Models\PurchaseOrder;
 use Modules\Purchase\Models\PurchaseOrderLine;
 use Modules\Purchase\Services\PurchaseOrderService;
@@ -49,6 +51,11 @@ class PurchaseOrderController extends Controller
             'products' => Product::with('uom')->where('product_type', '!=', 'service')->orderBy('name')->get(),
             'locations' => Location::where('type', 'internal')->orderBy('name')->get(),
             'canConfirm' => $po->created_by !== auth()->id() && auth()->user()->can('confirm purchase orders'),
+            'relatedInvoices' => Invoice::where('tenant_id', $po->tenant_id)
+                ->where('source_type', 'purchase_order')->where('source_id', $po->id)
+                ->with('lines')->latest()->get(),
+            'goodsReceipts' => GoodsReceipt::where('purchase_order_id', $po->id)
+                ->withCount('lines')->latest('receipt_date')->latest('id')->get(),
         ]);
     }
 

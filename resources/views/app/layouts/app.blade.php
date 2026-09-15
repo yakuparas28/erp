@@ -320,6 +320,11 @@
                                             <i class="ph-duotone ph-shopping-cart"></i><span>{{ __('Purchase Orders') }}</span>
                                         </a>
                                     </li>
+                                    <li>
+                                        <a href="{{ route('app.purchase.goods-receipts.index') }}" class="{{ request()->routeIs('app.purchase.goods-receipts.*') ? 'active' : '' }}">
+                                            <i class="ph-duotone ph-package"></i><span>{{ __('Goods Receipts') }}</span>
+                                        </a>
+                                    </li>
                                     @can('post journal entries')
                                         @module('accounting')
                                             <li>
@@ -353,6 +358,11 @@
                                         </a>
                                     </li>
                                     @can('create sales orders')
+                                        <li>
+                                            <a href="{{ route('app.sales.delivery-notes.index') }}" class="{{ request()->routeIs('app.sales.delivery-notes.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-note-pencil"></i><span>{{ __('Delivery Notes') }}</span>
+                                            </a>
+                                        </li>
                                         <li>
                                             <a href="{{ route('app.sales.carriers.index') }}" class="{{ request()->routeIs('app.sales.carriers.*') ? 'active' : '' }}">
                                                 <i class="ph-duotone ph-truck"></i><span>{{ __('Delivery Carriers') }}</span>

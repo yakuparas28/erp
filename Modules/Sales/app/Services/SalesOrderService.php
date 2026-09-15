@@ -35,6 +35,7 @@ class SalesOrderService
         private readonly CostingService $costing,
         private readonly KitExplosionService $kitExplosion,
         private readonly RouteService $routes,
+        private readonly DeliveryNoteService $deliveryNotes,
     ) {}
 
     public function create(int $tenantId, int $partnerId, int $locationId, User $creator): SalesOrder
@@ -298,6 +299,7 @@ class SalesOrderService
         DB::transaction(function () use ($so, $line, $qty, $product): void {
             if ($product->product_type === 'service') {
                 $this->increaseDeliveredQty($so, $line, $qty);
+                $this->deliveryNotes->recordDelivery($line, $qty);
 
                 return;
             }
@@ -319,6 +321,7 @@ class SalesOrderService
                 }
 
                 $this->increaseDeliveredQty($so, $line, $qty);
+                $this->deliveryNotes->recordDelivery($line, $qty);
 
                 return;
             }
@@ -383,6 +386,7 @@ class SalesOrderService
             SalesOrderLineDelivered::dispatch($line, $move, $cogs);
 
             $this->increaseDeliveredQty($so, $line, $qty);
+            $this->deliveryNotes->recordDelivery($line, $qty);
         });
     }
 

@@ -27,6 +27,7 @@ class PurchaseOrderService
         private readonly StockMoveService $stockMoves,
         private readonly CostingService $costing,
         private readonly PutawayService $putaway,
+        private readonly GoodsReceiptService $goodsReceipts,
     ) {}
 
     public function create(int $tenantId, int $partnerId, User $creator, string $billControlPolicy = 'received_qty'): PurchaseOrder
@@ -191,6 +192,8 @@ class PurchaseOrderService
                 );
             }
         }
+
+        $this->goodsReceipts->recordReceipt($line, $qty, $receivingLocationId);
 
         PurchaseOrderLineReceived::dispatch($line, $firstMove);
     }

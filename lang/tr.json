@@ -1,5 +1,23 @@
 {
     "(and :count more error)": "(ve :count hata daha var)",
+    "Delivery Notes": "Sevk İrsaliyeleri",
+    "Delivery Note": "Sevk İrsaliyesi",
+    "Automatically generated for each shipped sales order line.": "Sevk edilen her satış sipariş satırı için otomatik oluşturulur.",
+    "Automatically generated for each received purchase order line.": "Teslim alınan her satın alma sipariş satırı için otomatik oluşturulur.",
+    "Note No": "İrsaliye No",
+    "Goods Receipts": "Mal Kabul Fişleri",
+    "Goods Receipt": "Mal Kabul Fişi",
+    "Receipt No": "Mal Kabul No",
+    "Waybill No": "Sevk Belge No",
+    "Driver": "Şoför",
+    "Vehicle": "Araç",
+    "No delivery notes yet.": "Henüz sevk irsaliyesi yok.",
+    "No goods receipts yet.": "Henüz mal kabul fişi yok.",
+    "Related Delivery Notes": "İlgili İrsaliyeler",
+    "Related Goods Receipts": "İlgili Mal Kabul Fişleri",
+    "Delivered": "Teslim Edildi",
+    "Received": "Alındı",
+    "Cancelled": "İptal",
     "Human Resources": "İnsan Kaynakları",
     "Employees": "Personel",
     "Departments": "Departmanlar",
@@ -1682,5 +1700,7 @@
     "expense-status.refused": "Reddedildi",
     "expense-status.posted": "Postalandı",
     "expense-status.paid": "Ödendi",
-    "view": "görüntüle"
+    "view": "görüntüle",
+    "Related Invoices": "İlgili Faturalar",
+    "No invoices linked to this document yet.": "Bu belgeye bağlı fatura henüz yok."
 }

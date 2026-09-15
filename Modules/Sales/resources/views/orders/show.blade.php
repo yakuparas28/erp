@@ -231,6 +231,9 @@
     </script>
 @endif
 
+@include('app.partials.related-shipments', ['items' => $deliveryNotes, 'mode' => 'sales'])
+@include('app.partials.related-invoices', ['invoices' => $relatedInvoices, 'routePrefix' => 'sales'])
+
 @if ($so->status === 'draft' && $configurableTemplates->isNotEmpty())
     @include('sales::orders._variant-configurator', ['so' => $so, 'templates' => $configurableTemplates, 'uomOptions' => $uomOptions])
 @endif

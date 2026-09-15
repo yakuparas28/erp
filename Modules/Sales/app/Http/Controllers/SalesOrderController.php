@@ -7,11 +7,13 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Modules\Accounting\Models\Invoice;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Partner;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductTemplate;
 use Modules\Inventory\Services\VariantGeneratorService;
+use Modules\Sales\Models\DeliveryNote;
 use Modules\Sales\Models\SalesOrder;
 use Modules\Sales\Models\SalesOrderLine;
 use Modules\Sales\Services\SalesOrderService;
@@ -78,6 +80,11 @@ class SalesOrderController extends Controller
             'products' => Product::with('uom')->where('product_type', '!=', 'service')->orderBy('name')->get(),
             'configurableTemplates' => $configurableTemplates,
             'canConfirm' => $so->created_by !== auth()->id() && auth()->user()->can('confirm sales orders'),
+            'relatedInvoices' => Invoice::where('tenant_id', $so->tenant_id)
+                ->where('source_type', 'sales_order')->where('source_id', $so->id)
+                ->with('lines')->latest()->get(),
+            'deliveryNotes' => DeliveryNote::where('sales_order_id', $so->id)
+                ->withCount('lines')->latest('delivery_date')->latest('id')->get(),
         ]);
     }
 

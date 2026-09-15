@@ -187,6 +187,9 @@
     </script>
 @endif
 
+@include('app.partials.related-shipments', ['items' => $goodsReceipts, 'mode' => 'purchase'])
+@include('app.partials.related-invoices', ['invoices' => $relatedInvoices, 'routePrefix' => 'purchase'])
+
 <div class="flex items-center gap-2 flex-wrap">
     @can('post journal entries')
         @if (in_array($po->status, ['confirmed', 'done']))
