@@ -455,6 +455,11 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a href="{{ route('app.accounting.card-payments.index') }}" class="{{ request()->routeIs('app.accounting.card-payments.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-credit-card"></i><span>{{ __('Card Payments') }}</span>
+                                    </a>
+                                </li>
+                                <li>
                                     <a href="{{ route('app.accounting.payments.index') }}" class="{{ request()->routeIs('app.accounting.payments.index') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-wallet"></i><span>{{ __('All Payments') }}</span>
                                     </a>
@@ -464,6 +469,11 @@
                                 <li>
                                     <a href="{{ route('app.accounting.cash-bank-accounts.index') }}" class="{{ request()->routeIs('app.accounting.cash-bank-accounts.*') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-vault"></i><span>{{ __('Cash & Bank Accounts') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('app.accounting.pos-terminals.index') }}" class="{{ request()->routeIs('app.accounting.pos-terminals.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-terminal"></i><span>{{ __('POS Terminals') }}</span>
                                     </a>
                                 </li>
                                 <li>

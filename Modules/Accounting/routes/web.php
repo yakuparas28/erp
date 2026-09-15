@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Accounting\Http\Controllers\AccountingSettingsController;
+use Modules\Accounting\Http\Controllers\CardPaymentController;
 use Modules\Accounting\Http\Controllers\CashBankAccountController;
 use Modules\Accounting\Http\Controllers\ChartOfAccountController;
 use Modules\Accounting\Http\Controllers\CheckAndNoteController;
@@ -10,6 +11,7 @@ use Modules\Accounting\Http\Controllers\ExchangeRateController;
 use Modules\Accounting\Http\Controllers\InvoiceApprovalController;
 use Modules\Accounting\Http\Controllers\JournalEntryViewerController;
 use Modules\Accounting\Http\Controllers\PaymentController;
+use Modules\Accounting\Http\Controllers\PosTerminalController;
 use Modules\Accounting\Http\Controllers\PurchaseInvoiceController;
 use Modules\Accounting\Http\Controllers\SalesInvoiceController;
 
@@ -76,6 +78,17 @@ Route::middleware(['auth:web', 'module:accounting'])->prefix('app/accounting')->
         Route::post('/checks-and-notes/{note}/collect', [CheckAndNoteController::class, 'markCollected'])->name('checks-and-notes.collect');
         Route::post('/checks-and-notes/{note}/bounce', [CheckAndNoteController::class, 'markBounced'])->name('checks-and-notes.bounce');
         Route::post('/checks-and-notes/{note}/pay', [CheckAndNoteController::class, 'markPaid'])->name('checks-and-notes.pay');
+
+        Route::get('/card-payments', [CardPaymentController::class, 'index'])->name('card-payments.index');
+        Route::post('/card-payments', [CardPaymentController::class, 'store'])->name('card-payments.store');
+        Route::post('/card-payments/{card}/settle', [CardPaymentController::class, 'settle'])->name('card-payments.settle');
+    });
+
+    Route::middleware('role:Tenant Admin')->group(function (): void {
+        Route::get('/pos-terminals', [PosTerminalController::class, 'index'])->name('pos-terminals.index');
+        Route::post('/pos-terminals', [PosTerminalController::class, 'store'])->name('pos-terminals.store');
+        Route::patch('/pos-terminals/{terminal}', [PosTerminalController::class, 'update'])->name('pos-terminals.update');
+        Route::delete('/pos-terminals/{terminal}', [PosTerminalController::class, 'destroy'])->name('pos-terminals.destroy');
     });
 
     Route::middleware('permission:post journal entries,web')->group(function (): void {

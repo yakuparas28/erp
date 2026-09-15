@@ -27,9 +27,11 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Modules\Accounting\Models\CardPayment;
 use Modules\Accounting\Models\CheckAndNote;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\Payment;
+use Modules\Accounting\Models\PosTerminal;
 use Modules\Expenses\Models\Expense;
 use Modules\Expenses\Models\ExpenseCategory;
 use Modules\Fleet\Models\FleetTaskSetting;
@@ -166,6 +168,8 @@ class AppServiceProvider extends ServiceProvider
             'invoice' => Invoice::class,
             'payment' => Payment::class,
             'check_and_note' => CheckAndNote::class,
+            'pos_terminal' => PosTerminal::class,
+            'card_payment' => CardPayment::class,
             'approval_workflow' => ApprovalWorkflow::class,
             'approval_workflow_step' => ApprovalWorkflowStep::class,
             'approval' => Approval::class,
