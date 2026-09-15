@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Accounting\Http\Controllers\AccountingSettingsController;
+use Modules\Accounting\Http\Controllers\BankStatementController;
 use Modules\Accounting\Http\Controllers\CardPaymentController;
 use Modules\Accounting\Http\Controllers\CashBankAccountController;
 use Modules\Accounting\Http\Controllers\ChartOfAccountController;
@@ -82,6 +83,13 @@ Route::middleware(['auth:web', 'module:accounting'])->prefix('app/accounting')->
         Route::get('/card-payments', [CardPaymentController::class, 'index'])->name('card-payments.index');
         Route::post('/card-payments', [CardPaymentController::class, 'store'])->name('card-payments.store');
         Route::post('/card-payments/{card}/settle', [CardPaymentController::class, 'settle'])->name('card-payments.settle');
+
+        Route::get('/bank-statements', [BankStatementController::class, 'index'])->name('bank-statements.index');
+        Route::post('/bank-statements', [BankStatementController::class, 'store'])->name('bank-statements.store');
+        Route::get('/bank-statements/{statement}', [BankStatementController::class, 'show'])->name('bank-statements.show');
+        Route::post('/bank-statements/lines/{line}/match', [BankStatementController::class, 'matchLine'])->name('bank-statements.lines.match');
+        Route::post('/bank-statements/lines/{line}/ignore', [BankStatementController::class, 'ignoreLine'])->name('bank-statements.lines.ignore');
+        Route::post('/bank-statements/lines/{line}/unmatch', [BankStatementController::class, 'unmatchLine'])->name('bank-statements.lines.unmatch');
     });
 
     Route::middleware('role:Tenant Admin')->group(function (): void {

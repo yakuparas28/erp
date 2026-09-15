@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Modules\Accounting\Models\BankStatement;
+use Modules\Accounting\Models\BankStatementLine;
 use Modules\Accounting\Models\CardPayment;
 use Modules\Accounting\Models\CheckAndNote;
 use Modules\Accounting\Models\Invoice;
@@ -170,6 +172,8 @@ class AppServiceProvider extends ServiceProvider
             'check_and_note' => CheckAndNote::class,
             'pos_terminal' => PosTerminal::class,
             'card_payment' => CardPayment::class,
+            'bank_statement' => BankStatement::class,
+            'bank_statement_line' => BankStatementLine::class,
             'approval_workflow' => ApprovalWorkflow::class,
             'approval_workflow_step' => ApprovalWorkflowStep::class,
             'approval' => Approval::class,

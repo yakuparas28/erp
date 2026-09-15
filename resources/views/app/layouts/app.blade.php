@@ -460,6 +460,11 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a href="{{ route('app.accounting.bank-statements.index') }}" class="{{ request()->routeIs('app.accounting.bank-statements.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-file-arrow-up"></i><span>{{ __('Bank Statements') }}</span>
+                                    </a>
+                                </li>
+                                <li>
                                     <a href="{{ route('app.accounting.payments.index') }}" class="{{ request()->routeIs('app.accounting.payments.index') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-wallet"></i><span>{{ __('All Payments') }}</span>
                                     </a>
