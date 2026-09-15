@@ -60,6 +60,12 @@ final class PermissionCatalog
                 'manage leave configuration',
                 'manage consumption rules',
             ],
+            'expenses' => [
+                'submit own expense',
+                'approve expense',
+                'manage expense categories',
+                'post expense',
+            ],
             'fleet' => [
                 'view fleet calendar',
                 'reserve vehicle',
@@ -128,11 +134,23 @@ final class PermissionCatalog
     {
         return [
             'submit own leave',
+            'submit own expense',
             'view fleet calendar',
             'reserve vehicle',
             'view own reservations',
             'confirm own pickup',
             'submit own delivery',
+        ];
+    }
+
+    /** @return list<string> */
+    public static function expenseApproverDefaults(): array
+    {
+        return [
+            'submit own expense',
+            'approve expense',
+            'manage expense categories',
+            'post expense',
         ];
     }
 

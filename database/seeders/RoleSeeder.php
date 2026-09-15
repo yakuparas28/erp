@@ -26,6 +26,7 @@ class RoleSeeder extends Seeder
         Role::findOrCreate('Accountant', 'web');
         Role::findOrCreate('Employee', 'web'); // Personel: giriş yapabilir, kendi izin taleplerini yönetir; ek yetki verilmemiştir.
         Role::findOrCreate('Fleet Manager', 'web'); // Filo Yöneticisi: araç envanteri, rezervasyon onayı ve teslim akışını yönetir.
+        Role::findOrCreate('Expense Approver', 'web'); // Masraf Onaylayıcısı: personel masraflarını onaylayıp muhasebeye postalar.
 
         $this->call(PermissionSeeder::class);
     }

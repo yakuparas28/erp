@@ -1,0 +1,12 @@
+{
+    "name": "Expenses",
+    "alias": "expenses",
+    "description": "Masraf Yönetimi: kategoriler, personel masraf kayıtları, onay akışı ve muhasebeye postalama",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Expenses\\Providers\\ExpensesServiceProvider"
+    ],
+    "files": [],
+    "requires": ["Hr", "Accounting"]
+}

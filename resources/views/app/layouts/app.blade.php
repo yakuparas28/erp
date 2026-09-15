@@ -616,6 +616,38 @@
                                 </ul>
                             </li>
                         @endmodule
+                        @module('expenses')
+                            @php $expensesActive = request()->routeIs('app.expenses.*'); @endphp
+                            <li class="submenu {{ $expensesActive ? 'active' : '' }}">
+                                <a href="javascript:void(0);" class="{{ $expensesActive ? 'active subdrop' : '' }}">
+                                    <i class="ph-duotone ph-wallet"></i><span>{{ __('Expenses') }}</span>
+                                    <span class="menu-arrow"></span>
+                                </a>
+                                <ul>
+                                    @can('submit own expense')
+                                        <li>
+                                            <a href="{{ route('app.expenses.mine') }}" class="{{ request()->routeIs('app.expenses.mine') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-receipt"></i><span>{{ __('My Expenses') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('approve expense')
+                                        <li>
+                                            <a href="{{ route('app.expenses.approvals.index') }}" class="{{ request()->routeIs('app.expenses.approvals.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-check-square"></i><span>{{ __('Expense Approvals') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                    @can('manage expense categories')
+                                        <li>
+                                            <a href="{{ route('app.expenses.categories.index') }}" class="{{ request()->routeIs('app.expenses.categories.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-tag"></i><span>{{ __('Expense Categories') }}</span>
+                                            </a>
+                                        </li>
+                                    @endcan
+                                </ul>
+                            </li>
+                        @endmodule
                         @if (auth()->user()?->can('manage users') || auth()->user()?->can('manage roles'))
                             @php $adminActive = request()->routeIs('app.users.*') || request()->routeIs('app.roles.*'); @endphp
                             <li class="submenu {{ $adminActive ? 'active' : '' }}">

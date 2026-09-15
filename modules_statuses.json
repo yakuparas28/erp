@@ -4,5 +4,6 @@
     "Purchase": true,
     "Accounting": true,
     "Hr": true,
-    "Fleet": true
+    "Fleet": true,
+    "Expenses": true
 }

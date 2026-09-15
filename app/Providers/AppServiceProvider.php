@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\Payment;
+use Modules\Expenses\Models\Expense;
+use Modules\Expenses\Models\ExpenseCategory;
 use Modules\Fleet\Models\FleetTaskSetting;
 use Modules\Fleet\Models\MaintenanceRecord;
 use Modules\Fleet\Models\Project;
@@ -151,6 +153,8 @@ class AppServiceProvider extends ServiceProvider
             'vehicle_calendar_block' => VehicleCalendarBlock::class,
             'vehicle_usage_rule' => VehicleUsageRule::class,
             'fleet_task_setting' => FleetTaskSetting::class,
+            'expense' => Expense::class,
+            'expense_category' => ExpenseCategory::class,
         ]);
     }
 }
