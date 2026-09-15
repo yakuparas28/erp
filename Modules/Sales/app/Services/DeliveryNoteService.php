@@ -5,36 +5,26 @@ namespace Modules\Sales\Services;
 use Illuminate\Support\Facades\DB;
 use Modules\Sales\Models\DeliveryNote;
 use Modules\Sales\Models\DeliveryNoteLine;
+use Modules\Sales\Models\SalesOrder;
 use Modules\Sales\Models\SalesOrderLine;
 
 /**
- * İrsaliye üretimi. SalesOrderService::deliver() her satır teslim
- * için bir DeliveryNote (o an için tek-satırlık) yaratır. Manual
- * multi-line irsaliyeler için createFromLines() de sunuluyor.
+ * İrsaliye üretimi. İki mod:
+ *  • recordDelivery(line, qty) — tek-satırlık şort yol (eski API,
+ *    SalesOrderService::deliver()'ın default kullanımı).
+ *  • createNoteHeader(so, meta) + recordDelivery(line, qty, [], $note)
+ *    — çoklu satır tek irsaliye (yeni "İrsaliye Oluştur" akışı).
+ * Stok hareketleri hâlâ SalesOrderService::deliver()'dadır; bu servis
+ * yalnızca yasal belge kaydını üretir.
  */
 class DeliveryNoteService
 {
-    /**
-     * Tek satırlık irsaliye — mevcut deliver() akışıyla uyumlu.
-     * Stok hareketleri hâlâ SalesOrderService::deliver()'da; bu servis
-     * sadece belge kaydını üretir.
-     */
-    public function recordDelivery(SalesOrderLine $line, string $qty, array $meta = []): DeliveryNote
+    public function recordDelivery(SalesOrderLine $line, string $qty, array $meta = [], ?DeliveryNote $existingNote = null): DeliveryNote
     {
-        return DB::transaction(function () use ($line, $qty, $meta) {
+        return DB::transaction(function () use ($line, $qty, $meta, $existingNote) {
             $so = $line->salesOrder;
-            $note = new DeliveryNote([
-                'sales_order_id' => $so->id,
-                'note_no' => $this->nextNoteNo($so->tenant_id),
-                'delivery_date' => $meta['delivery_date'] ?? now()->toDateString(),
-                'driver_name' => $meta['driver_name'] ?? null,
-                'vehicle_plate' => $meta['vehicle_plate'] ?? null,
-                'notes' => $meta['notes'] ?? null,
-                'status' => DeliveryNote::STATUS_DELIVERED,
-                'created_by' => auth()->id(),
-            ]);
-            $note->tenant_id = $so->tenant_id;
-            $note->save();
+            $note = $existingNote ?? $this->createNoteHeader($so, $meta);
+
             $noteLine = new DeliveryNoteLine([
                 'delivery_note_id' => $note->id,
                 'sales_order_line_id' => $line->id,
@@ -47,6 +37,30 @@ class DeliveryNoteService
 
             return $note;
         });
+    }
+
+    /**
+     * Boş irsaliye başlığı yaratır. Çağıran, ardından her satırı
+     * recordDelivery(line, qty, [], $note) ile bu belgeye ekler.
+     * Aynı DB transaction'ı içinde çağrılmalı — kısmi başarı durumu
+     * yasal belge tutarlılığını bozar.
+     */
+    public function createNoteHeader(SalesOrder $so, array $meta = []): DeliveryNote
+    {
+        $note = new DeliveryNote([
+            'sales_order_id' => $so->id,
+            'note_no' => $this->nextNoteNo($so->tenant_id),
+            'delivery_date' => $meta['delivery_date'] ?? now()->toDateString(),
+            'driver_name' => $meta['driver_name'] ?? null,
+            'vehicle_plate' => $meta['vehicle_plate'] ?? null,
+            'notes' => $meta['notes'] ?? null,
+            'status' => DeliveryNote::STATUS_DELIVERED,
+            'created_by' => auth()->id(),
+        ]);
+        $note->tenant_id = $so->tenant_id;
+        $note->save();
+
+        return $note;
     }
 
     public function totalDeliveredForLine(int $lineId): string

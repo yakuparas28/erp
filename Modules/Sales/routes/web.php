@@ -19,6 +19,7 @@ Route::middleware(['auth:web', 'module:sales'])->prefix('app/sales')->name('app.
         Route::post('/orders/{so}/lines', [SalesOrderController::class, 'storeLine'])->name('orders.lines.store');
         Route::post('/orders/{so}/lines/configure', [SalesOrderController::class, 'configureAndAddLine'])->name('orders.lines.configure');
         Route::post('/orders/{so}/send-quotation', [SalesOrderController::class, 'sendQuotation'])->name('orders.send-quotation');
+        Route::post('/orders/{so}/delivery-notes', [SalesOrderController::class, 'createDeliveryNote'])->name('orders.delivery-notes.create');
         Route::get('/quotations', [QuotationController::class, 'index'])->name('quotations.index');
         Route::post('/quotations', [QuotationController::class, 'store'])->name('quotations.store');
         Route::get('/orders/{so}/quotation', [SalesOrderController::class, 'quotation'])->name('orders.quotation');

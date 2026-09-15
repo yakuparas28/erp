@@ -19,6 +19,7 @@ use Modules\Inventory\Services\KitExplosionService;
 use Modules\Inventory\Services\RouteService;
 use Modules\Inventory\Services\StockMoveService;
 use Modules\Sales\Events\SalesOrderLineDelivered;
+use Modules\Sales\Models\DeliveryNote;
 use Modules\Sales\Models\SalesOrder;
 use Modules\Sales\Models\SalesOrderLine;
 
@@ -285,7 +286,7 @@ class SalesOrderService
      * edilmişse) rezervi serbest bırakır. Tüm satırlar tam teslim
      * edilince SO 'done' durumuna geçer.
      */
-    public function deliver(SalesOrderLine $line, string $qty): void
+    public function deliver(SalesOrderLine $line, string $qty, ?DeliveryNote $note = null): void
     {
         $so = $line->salesOrder;
 
@@ -296,10 +297,10 @@ class SalesOrderService
 
         $product = Product::withoutGlobalScopes()->findOrFail($line->product_id);
 
-        DB::transaction(function () use ($so, $line, $qty, $product): void {
+        DB::transaction(function () use ($so, $line, $qty, $product, $note): void {
             if ($product->product_type === 'service') {
                 $this->increaseDeliveredQty($so, $line, $qty);
-                $this->deliveryNotes->recordDelivery($line, $qty);
+                $this->deliveryNotes->recordDelivery($line, $qty, [], $note);
 
                 return;
             }
@@ -321,7 +322,7 @@ class SalesOrderService
                 }
 
                 $this->increaseDeliveredQty($so, $line, $qty);
-                $this->deliveryNotes->recordDelivery($line, $qty);
+                $this->deliveryNotes->recordDelivery($line, $qty, [], $note);
 
                 return;
             }
@@ -386,7 +387,33 @@ class SalesOrderService
             SalesOrderLineDelivered::dispatch($line, $move, $cogs);
 
             $this->increaseDeliveredQty($so, $line, $qty);
-            $this->deliveryNotes->recordDelivery($line, $qty);
+            $this->deliveryNotes->recordDelivery($line, $qty, [], $note);
+        });
+    }
+
+    /**
+     * Çoklu satırı tek irsaliyeye toplayan yasal akış. Kısmi başarı
+     * kabul edilmez — herhangi bir satır fail olursa tüm işlem geri sarılır
+     * (transaction) ve hiçbir belge yaratılmaz.
+     *
+     * @param  array<int, array{line_id:int, qty:string}>  $items
+     * @param  array{delivery_date?:?string, driver_name?:?string, vehicle_plate?:?string, notes?:?string}  $meta
+     */
+    public function deliverMany(SalesOrder $so, array $items, array $meta = []): DeliveryNote
+    {
+        abort_unless($so->status === 'confirmed', 422, __('Only a confirmed sales order can be delivered.'));
+        abort_if($items === [], 422, __('Select at least one line to include on the delivery note.'));
+
+        return DB::transaction(function () use ($so, $items, $meta) {
+            $note = $this->deliveryNotes->createNoteHeader($so, $meta);
+
+            foreach ($items as $item) {
+                $line = SalesOrderLine::withoutGlobalScopes()->findOrFail($item['line_id']);
+                abort_if($line->sales_order_id !== $so->id, 422, __('One of the selected lines does not belong to this order.'));
+                $this->deliver($line, (string) $item['qty'], $note);
+            }
+
+            return $note->fresh();
         });
     }
 

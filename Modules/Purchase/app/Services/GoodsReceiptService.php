@@ -7,6 +7,7 @@ use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Services\InvoiceMatchingService;
 use Modules\Purchase\Models\GoodsReceipt;
 use Modules\Purchase\Models\GoodsReceiptLine;
+use Modules\Purchase\Models\PurchaseOrder;
 use Modules\Purchase\Models\PurchaseOrderLine;
 
 /**
@@ -20,22 +21,12 @@ class GoodsReceiptService
         private readonly InvoiceMatchingService $matching,
     ) {}
 
-    public function recordReceipt(PurchaseOrderLine $line, string $qty, int $locationId, array $meta = []): GoodsReceipt
+    public function recordReceipt(PurchaseOrderLine $line, string $qty, int $locationId, array $meta = [], ?GoodsReceipt $existingReceipt = null): GoodsReceipt
     {
-        return DB::transaction(function () use ($line, $qty, $locationId, $meta) {
+        return DB::transaction(function () use ($line, $qty, $locationId, $meta, $existingReceipt) {
             $po = $line->purchaseOrder;
-            $receipt = new GoodsReceipt([
-                'purchase_order_id' => $po->id,
-                'receipt_no' => $this->nextReceiptNo($po->tenant_id),
-                'receipt_date' => $meta['receipt_date'] ?? now()->toDateString(),
-                'warehouse_location_id' => $locationId,
-                'waybill_no' => $meta['waybill_no'] ?? null,
-                'notes' => $meta['notes'] ?? null,
-                'status' => GoodsReceipt::STATUS_RECEIVED,
-                'created_by' => auth()->id(),
-            ]);
-            $receipt->tenant_id = $po->tenant_id;
-            $receipt->save();
+            $receipt = $existingReceipt ?? $this->createReceiptHeader($po, $locationId, $meta);
+
             $receiptLine = new GoodsReceiptLine([
                 'goods_receipt_id' => $receipt->id,
                 'purchase_order_line_id' => $line->id,
@@ -50,6 +41,28 @@ class GoodsReceiptService
 
             return $receipt;
         });
+    }
+
+    /**
+     * Boş mal kabul fişi başlığı yaratır. Çağıran, her satırı
+     * recordReceipt(line, qty, locationId, [], $receipt) ile bu belgeye ekler.
+     */
+    public function createReceiptHeader(PurchaseOrder $po, int $locationId, array $meta = []): GoodsReceipt
+    {
+        $receipt = new GoodsReceipt([
+            'purchase_order_id' => $po->id,
+            'receipt_no' => $this->nextReceiptNo($po->tenant_id),
+            'receipt_date' => $meta['receipt_date'] ?? now()->toDateString(),
+            'warehouse_location_id' => $locationId,
+            'waybill_no' => $meta['waybill_no'] ?? null,
+            'notes' => $meta['notes'] ?? null,
+            'status' => GoodsReceipt::STATUS_RECEIVED,
+            'created_by' => auth()->id(),
+        ]);
+        $receipt->tenant_id = $po->tenant_id;
+        $receipt->save();
+
+        return $receipt;
     }
 
     /**

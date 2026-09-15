@@ -136,6 +136,37 @@ class PurchaseOrderController extends Controller
         return redirect()->route('app.purchase.orders.show', $line->purchase_order_id)->with('status', __('Received.'));
     }
 
+    public function createGoodsReceipt(Request $request, PurchaseOrder $po): RedirectResponse
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        $validated = $request->validate([
+            'receipt_date' => ['nullable', 'date'],
+            'waybill_no' => ['nullable', 'string', 'max:64'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'receiving_location_id' => ['required', Rule::exists('locations', 'id')->where(fn ($q) => $q->where('tenant_id', $tenantId))],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.line_id' => [
+                'required',
+                Rule::exists('purchase_order_lines', 'id')
+                    ->where(fn ($q) => $q->where('tenant_id', $tenantId)->where('purchase_order_id', $po->id)),
+            ],
+            'lines.*.qty' => ['required', 'numeric', 'gt:0'],
+        ]);
+
+        try {
+            $receipt = $this->purchaseOrders->receiveMany($po, $validated['lines'], (int) $validated['receiving_location_id'], [
+                'receipt_date' => $validated['receipt_date'] ?? null,
+                'waybill_no' => $validated['waybill_no'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+        } catch (HttpException $e) {
+            return back()->withErrors(['receipt' => $e->getMessage()])->withInput();
+        }
+
+        return redirect()->route('app.purchase.goods-receipts.show', $receipt)->with('status', __('Goods receipt created.'));
+    }
+
     public function returnReceipt(Request $request, PurchaseOrderLine $line): RedirectResponse
     {
         $tenantId = $request->user()->tenant_id;

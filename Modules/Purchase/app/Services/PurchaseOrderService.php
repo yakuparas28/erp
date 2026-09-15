@@ -3,6 +3,7 @@
 namespace Modules\Purchase\Services;
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\Uom;
@@ -11,6 +12,7 @@ use Modules\Inventory\Services\CostingService;
 use Modules\Inventory\Services\PutawayService;
 use Modules\Inventory\Services\StockMoveService;
 use Modules\Purchase\Events\PurchaseOrderLineReceived;
+use Modules\Purchase\Models\GoodsReceipt;
 use Modules\Purchase\Models\PurchaseOrder;
 use Modules\Purchase\Models\PurchaseOrderLine;
 
@@ -93,7 +95,7 @@ class PurchaseOrderService
      * değer yaratmadığından maliyet yalnızca ilk (alım) hareketinde
      * kaydedilir (Faz 5 kararıyla tutarlı).
      */
-    public function receive(PurchaseOrderLine $line, string $qty, int $receivingLocationId, ?int $lotId = null): void
+    public function receive(PurchaseOrderLine $line, string $qty, int $receivingLocationId, ?int $lotId = null, ?GoodsReceipt $receipt = null): void
     {
         $po = $line->purchaseOrder;
 
@@ -193,9 +195,34 @@ class PurchaseOrderService
             }
         }
 
-        $this->goodsReceipts->recordReceipt($line, $qty, $receivingLocationId);
+        $this->goodsReceipts->recordReceipt($line, $qty, $receivingLocationId, [], $receipt);
 
         PurchaseOrderLineReceived::dispatch($line, $firstMove);
+    }
+
+    /**
+     * Çoklu satırı tek mal kabul fişine toplayan akış. Transaction
+     * bütünlüğü — kısmi başarı yok, hiçbiri veya hepsi.
+     *
+     * @param  array<int, array{line_id:int, qty:string}>  $items
+     * @param  array{receipt_date?:?string, waybill_no?:?string, notes?:?string}  $meta
+     */
+    public function receiveMany(PurchaseOrder $po, array $items, int $receivingLocationId, array $meta = []): GoodsReceipt
+    {
+        abort_unless($po->status === 'confirmed', 422, __('Only a confirmed purchase order can be received.'));
+        abort_if($items === [], 422, __('Select at least one line to include on the goods receipt.'));
+
+        return DB::transaction(function () use ($po, $items, $receivingLocationId, $meta) {
+            $receipt = $this->goodsReceipts->createReceiptHeader($po, $receivingLocationId, $meta);
+
+            foreach ($items as $item) {
+                $line = PurchaseOrderLine::withoutGlobalScopes()->findOrFail($item['line_id']);
+                abort_if($line->purchase_order_id !== $po->id, 422, __('One of the selected lines does not belong to this order.'));
+                $this->receive($line, (string) $item['qty'], $receivingLocationId, null, $receipt);
+            }
+
+            return $receipt->fresh();
+        });
     }
 
     /**

@@ -113,13 +113,27 @@
         </table>
     </div>
 
-    <div class="flex justify-end">
+    <div class="flex flex-wrap justify-between items-end gap-3">
+        @php
+            $hasReceivable = $po->status === 'confirmed' && $po->lines->contains(fn ($l) => bccomp($l->receivedQty(), (string) $l->qty, 4) < 0);
+        @endphp
+        <div>
+            @if ($hasReceivable)
+                <button type="button" data-po-open-receipt class="btn-sm bg-primary text-white border border-primary hover:bg-primary/90 cursor-pointer inline-flex items-center gap-2">
+                    <i class="ph ph-package"></i> {{ __('Create Goods Receipt') }}
+                </button>
+            @endif
+        </div>
         <div class="w-72 text-sm space-y-2">
             <div class="flex justify-between"><span class="text-default">{{ __('Subtotal') }}</span><span class="text-gray-900 font-semibold">{{ number_format((float) $subtotal, 2) }}</span></div>
             <div class="flex justify-between border-t border-border-color pt-2 text-base"><span class="font-bold text-title">{{ __('Total') }}</span><span class="text-primary font-bold">{{ number_format((float) $subtotal, 2) }}</span></div>
         </div>
     </div>
 </div>
+
+@if ($po->status === 'confirmed')
+    @include('purchase::orders._goods-receipt-modal', ['po' => $po, 'locations' => $locations])
+@endif
 
 @if ($po->status === 'draft')
     <div class="bg-white border border-border-color rounded-md p-4 mb-4">

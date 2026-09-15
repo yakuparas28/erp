@@ -13,6 +13,7 @@ Route::middleware(['auth:web', 'module:purchase'])->prefix('app/purchase')->name
         Route::post('/orders/{po}/send-rfq', [PurchaseOrderController::class, 'sendRfq'])->name('orders.send-rfq');
         Route::post('/orders/{po}/cancel', [PurchaseOrderController::class, 'cancel'])->name('orders.cancel');
         Route::post('/lines/{line}/receive', [PurchaseOrderController::class, 'receive'])->name('lines.receive');
+        Route::post('/orders/{po}/goods-receipts', [PurchaseOrderController::class, 'createGoodsReceipt'])->name('orders.goods-receipts.create');
         Route::post('/lines/{line}/return', [PurchaseOrderController::class, 'returnReceipt'])->name('lines.return');
 
         Route::get('/goods-receipts', [GoodsReceiptController::class, 'index'])->name('goods-receipts.index');

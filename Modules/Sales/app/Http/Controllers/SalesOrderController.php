@@ -210,6 +210,38 @@ class SalesOrderController extends Controller
         return redirect()->route('app.sales.orders.show', $line->sales_order_id)->with('status', __('Delivered.'));
     }
 
+    public function createDeliveryNote(Request $request, SalesOrder $so): RedirectResponse
+    {
+        $tenantId = $request->user()->tenant_id;
+
+        $validated = $request->validate([
+            'delivery_date' => ['nullable', 'date'],
+            'driver_name' => ['nullable', 'string', 'max:128'],
+            'vehicle_plate' => ['nullable', 'string', 'max:32'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'lines' => ['required', 'array', 'min:1'],
+            'lines.*.line_id' => [
+                'required',
+                Rule::exists('sales_order_lines', 'id')
+                    ->where(fn ($q) => $q->where('tenant_id', $tenantId)->where('sales_order_id', $so->id)),
+            ],
+            'lines.*.qty' => ['required', 'numeric', 'gt:0'],
+        ]);
+
+        try {
+            $note = $this->salesOrders->deliverMany($so, $validated['lines'], [
+                'delivery_date' => $validated['delivery_date'] ?? null,
+                'driver_name' => $validated['driver_name'] ?? null,
+                'vehicle_plate' => $validated['vehicle_plate'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+        } catch (HttpException $e) {
+            return back()->withErrors(['delivery' => $e->getMessage()])->withInput();
+        }
+
+        return redirect()->route('app.sales.delivery-notes.show', $note)->with('status', __('Delivery note created.'));
+    }
+
     public function deliverySlip(SalesOrder $so): View
     {
         return view('sales::orders.delivery-slip', [
