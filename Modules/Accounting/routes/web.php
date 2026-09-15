@@ -5,6 +5,7 @@ use Modules\Accounting\Http\Controllers\AccountingSettingsController;
 use Modules\Accounting\Http\Controllers\BankStatementController;
 use Modules\Accounting\Http\Controllers\CardPaymentController;
 use Modules\Accounting\Http\Controllers\CashBankAccountController;
+use Modules\Accounting\Http\Controllers\CashFlowController;
 use Modules\Accounting\Http\Controllers\ChartOfAccountController;
 use Modules\Accounting\Http\Controllers\CheckAndNoteController;
 use Modules\Accounting\Http\Controllers\CurrencyController;
@@ -62,6 +63,8 @@ Route::middleware(['auth:web', 'module:accounting'])->prefix('app/accounting')->
     });
 
     Route::middleware('permission:register payments,web')->group(function (): void {
+        Route::get('/cash-flow', [CashFlowController::class, 'index'])->name('cash-flow.index');
+
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
         Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
         Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');

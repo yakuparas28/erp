@@ -435,6 +435,11 @@
                             @endcan
                             @can('register payments')
                                 <li>
+                                    <a href="{{ route('app.accounting.cash-flow.index') }}" class="{{ request()->routeIs('app.accounting.cash-flow.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-chart-line-up"></i><span>{{ __('Cash Flow Dashboard') }}</span>
+                                    </a>
+                                </li>
+                                <li>
                                     <a href="{{ route('app.accounting.receipts.index') }}" class="{{ request()->routeIs('app.accounting.receipts.*') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-hand-coins"></i><span>{{ __('Customer Receipts') }}</span>
                                     </a>
