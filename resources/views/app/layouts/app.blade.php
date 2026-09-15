@@ -445,6 +445,16 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a href="{{ route('app.accounting.incoming-checks.index') }}" class="{{ request()->routeIs('app.accounting.incoming-checks.*') || request()->routeIs('app.accounting.checks-and-notes.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-note"></i><span>{{ __('Incoming Checks & Notes') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('app.accounting.outgoing-checks.index') }}" class="{{ request()->routeIs('app.accounting.outgoing-checks.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-note-pencil"></i><span>{{ __('Outgoing Checks & Notes') }}</span>
+                                    </a>
+                                </li>
+                                <li>
                                     <a href="{{ route('app.accounting.payments.index') }}" class="{{ request()->routeIs('app.accounting.payments.index') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-wallet"></i><span>{{ __('All Payments') }}</span>
                                     </a>

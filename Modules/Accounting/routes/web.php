@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Accounting\Http\Controllers\AccountingSettingsController;
 use Modules\Accounting\Http\Controllers\CashBankAccountController;
 use Modules\Accounting\Http\Controllers\ChartOfAccountController;
+use Modules\Accounting\Http\Controllers\CheckAndNoteController;
 use Modules\Accounting\Http\Controllers\CurrencyController;
 use Modules\Accounting\Http\Controllers\ExchangeRateController;
 use Modules\Accounting\Http\Controllers\InvoiceApprovalController;
@@ -65,6 +66,16 @@ Route::middleware(['auth:web', 'module:accounting'])->prefix('app/accounting')->
 
         Route::get('/receipts', [PaymentController::class, 'index'])->defaults('flow', 'receipt')->name('receipts.index');
         Route::get('/disbursements', [PaymentController::class, 'index'])->defaults('flow', 'payment')->name('disbursements.index');
+
+        Route::get('/incoming-checks', [CheckAndNoteController::class, 'index'])->defaults('direction', 'incoming')->name('incoming-checks.index');
+        Route::get('/outgoing-checks', [CheckAndNoteController::class, 'index'])->defaults('direction', 'outgoing')->name('outgoing-checks.index');
+        Route::post('/checks-and-notes', [CheckAndNoteController::class, 'store'])->name('checks-and-notes.store');
+        Route::get('/checks-and-notes/{note}', [CheckAndNoteController::class, 'show'])->name('checks-and-notes.show');
+        Route::post('/checks-and-notes/{note}/endorse', [CheckAndNoteController::class, 'endorse'])->name('checks-and-notes.endorse');
+        Route::post('/checks-and-notes/{note}/send-to-bank', [CheckAndNoteController::class, 'sendToBank'])->name('checks-and-notes.send-to-bank');
+        Route::post('/checks-and-notes/{note}/collect', [CheckAndNoteController::class, 'markCollected'])->name('checks-and-notes.collect');
+        Route::post('/checks-and-notes/{note}/bounce', [CheckAndNoteController::class, 'markBounced'])->name('checks-and-notes.bounce');
+        Route::post('/checks-and-notes/{note}/pay', [CheckAndNoteController::class, 'markPaid'])->name('checks-and-notes.pay');
     });
 
     Route::middleware('permission:post journal entries,web')->group(function (): void {

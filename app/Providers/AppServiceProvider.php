@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Modules\Accounting\Models\CheckAndNote;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\Payment;
 use Modules\Expenses\Models\Expense;
@@ -164,6 +165,7 @@ class AppServiceProvider extends ServiceProvider
             'sales_order' => SalesOrder::class,
             'invoice' => Invoice::class,
             'payment' => Payment::class,
+            'check_and_note' => CheckAndNote::class,
             'approval_workflow' => ApprovalWorkflow::class,
             'approval_workflow_step' => ApprovalWorkflowStep::class,
             'approval' => Approval::class,
