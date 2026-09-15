@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Sales\Http\Controllers\DeliveryCarrierController;
 use Modules\Sales\Http\Controllers\DeliveryNoteController;
 use Modules\Sales\Http\Controllers\QuotationController;
+use Modules\Sales\Http\Controllers\SalesApprovalController;
 use Modules\Sales\Http\Controllers\SalesOrderController;
 
 Route::middleware(['auth:web', 'module:sales'])->prefix('app/sales')->name('app.sales.')->group(function (): void {
@@ -32,6 +33,14 @@ Route::middleware(['auth:web', 'module:sales'])->prefix('app/sales')->name('app.
 
         Route::get('/delivery-notes', [DeliveryNoteController::class, 'index'])->name('delivery-notes.index');
         Route::get('/delivery-notes/{note}', [DeliveryNoteController::class, 'show'])->name('delivery-notes.show');
+
+        Route::post('/orders/{so}/approval/quotation/submit', [SalesApprovalController::class, 'submitQuotation'])->name('orders.approval.quotation.submit');
+        Route::post('/orders/{so}/approval/confirmation/submit', [SalesApprovalController::class, 'submitConfirmation'])->name('orders.approval.confirmation.submit');
+    });
+
+    Route::middleware('role:Tenant Admin')->group(function (): void {
+        Route::post('/orders/{so}/approval/{type}/approve', [SalesApprovalController::class, 'approve'])->name('orders.approval.approve');
+        Route::post('/orders/{so}/approval/{type}/reject', [SalesApprovalController::class, 'reject'])->name('orders.approval.reject');
     });
 
     Route::middleware('permission:confirm sales orders,web')->group(function (): void {

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Purchase\Http\Controllers\GoodsReceiptController;
+use Modules\Purchase\Http\Controllers\PurchaseApprovalController;
 use Modules\Purchase\Http\Controllers\PurchaseOrderController;
 
 Route::middleware(['auth:web', 'module:purchase'])->prefix('app/purchase')->name('app.purchase.')->group(function (): void {
@@ -18,6 +19,13 @@ Route::middleware(['auth:web', 'module:purchase'])->prefix('app/purchase')->name
 
         Route::get('/goods-receipts', [GoodsReceiptController::class, 'index'])->name('goods-receipts.index');
         Route::get('/goods-receipts/{receipt}', [GoodsReceiptController::class, 'show'])->name('goods-receipts.show');
+
+        Route::post('/orders/{po}/approval/submit', [PurchaseApprovalController::class, 'submit'])->name('orders.approval.submit');
+    });
+
+    Route::middleware('role:Tenant Admin')->group(function (): void {
+        Route::post('/orders/{po}/approval/approve', [PurchaseApprovalController::class, 'approve'])->name('orders.approval.approve');
+        Route::post('/orders/{po}/approval/reject', [PurchaseApprovalController::class, 'reject'])->name('orders.approval.reject');
     });
 
     Route::middleware('permission:confirm purchase orders,web')->group(function (): void {

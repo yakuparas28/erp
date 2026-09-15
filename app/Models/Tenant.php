@@ -22,12 +22,18 @@ class Tenant extends Model
         'phone',
         'address',
         'invoice_approval_threshold',
+        'quotation_approval_threshold',
+        'sales_order_approval_threshold',
+        'purchase_order_approval_threshold',
     ];
 
     protected function casts(): array
     {
         return [
             'invoice_approval_threshold' => 'decimal:4',
+            'quotation_approval_threshold' => 'decimal:4',
+            'sales_order_approval_threshold' => 'decimal:4',
+            'purchase_order_approval_threshold' => 'decimal:4',
         ];
     }
 

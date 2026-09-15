@@ -2,6 +2,7 @@
 
 namespace Modules\Purchase\Models;
 
+use App\Concerns\HasApproval;
 use App\Models\Concerns\BelongsToTenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Modules\Purchase\Database\Factories\PurchaseOrderFactory;
 class PurchaseOrder extends Model
 {
     /** @use HasFactory<PurchaseOrderFactory> */
-    use BelongsToTenant, HasFactory;
+    use BelongsToTenant, HasApproval, HasFactory;
 
     protected $fillable = [
         'tenant_id',

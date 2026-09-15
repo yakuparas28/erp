@@ -252,7 +252,38 @@
     @include('sales::orders._variant-configurator', ['so' => $so, 'templates' => $configurableTemplates, 'uomOptions' => $uomOptions])
 @endif
 
-<div class="flex items-center gap-2 flex-wrap">
+@php
+    $salesSvc = app(\Modules\Sales\Services\SalesOrderService::class);
+    $canAdmin = auth()->user()->hasRole('Tenant Admin');
+@endphp
+
+@if ($so->status === 'draft' && $salesSvc->requiresQuotationApproval($so))
+    @include('app.partials.approval-panel', [
+        'required' => true,
+        'approval' => $so->approvalFor('quotation'),
+        'canApprove' => $canAdmin,
+        'canSubmit' => true,
+        'title' => __('Quotation Approval Required'),
+        'submitRoute' => route('app.sales.orders.approval.quotation.submit', $so),
+        'approveRoute' => route('app.sales.orders.approval.approve', ['so' => $so, 'type' => 'quotation']),
+        'rejectRoute' => route('app.sales.orders.approval.reject', ['so' => $so, 'type' => 'quotation']),
+    ])
+@endif
+
+@if ($so->status === 'quotation_sent' && $salesSvc->requiresConfirmationApproval($so))
+    @include('app.partials.approval-panel', [
+        'required' => true,
+        'approval' => $so->approvalFor('sales_order'),
+        'canApprove' => $canAdmin,
+        'canSubmit' => true,
+        'title' => __('Sales Order Approval Required'),
+        'submitRoute' => route('app.sales.orders.approval.confirmation.submit', $so),
+        'approveRoute' => route('app.sales.orders.approval.approve', ['so' => $so, 'type' => 'sales_order']),
+        'rejectRoute' => route('app.sales.orders.approval.reject', ['so' => $so, 'type' => 'sales_order']),
+    ])
+@endif
+
+<div class="flex items-center gap-2 flex-wrap mt-4">
     @can('post journal entries')
         @if (in_array($so->status, ['confirmed', 'done']))
             <form method="POST" action="{{ route('app.accounting.sales-invoices.store') }}">

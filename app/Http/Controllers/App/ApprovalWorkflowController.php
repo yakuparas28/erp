@@ -22,6 +22,11 @@ class ApprovalWorkflowController extends Controller
     /** @var array<string, string> */
     private array $subjectTypes = [
         'leave_request' => 'İzin Talebi (HR)',
+        'expense' => 'Masraf Talebi (Masraflar)',
+        'quotation' => 'Teklif Gönderimi (Satış)',
+        'sales_order' => 'Satış Siparişi Onayı',
+        'purchase_order' => 'Satın Alma Siparişi Onayı',
+        'invoice' => 'Fatura Onayı (Muhasebe)',
     ];
 
     public function index(): View

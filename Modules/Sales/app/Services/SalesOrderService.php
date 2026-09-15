@@ -5,6 +5,7 @@ namespace Modules\Sales\Services;
 use App\Mail\TemplatedMail;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Approval\ApprovalService;
 use App\Services\Mail\NotificationTemplateService;
 use App\Services\Mail\TenantMailer;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +38,58 @@ class SalesOrderService
         private readonly KitExplosionService $kitExplosion,
         private readonly RouteService $routes,
         private readonly DeliveryNoteService $deliveryNotes,
+        private readonly ApprovalService $approvals,
     ) {}
+
+    public function subtotal(SalesOrder $so): string
+    {
+        return $so->lines->reduce(
+            fn (string $carry, SalesOrderLine $line) => bcadd($carry, bcmul((string) $line->qty, (string) $line->unit_price, 4), 4),
+            '0.0000',
+        );
+    }
+
+    /** Tenant ayarındaki tutar eşiği aşılıyor mu? NULL/0 = akış kapalı. */
+    private function overThreshold(SalesOrder $so, ?string $threshold): bool
+    {
+        if ($threshold === null || bccomp($threshold, '0', 4) <= 0) {
+            return false;
+        }
+
+        return bccomp($this->subtotal($so), $threshold, 4) >= 0;
+    }
+
+    public function requiresQuotationApproval(SalesOrder $so): bool
+    {
+        $tenant = Tenant::find($so->tenant_id);
+
+        return $this->overThreshold($so, $tenant?->quotation_approval_threshold);
+    }
+
+    public function requiresConfirmationApproval(SalesOrder $so): bool
+    {
+        $tenant = Tenant::find($so->tenant_id);
+
+        return $this->overThreshold($so, $tenant?->sales_order_approval_threshold);
+    }
+
+    public function submitForQuotationApproval(SalesOrder $so, User $submitter): void
+    {
+        abort_unless($so->status === 'draft', 422, __('Only draft sales orders can be submitted for quotation approval.'));
+        abort_unless($this->requiresQuotationApproval($so), 422, __('This sales order does not require quotation approval.'));
+        abort_if($so->isPendingApprovalFor('quotation'), 422, __('An approval request is already pending for this quotation.'));
+
+        $this->approvals->submit($so, $submitter, 'quotation');
+    }
+
+    public function submitForConfirmationApproval(SalesOrder $so, User $submitter): void
+    {
+        abort_unless($so->status === 'quotation_sent', 422, __('Only a quotation-sent sales order can be submitted for confirmation approval.'));
+        abort_unless($this->requiresConfirmationApproval($so), 422, __('This sales order does not require confirmation approval.'));
+        abort_if($so->isPendingApprovalFor('sales_order'), 422, __('An approval request is already pending for this sales order.'));
+
+        $this->approvals->submit($so, $submitter, 'sales_order');
+    }
 
     public function create(int $tenantId, int $partnerId, int $locationId, User $creator): SalesOrder
     {
@@ -86,6 +138,10 @@ class SalesOrderService
     public function sendQuotation(SalesOrder $so, ?string $validityDate = null): void
     {
         abort_unless($so->status === 'draft', 422, __('Only draft sales orders can be sent as a quotation.'));
+
+        if ($this->requiresQuotationApproval($so) && ! $so->fresh()->isApprovedFor('quotation')) {
+            abort(422, __('This quotation exceeds the approval threshold and must be approved before it can be sent.'));
+        }
 
         $so->update([
             'status' => 'quotation_sent',
@@ -153,6 +209,10 @@ class SalesOrderService
             abort_if($approver === null, 403, __('You are not allowed to confirm sales orders.'));
             abort_if($so->created_by === $approver->id, 403, __('You cannot confirm a sales order you created.'));
             abort_unless($approver->can('confirm sales orders'), 403, __('You are not allowed to confirm sales orders.'));
+
+            if ($this->requiresConfirmationApproval($so) && ! $so->fresh()->isApprovedFor('sales_order')) {
+                abort(422, __('This sales order exceeds the approval threshold and must be approved before it can be confirmed.'));
+            }
         }
 
         DB::transaction(function () use ($so, $byCustomer): void {

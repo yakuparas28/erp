@@ -25,11 +25,17 @@ class AccountingSettingsController extends Controller
     {
         $validated = $request->validate([
             'invoice_approval_threshold' => ['nullable', 'numeric', 'min:0'],
+            'quotation_approval_threshold' => ['nullable', 'numeric', 'min:0'],
+            'sales_order_approval_threshold' => ['nullable', 'numeric', 'min:0'],
+            'purchase_order_approval_threshold' => ['nullable', 'numeric', 'min:0'],
         ]);
 
         $tenant = Tenant::findOrFail($request->user()->tenant_id);
         $tenant->update([
             'invoice_approval_threshold' => $validated['invoice_approval_threshold'] ?? null,
+            'quotation_approval_threshold' => $validated['quotation_approval_threshold'] ?? null,
+            'sales_order_approval_threshold' => $validated['sales_order_approval_threshold'] ?? null,
+            'purchase_order_approval_threshold' => $validated['purchase_order_approval_threshold'] ?? null,
         ]);
 
         return back()->with('status', __('Settings saved.'));

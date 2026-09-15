@@ -204,7 +204,25 @@
 @include('app.partials.related-shipments', ['items' => $goodsReceipts, 'mode' => 'purchase'])
 @include('app.partials.related-invoices', ['invoices' => $relatedInvoices, 'routePrefix' => 'purchase'])
 
-<div class="flex items-center gap-2 flex-wrap">
+@php
+    $purchaseSvc = app(\Modules\Purchase\Services\PurchaseOrderService::class);
+    $canAdmin = auth()->user()->hasRole('Tenant Admin');
+@endphp
+
+@if ($po->status === 'rfq_sent' && $purchaseSvc->requiresConfirmationApproval($po))
+    @include('app.partials.approval-panel', [
+        'required' => true,
+        'approval' => $po->approvalFor('purchase_order'),
+        'canApprove' => $canAdmin,
+        'canSubmit' => true,
+        'title' => __('Purchase Order Approval Required'),
+        'submitRoute' => route('app.purchase.orders.approval.submit', $po),
+        'approveRoute' => route('app.purchase.orders.approval.approve', $po),
+        'rejectRoute' => route('app.purchase.orders.approval.reject', $po),
+    ])
+@endif
+
+<div class="flex items-center gap-2 flex-wrap mt-4">
     @can('post journal entries')
         @if (in_array($po->status, ['confirmed', 'done']))
             <form method="POST" action="{{ route('app.accounting.purchase-invoices.store') }}">

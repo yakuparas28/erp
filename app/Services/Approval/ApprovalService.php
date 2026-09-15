@@ -75,12 +75,21 @@ class ApprovalService
         };
     }
 
-    public function submit(Model $subject, User $submitter): Approval
+    /**
+     * @param  ?string  $workflowSubjectType  aynı modelde birden fazla iş
+     *                                        akışı gerekiyorsa (ör. SalesOrder
+     *                                        için hem 'quotation' hem
+     *                                        'sales_order') hangi akışın
+     *                                        kullanılacağını seçer. Boş ise
+     *                                        modelin morph adı kullanılır.
+     */
+    public function submit(Model $subject, User $submitter, ?string $workflowSubjectType = null): Approval
     {
         $subjectType = $subject->getMorphClass();
+        $lookupType = $workflowSubjectType ?? $subjectType;
 
         $workflow = ApprovalWorkflow::where('tenant_id', $submitter->tenant_id)
-            ->where('subject_type', $subjectType)
+            ->where('subject_type', $lookupType)
             ->where('is_active', true)
             ->with('steps')
             ->first();

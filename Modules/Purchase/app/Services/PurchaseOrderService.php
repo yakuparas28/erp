@@ -2,7 +2,9 @@
 
 namespace Modules\Purchase\Services;
 
+use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Approval\ApprovalService;
 use Illuminate\Support\Facades\DB;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Product;
@@ -30,7 +32,37 @@ class PurchaseOrderService
         private readonly CostingService $costing,
         private readonly PutawayService $putaway,
         private readonly GoodsReceiptService $goodsReceipts,
+        private readonly ApprovalService $approvals,
     ) {}
+
+    public function subtotal(PurchaseOrder $po): string
+    {
+        return $po->lines->reduce(
+            fn (string $carry, PurchaseOrderLine $line) => bcadd($carry, bcmul((string) $line->qty, (string) $line->unit_price, 4), 4),
+            '0.0000',
+        );
+    }
+
+    public function requiresConfirmationApproval(PurchaseOrder $po): bool
+    {
+        $tenant = Tenant::find($po->tenant_id);
+        $threshold = $tenant?->purchase_order_approval_threshold;
+
+        if ($threshold === null || bccomp((string) $threshold, '0', 4) <= 0) {
+            return false;
+        }
+
+        return bccomp($this->subtotal($po), (string) $threshold, 4) >= 0;
+    }
+
+    public function submitForConfirmationApproval(PurchaseOrder $po, User $submitter): void
+    {
+        abort_unless($po->status === 'rfq_sent', 422, __('Only RFQ-sent purchase orders can be submitted for approval.'));
+        abort_unless($this->requiresConfirmationApproval($po), 422, __('This purchase order does not require approval.'));
+        abort_if($po->isPendingApprovalFor('purchase_order'), 422, __('An approval request is already pending for this purchase order.'));
+
+        $this->approvals->submit($po, $submitter, 'purchase_order');
+    }
 
     public function create(int $tenantId, int $partnerId, User $creator, string $billControlPolicy = 'received_qty'): PurchaseOrder
     {
@@ -84,6 +116,10 @@ class PurchaseOrderService
         abort_unless($po->status === 'rfq_sent', 422, __('Only an RFQ-sent purchase order can be confirmed.'));
         abort_if($po->created_by === $approver->id, 403, __('You cannot confirm a purchase order you created.'));
         abort_unless($approver->can('confirm purchase orders'), 403, __('You are not allowed to confirm purchase orders.'));
+
+        if ($this->requiresConfirmationApproval($po) && ! $po->fresh()->isApprovedFor('purchase_order')) {
+            abort(422, __('This purchase order exceeds the approval threshold and must be approved before it can be confirmed.'));
+        }
 
         $po->update(['status' => 'confirmed']);
     }
