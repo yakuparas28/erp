@@ -39,6 +39,11 @@ class ExpenseApprovalController extends Controller
 
     public function post(Expense $expense): RedirectResponse
     {
+        // Belt-and-suspenders: route zaten `permission:post expense` altında
+        // ama controller'da da explicit tuttum ki routes yeniden düzenlenirse
+        // yetki kaybolmasın.
+        abort_unless(auth()->user()?->can('post expense'), 403);
+
         $this->service->postToAccounting($expense);
 
         return back()->with('status', __('Expense posted to accounting journal.'));
