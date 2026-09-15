@@ -1,6 +1,7 @@
 <div id="{{ $id }}" class="hs-overlay hidden size-full fixed top-0 start-0 z-[80] overflow-x-hidden overflow-y-auto pointer-events-none">
-    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto pointer-events-auto min-h-screen flex items-center justify-center" style="max-width: min(960px, calc(100vw - 32px));">
-        <form method="POST" action="{{ $action }}" class="flex flex-col bg-white border shadow-sm rounded-md border-border-color w-full max-h-[92vh] overflow-hidden">
+    <div class="hs-overlay-open:mt-7 hs-overlay-open:opacity-100 hs-overlay-open:duration-500 mt-0 opacity-0 ease-out transition-all sm:max-w-2xl sm:w-full m-3 sm:mx-auto pointer-events-auto min-h-screen flex flex-col items-center justify-center" style="max-width: min(960px, calc(100vw - 32px));">
+        <div class="flex flex-col bg-white border shadow-sm rounded-md border-border-color w-full max-h-[92vh] overflow-hidden">
+        <form method="POST" action="{{ $action }}" class="flex flex-col flex-1 min-h-0 overflow-hidden">
             @csrf
             @if ($method === 'PUT') @method('PUT') @endif
 
@@ -213,7 +214,7 @@
         </form>
 
         @if ($product !== null)
-            <div class="border-t border-border-color p-4 bg-light/40 rounded-b-md">
+            <div class="border-t border-border-color p-4 bg-light/40">
                 <div class="flex items-center gap-3">
                     @if ($product->image_path)
                         <img src="{{ asset('storage/'.$product->image_path) }}" alt="" class="size-14 rounded border border-border-color object-cover shrink-0">
@@ -242,6 +243,7 @@
                 </div>
             </div>
         @endif
+        </div>
     </div>
 </div>
 <script>
