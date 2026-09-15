@@ -26,6 +26,9 @@ Route::middleware(['auth:web', 'module:expenses'])->prefix('app/expenses')->name
         Route::get('/approvals', [ExpenseApprovalController::class, 'index'])->name('approvals.index');
         Route::post('/approvals/{expense}/approve', [ExpenseApprovalController::class, 'approve'])->name('approvals.approve');
         Route::post('/approvals/{expense}/refuse', [ExpenseApprovalController::class, 'refuse'])->name('approvals.refuse');
+    });
+
+    Route::middleware('permission:post expense,web')->group(function (): void {
         Route::post('/approvals/{expense}/post', [ExpenseApprovalController::class, 'post'])->name('approvals.post');
     });
 });
