@@ -22,9 +22,26 @@ class PaymentController extends Controller
 {
     public function __construct(private readonly PaymentService $payments) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        $payments = Payment::with(['partner', 'journal', 'allocations'])->latest()->get();
+        // 'flow' route defaults'tan gelir:
+        //   'receipt'  → Müşteri Tahsilatı ekranı (is_customer partner + sale invoice)
+        //   'payment'  → Tedarikçi Ödemesi ekranı (is_supplier partner + purchase invoice)
+        //   null       → Klasik "tüm ödemeler" admin listesi
+        $flow = $request->route()?->defaults['flow'] ?? null;
+
+        $partnersQuery = Partner::query();
+        $paymentsQuery = Payment::with(['partner', 'journal', 'allocations'])->latest();
+
+        if ($flow === 'receipt') {
+            $partnersQuery->where('is_customer', true);
+            $paymentsQuery->whereHas('partner', fn ($q) => $q->where('is_customer', true));
+        } elseif ($flow === 'payment') {
+            $partnersQuery->where('is_supplier', true);
+            $paymentsQuery->whereHas('partner', fn ($q) => $q->where('is_supplier', true));
+        }
+
+        $payments = $paymentsQuery->get();
 
         // `Payment::unallocatedAmount()` sums `allocations()` via a fresh
         // query per call (it does not consult the eager-loaded collection),
@@ -40,9 +57,10 @@ class PaymentController extends Controller
 
         return view('accounting::payments.index', [
             'payments' => $payments,
-            'partners' => Partner::orderBy('name')->get(),
-            'cashAndBankJournals' => Journal::whereIn('type', ['cash', 'bank'])->orderBy('name')->get(),
+            'partners' => $partnersQuery->orderBy('name')->get(),
+            'cashAndBankJournals' => Journal::whereIn('type', ['cash', 'bank'])->where('is_active', true)->orderBy('type')->orderBy('name')->get(),
             'currencies' => Currency::where('is_functional', false)->orderBy('code')->get(),
+            'flow' => $flow,
         ]);
     }
 

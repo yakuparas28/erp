@@ -435,12 +435,27 @@
                             @endcan
                             @can('register payments')
                                 <li>
-                                    <a href="{{ route('app.accounting.payments.index') }}" class="{{ request()->routeIs('app.accounting.payments.*') ? 'active' : '' }}">
-                                        <i class="ph-duotone ph-wallet"></i><span>{{ __('Payments') }}</span>
+                                    <a href="{{ route('app.accounting.receipts.index') }}" class="{{ request()->routeIs('app.accounting.receipts.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-hand-coins"></i><span>{{ __('Customer Receipts') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('app.accounting.disbursements.index') }}" class="{{ request()->routeIs('app.accounting.disbursements.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-money"></i><span>{{ __('Supplier Payments') }}</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('app.accounting.payments.index') }}" class="{{ request()->routeIs('app.accounting.payments.index') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-wallet"></i><span>{{ __('All Payments') }}</span>
                                     </a>
                                 </li>
                             @endcan
                             @if (auth()->user()?->hasRole('Tenant Admin'))
+                                <li>
+                                    <a href="{{ route('app.accounting.cash-bank-accounts.index') }}" class="{{ request()->routeIs('app.accounting.cash-bank-accounts.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-vault"></i><span>{{ __('Cash & Bank Accounts') }}</span>
+                                    </a>
+                                </li>
                                 <li>
                                     <a href="{{ route('app.accounting.settings.edit') }}" class="{{ request()->routeIs('app.accounting.settings.*') ? 'active' : '' }}">
                                         <i class="ph-duotone ph-gear"></i><span>{{ __('Accounting Settings') }}</span>

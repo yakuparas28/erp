@@ -1,12 +1,38 @@
 @extends('app.layouts.app')
 
-@section('title', __('Payments'))
+@php
+    $flow = $flow ?? null;
+    $pageTitle = match ($flow) {
+        'receipt' => __('Customer Receipts'),
+        'payment' => __('Supplier Payments'),
+        default => __('Payments'),
+    };
+    $newButtonLabel = match ($flow) {
+        'receipt' => __('New Receipt'),
+        'payment' => __('New Payment'),
+        default => __('New Payment'),
+    };
+    $partnerLabel = match ($flow) {
+        'receipt' => __('Customer'),
+        'payment' => __('Supplier'),
+        default => __('Partner'),
+    };
+@endphp
+
+@section('title', $pageTitle)
 
 @section('content')
 <div class="flex flex-wrap items-center justify-between gap-3 mb-3 lg:mb-6">
-    <h1 class="text-gray-900 text-xl font-bold mb-0">{{ __('Payments') }}</h1>
+    <div>
+        <h1 class="text-gray-900 text-xl font-bold mb-0">{{ $pageTitle }}</h1>
+        @if ($flow)
+            <p class="text-[12px] text-default mb-0 mt-1">
+                {{ $flow === 'receipt' ? __('Money coming in from customers.') : __('Money going out to suppliers.') }}
+            </p>
+        @endif
+    </div>
     <button type="button" data-hs-overlay="#add-payment-modal" class="btn-sm bg-dark text-white border border-dark inline-flex items-center gap-2 hover:bg-primary-hover hover:border-primary-hover cursor-pointer">
-        <i class="ph ph-plus"></i> {{ __('New Payment') }}
+        <i class="ph ph-plus"></i> {{ $newButtonLabel }}
     </button>
 </div>
 
@@ -19,7 +45,7 @@
         <table class="w-full text-sm">
             <thead>
                 <tr class="text-sm text-default border-b border-border-color">
-                    <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Partner') }}</th>
+                    <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ $partnerLabel }}</th>
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Journal') }}</th>
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Amount') }}</th>
                     <th class="text-left py-2 px-3 font-semibold text-gray-900">{{ __('Date') }}</th>

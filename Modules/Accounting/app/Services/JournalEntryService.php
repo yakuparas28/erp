@@ -5,6 +5,7 @@ namespace Modules\Accounting\Services;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Modules\Accounting\Models\ChartOfAccount;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\InvoiceLine;
 use Modules\Accounting\Models\Journal;
@@ -218,8 +219,16 @@ class JournalEntryService
      */
     public function postForPayment(Payment $payment, Invoice $invoice, string $amount): JournalEntry
     {
-        $cashOrBankCode = $payment->journal->type === 'cash' ? '100' : '102';
-        $cashOrBank = $this->defaults->accountByCode($payment->tenant_id, $cashOrBankCode);
+        // Journal'a özel hesap tanımlıysa onu kullan (ör. "Vakıfbank TL" =
+        // 102.03). Aksi hâlde eski davranış: '100' (kasa) / '102' (banka)
+        // varsayılan hesabı.
+        if ($payment->journal->chart_of_account_id !== null) {
+            $cashOrBank = ChartOfAccount::withoutGlobalScopes()
+                ->findOrFail($payment->journal->chart_of_account_id);
+        } else {
+            $cashOrBankCode = $payment->journal->type === 'cash' ? '100' : '102';
+            $cashOrBank = $this->defaults->accountByCode($payment->tenant_id, $cashOrBankCode);
+        }
         $controlAccount = $this->defaults->accountByCode($payment->tenant_id, $invoice->type === 'purchase' ? '320' : '120');
 
         $controlAmountTL = bcmul($amount, $invoice->exchangeRateOrOne(), 4);

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Accounting\Http\Controllers\AccountingSettingsController;
+use Modules\Accounting\Http\Controllers\CashBankAccountController;
 use Modules\Accounting\Http\Controllers\ChartOfAccountController;
 use Modules\Accounting\Http\Controllers\CurrencyController;
 use Modules\Accounting\Http\Controllers\ExchangeRateController;
@@ -61,6 +62,9 @@ Route::middleware(['auth:web', 'module:accounting'])->prefix('app/accounting')->
         Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
         Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
         Route::post('/payments/{payment}/allocations', [PaymentController::class, 'storeAllocation'])->name('payments.allocations.store');
+
+        Route::get('/receipts', [PaymentController::class, 'index'])->defaults('flow', 'receipt')->name('receipts.index');
+        Route::get('/disbursements', [PaymentController::class, 'index'])->defaults('flow', 'payment')->name('disbursements.index');
     });
 
     Route::middleware('permission:post journal entries,web')->group(function (): void {
@@ -73,5 +77,10 @@ Route::middleware(['auth:web', 'module:accounting'])->prefix('app/accounting')->
 
         Route::get('/settings', [AccountingSettingsController::class, 'edit'])->name('settings.edit');
         Route::patch('/settings', [AccountingSettingsController::class, 'update'])->name('settings.update');
+
+        Route::get('/cash-bank-accounts', [CashBankAccountController::class, 'index'])->name('cash-bank-accounts.index');
+        Route::post('/cash-bank-accounts', [CashBankAccountController::class, 'store'])->name('cash-bank-accounts.store');
+        Route::patch('/cash-bank-accounts/{journal}', [CashBankAccountController::class, 'update'])->name('cash-bank-accounts.update');
+        Route::delete('/cash-bank-accounts/{journal}', [CashBankAccountController::class, 'destroy'])->name('cash-bank-accounts.destroy');
     });
 });
