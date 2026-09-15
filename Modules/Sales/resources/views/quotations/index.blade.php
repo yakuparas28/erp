@@ -74,7 +74,7 @@
                         <td class="py-2.5 px-2 text-sm text-default">{{ $q->creator?->name ?? '—' }}</td>
                         <td class="py-2.5 px-2 text-sm text-default">{{ $q->created_at->translatedFormat('d M Y') }}</td>
                         <td class="py-2.5 px-2 text-sm text-title font-semibold text-right">{{ number_format((float) $total, 2) }}</td>
-                        <td class="py-2.5 px-2 text-sm text-default text-center">{{ $q->lines->count() }}</td>
+                        <td class="py-2.5 px-2 text-sm text-default text-center">{{ $q->lines_count }}</td>
                         <td class="py-2.5 px-2">@include('sales::orders._status-badge', ['status' => $q->status])</td>
                         <td class="py-2.5 px-2 text-right">
                             <div class="hs-dropdown [--placement:bottom-right] [--auto-close:inside] relative inline-flex">

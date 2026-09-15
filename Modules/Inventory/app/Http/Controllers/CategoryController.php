@@ -15,7 +15,7 @@ class CategoryController extends Controller
     public function index(): View
     {
         return view('inventory::categories.index', [
-            'categories' => ProductCategory::with('children', 'parent')->orderBy('name')->get(),
+            'categories' => ProductCategory::with('parent')->withCount('children')->orderBy('name')->get(),
             'accounts' => class_exists(ChartOfAccount::class)
                 ? ChartOfAccount::orderBy('code')->get()
                 : collect(),

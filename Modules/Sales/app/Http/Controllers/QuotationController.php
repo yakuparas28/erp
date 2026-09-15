@@ -24,7 +24,8 @@ class QuotationController extends Controller
     public function index(): View
     {
         return view('sales::quotations.index', [
-            'quotations' => SalesOrder::with(['partner', 'location', 'lines', 'creator'])
+            'quotations' => SalesOrder::with(['partner', 'location', 'creator', 'lines'])
+                ->withCount('lines')
                 ->whereIn('status', ['draft', 'quotation_sent'])
                 ->latest()->get(),
             'customers' => Partner::where('is_customer', true)->orderBy('name')->get(),

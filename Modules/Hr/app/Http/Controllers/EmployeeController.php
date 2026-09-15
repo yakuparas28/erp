@@ -45,6 +45,8 @@ class EmployeeController extends Controller
     {
         $employee->load(['user', 'department', 'manager', 'subordinates.user']);
 
+        $employee->load(['department', 'manager', 'user', 'subordinates']);
+
         return view('hr::employees.show', [
             'employee' => $employee,
             'recentLeaves' => LeaveRequest::where('employee_id', $employee->id)

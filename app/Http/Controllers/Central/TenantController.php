@@ -30,7 +30,7 @@ class TenantController extends Controller
     public function index(): View
     {
         return view('central.tenants.index', [
-            'tenants' => Tenant::with('users')->latest()->get(),
+            'tenants' => Tenant::withCount('users')->latest()->get(),
             'subscriptions' => TenantSubscription::with('licensePackage')->get()->keyBy('tenant_id'),
         ]);
     }

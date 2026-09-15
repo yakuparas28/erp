@@ -16,6 +16,7 @@ use App\Models\TenantModuleActivation;
 use App\Models\TenantSubscription;
 use App\Models\User;
 use App\Services\Approval\ApprovalService;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
@@ -75,6 +76,11 @@ class AppServiceProvider extends ServiceProvider
         $this->registerBladeDirectives();
         $this->registerGates();
         ApprovalService::bootDefaultResolvers();
+
+        // Non-production'da lazy loading her yerde exception atar — böylece
+        // N+1 gizli kalmaz; test suite'inde de yakalanır. Production'da tolerans
+        // gösterilir ki tek bir kaçak lazy load 500 hatası vermesin.
+        Model::preventLazyLoading(! app()->isProduction());
     }
 
     /**

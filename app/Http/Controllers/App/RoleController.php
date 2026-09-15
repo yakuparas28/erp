@@ -20,7 +20,7 @@ class RoleController extends Controller
 
         $roles = Role::where(function ($query) use ($tenantId): void {
             $query->whereNull('tenant_id')->orWhere('tenant_id', $tenantId);
-        })->withCount('users')->orderByRaw('tenant_id is not null')->orderBy('name')->get();
+        })->with('permissions')->withCount('users')->orderByRaw('tenant_id is not null')->orderBy('name')->get();
 
         return view('app.roles.index', [
             'roles' => $roles,

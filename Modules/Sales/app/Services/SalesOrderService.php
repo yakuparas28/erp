@@ -58,7 +58,7 @@ class SalesOrderService
     {
         abort_unless($so->status === 'draft', 422, __('Lines can only be added to a draft sales order.'));
 
-        $product = Product::withoutGlobalScopes()->findOrFail($productId);
+        $product = Product::withoutGlobalScopes()->with('uom')->findOrFail($productId);
         $uom = Uom::withoutGlobalScopes()->findOrFail($uomId);
 
         abort_if(

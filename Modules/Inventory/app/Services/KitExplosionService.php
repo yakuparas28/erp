@@ -30,7 +30,7 @@ class KitExplosionService
     ): array {
         abort_unless($kit->is_kit, 422, __('This product is not a kit.'));
 
-        $components = ProductKitComponent::where('kit_product_id', $kit->id)->with('componentProduct')->get();
+        $components = ProductKitComponent::where('kit_product_id', $kit->id)->with('componentProduct.uom')->get();
 
         foreach ($components as $component) {
             abort_if($component->componentProduct->is_kit, 422, __('A kit component cannot itself be a kit.'));

@@ -19,7 +19,7 @@ class TransferBatchController extends Controller
     public function index(): View
     {
         return view('inventory::transfer-batches.index', [
-            'batches' => TransferBatch::with(['transfers.fromLocation', 'transfers.toLocation'])->latest()->get(),
+            'batches' => TransferBatch::with(['transfers.fromLocation', 'transfers.toLocation'])->withCount('transfers')->latest()->get(),
         ]);
     }
 

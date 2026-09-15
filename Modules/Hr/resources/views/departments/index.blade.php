@@ -44,8 +44,8 @@
                         <td class="py-2.5 px-3 font-semibold text-title">{{ $department->name }}</td>
                         <td class="py-2.5 px-3 text-default">{{ $department->parent?->name ?? '—' }}</td>
                         <td class="py-2.5 px-3 text-default">{{ $department->manager?->full_name ?? '—' }}</td>
-                        <td class="py-2.5 px-3 text-right">{{ $department->employees->count() }}</td>
-                        <td class="py-2.5 px-3 text-right">{{ $department->children->count() }}</td>
+                        <td class="py-2.5 px-3 text-right">{{ $department->employees_count }}</td>
+                        <td class="py-2.5 px-3 text-right">{{ $department->children_count }}</td>
                         <td class="py-2.5 px-3">
                             @if ($department->is_active)
                                 <span class="text-[11px] bg-success-transparent text-success px-2 py-0.5 rounded">{{ __('Active') }}</span>

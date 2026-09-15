@@ -71,7 +71,7 @@
                         <td class="py-2.5 px-2 text-sm text-default">{{ $order->creator?->name ?? '—' }}</td>
                         <td class="py-2.5 px-2 text-sm text-default">{{ $order->created_at->translatedFormat('d M Y') }}</td>
                         <td class="py-2.5 px-2 text-sm text-title font-semibold text-right">{{ number_format((float) $total, 2) }}</td>
-                        <td class="py-2.5 px-2 text-sm text-default text-center">{{ $order->lines->count() }}</td>
+                        <td class="py-2.5 px-2 text-sm text-default text-center">{{ $order->lines_count }}</td>
                         <td class="py-2.5 px-2">
                             @include('purchase::orders._status-badge', ['status' => $order->status])
                         </td>

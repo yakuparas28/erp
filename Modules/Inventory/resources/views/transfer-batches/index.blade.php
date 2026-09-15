@@ -37,7 +37,7 @@
                                 {{ __('batch-status.'.$batch->status) }}
                             </span>
                         </td>
-                        <td class="py-2.5 px-3 text-sm text-default">{{ $batch->transfers->count() }}</td>
+                        <td class="py-2.5 px-3 text-sm text-default">{{ $batch->transfers_count }}</td>
                         <td class="py-2.5 px-3">
                             <a href="{{ route('app.inventory.transfer-batches.show', $batch) }}" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light inline-flex items-center gap-1">
                                 {{ __('View') }}

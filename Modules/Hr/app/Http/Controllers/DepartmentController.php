@@ -15,7 +15,8 @@ class DepartmentController extends Controller
     public function index(): View
     {
         return view('hr::departments.index', [
-            'departments' => Department::with(['parent', 'manager', 'children'])
+            'departments' => Department::with(['parent', 'manager'])
+                ->withCount(['employees', 'children'])
                 ->orderBy('name')->get(),
             'employees' => Employee::where('is_active', true)->orderBy('first_name')->get(),
         ]);

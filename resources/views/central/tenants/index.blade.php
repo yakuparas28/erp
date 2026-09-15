@@ -49,7 +49,7 @@
                                 <span class="text-[11px] bg-light text-default px-2 py-0.5 rounded">{{ __('No subscription') }}</span>
                             @endif
                         </td>
-                        <td class="py-2.5 px-3 text-sm text-default">{{ $tenant->users->count() }}</td>
+                        <td class="py-2.5 px-3 text-sm text-default">{{ $tenant->users_count }}</td>
                         <td class="py-2.5 px-3 text-sm text-default">{{ $tenant->created_at->format('d.m.Y') }}</td>
                         <td class="py-2.5 px-3">
                             <div class="flex items-center gap-2">

@@ -27,7 +27,8 @@ class SalesOrderController extends Controller
     public function index(): View
     {
         return view('sales::orders.index', [
-            'orders' => SalesOrder::with(['partner', 'location', 'lines', 'creator'])
+            'orders' => SalesOrder::with(['partner', 'location', 'creator', 'lines'])
+                ->withCount('lines')
                 ->whereIn('status', ['confirmed', 'done', 'cancelled'])
                 ->latest()->get(),
             'customers' => Partner::where('is_customer', true)->orderBy('name')->get(),

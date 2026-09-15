@@ -74,11 +74,15 @@ class Invoice extends Model
 
     public function subtotal(): string
     {
+        $this->loadMissing('lines');
+
         return $this->lines->reduce(fn (string $carry, InvoiceLine $line) => bcadd($carry, $line->subtotal(), 4), '0.0000');
     }
 
     public function taxTotal(): string
     {
+        $this->loadMissing('lines.taxRate');
+
         return $this->lines->reduce(fn (string $carry, InvoiceLine $line) => bcadd($carry, $line->taxAmount(), 4), '0.0000');
     }
 

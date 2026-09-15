@@ -22,7 +22,9 @@ class PurchaseOrderController extends Controller
     public function index(): View
     {
         return view('purchase::orders.index', [
-            'orders' => PurchaseOrder::with(['partner', 'lines', 'creator'])->latest()->get(),
+            'orders' => PurchaseOrder::with(['partner', 'creator', 'lines'])
+                ->withCount('lines')
+                ->latest()->get(),
             'suppliers' => Partner::where('is_supplier', true)->orderBy('name')->get(),
         ]);
     }

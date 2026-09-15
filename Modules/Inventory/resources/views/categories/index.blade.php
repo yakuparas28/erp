@@ -39,7 +39,7 @@
                     <tr class="border-b border-border-color">
                         <td class="py-2.5 px-3 text-sm font-semibold text-title">{{ $category->name }}</td>
                         <td class="py-2.5 px-3 text-sm text-default">{{ $category->parent?->name ?? '—' }}</td>
-                        <td class="py-2.5 px-3 text-sm text-default">{{ $category->children->count() }}</td>
+                        <td class="py-2.5 px-3 text-sm text-default">{{ $category->children_count }}</td>
                         <td class="py-2.5 px-3">
                             <div class="flex items-center gap-2">
                                 <button type="button" data-hs-overlay="#edit-category-modal-{{ $category->id }}" class="size-7 rounded-md border border-border-color flex items-center justify-center text-gray-900 hover:bg-light cursor-pointer" title="{{ __('Edit') }}">
