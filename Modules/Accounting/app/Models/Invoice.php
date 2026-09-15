@@ -2,6 +2,7 @@
 
 namespace Modules\Accounting\Models;
 
+use App\Concerns\HasApproval;
 use App\Models\Concerns\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,7 @@ use Modules\Inventory\Models\Partner;
 class Invoice extends Model
 {
     /** @use HasFactory<InvoiceFactory> */
-    use BelongsToTenant, HasFactory;
+    use BelongsToTenant, HasApproval, HasFactory;
 
     public const MATCH_NOT_APPLICABLE = 'not_applicable';
 

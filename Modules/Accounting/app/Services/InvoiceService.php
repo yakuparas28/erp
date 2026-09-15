@@ -2,7 +2,9 @@
 
 namespace Modules\Accounting\Services;
 
+use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Approval\ApprovalService;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\InvoiceLine;
@@ -22,6 +24,7 @@ class InvoiceService
         private readonly JournalEntryService $journalEntries,
         private readonly ExchangeRateService $exchangeRates,
         private readonly InvoiceMatchingService $matching,
+        private readonly ApprovalService $approvals,
     ) {}
 
     public function post(Invoice $invoice, User $poster): void
@@ -29,10 +32,43 @@ class InvoiceService
         abort_unless($invoice->status === 'draft', 422, __('Only a draft invoice can be posted.'));
         abort_unless($poster->can('post journal entries'), 403, __('You are not allowed to post journal entries.'));
 
+        if ($this->requiresApproval($invoice) && ! $invoice->fresh()->isApproved()) {
+            abort(422, __('This invoice exceeds the approval threshold and must be approved before posting.'));
+        }
+
         $this->journalEntries->postForInvoice($invoice);
 
         $invoice->update(['status' => 'posted']);
         $this->matching->evaluate($invoice);
+    }
+
+    /**
+     * Fatura tutarı tenant'ın onay eşiğini aşıyor mu?
+     * Eşik NULL veya 0 ise kural kapalıdır (her fatura direkt post edilebilir).
+     */
+    public function requiresApproval(Invoice $invoice): bool
+    {
+        $tenant = Tenant::find($invoice->tenant_id);
+        $threshold = $tenant?->invoice_approval_threshold;
+
+        if ($threshold === null || bccomp((string) $threshold, '0', 4) <= 0) {
+            return false;
+        }
+
+        return bccomp($invoice->total(), (string) $threshold, 4) >= 0;
+    }
+
+    /**
+     * Onaya gönder. requiresApproval() true değilse hata verir — istemci
+     * gereksiz onay akışı başlatmasın diye.
+     */
+    public function submitForApproval(Invoice $invoice, User $submitter): void
+    {
+        abort_unless($invoice->status === 'draft', 422, __('Only draft invoices can be submitted for approval.'));
+        abort_unless($this->requiresApproval($invoice), 422, __('This invoice does not require approval.'));
+        abort_if($invoice->fresh()->isPendingApproval(), 422, __('An approval request is already pending for this invoice.'));
+
+        $this->approvals->submit($invoice, $submitter);
     }
 
     public function create(int $tenantId, int $partnerId, string $type, Model $source, ?int $currencyId = null): Invoice

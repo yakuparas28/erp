@@ -1,9 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Modules\Accounting\Http\Controllers\AccountingSettingsController;
 use Modules\Accounting\Http\Controllers\ChartOfAccountController;
 use Modules\Accounting\Http\Controllers\CurrencyController;
 use Modules\Accounting\Http\Controllers\ExchangeRateController;
+use Modules\Accounting\Http\Controllers\InvoiceApprovalController;
 use Modules\Accounting\Http\Controllers\JournalEntryViewerController;
 use Modules\Accounting\Http\Controllers\PaymentController;
 use Modules\Accounting\Http\Controllers\PurchaseInvoiceController;
@@ -59,5 +61,17 @@ Route::middleware(['auth:web', 'module:accounting'])->prefix('app/accounting')->
         Route::post('/payments', [PaymentController::class, 'store'])->name('payments.store');
         Route::get('/payments/{payment}', [PaymentController::class, 'show'])->name('payments.show');
         Route::post('/payments/{payment}/allocations', [PaymentController::class, 'storeAllocation'])->name('payments.allocations.store');
+    });
+
+    Route::middleware('permission:post journal entries,web')->group(function (): void {
+        Route::post('/invoices/{invoice}/approval/submit', [InvoiceApprovalController::class, 'submit'])->name('invoices.approval.submit');
+    });
+
+    Route::middleware('role:Tenant Admin')->group(function (): void {
+        Route::post('/invoices/{invoice}/approval/approve', [InvoiceApprovalController::class, 'approve'])->name('invoices.approval.approve');
+        Route::post('/invoices/{invoice}/approval/reject', [InvoiceApprovalController::class, 'reject'])->name('invoices.approval.reject');
+
+        Route::get('/settings', [AccountingSettingsController::class, 'edit'])->name('settings.edit');
+        Route::patch('/settings', [AccountingSettingsController::class, 'update'])->name('settings.update');
     });
 });

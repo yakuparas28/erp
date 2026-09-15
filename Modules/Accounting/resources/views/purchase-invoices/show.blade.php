@@ -144,7 +144,66 @@
     </div>
 </div>
 
-@if ($invoice->status === 'draft' && $invoice->lines->isNotEmpty())
+@php
+    $requiresApproval = app(\Modules\Accounting\Services\InvoiceService::class)->requiresApproval($invoice);
+    $approval = $invoice->approval;
+    $canApprove = auth()->user()->hasRole('Tenant Admin');
+    $canPost = $invoice->status === 'draft' && $invoice->lines->isNotEmpty()
+        && (! $requiresApproval || $invoice->isApproved());
+@endphp
+
+@if ($invoice->status === 'draft' && $requiresApproval)
+    <div class="bg-white border border-border-color rounded-md p-4 mt-4">
+        <h2 class="text-base font-bold text-title mb-2 inline-flex items-center gap-2">
+            <i class="ph ph-shield-check"></i> {{ __('Approval Required') }}
+        </h2>
+        <p class="text-[12px] text-default mb-3">
+            {{ __('This invoice exceeds the approval threshold and must be approved before it can be posted.') }}
+        </p>
+
+        @if ($approval === null)
+            <form method="POST" action="{{ route('app.accounting.invoices.approval.submit', $invoice) }}">
+                @csrf
+                <button type="submit" class="btn-sm bg-warning text-white border border-warning hover:bg-warning/90 cursor-pointer inline-flex items-center gap-2">
+                    <i class="ph ph-paper-plane-tilt"></i> {{ __('Submit for Approval') }}
+                </button>
+            </form>
+        @elseif ($approval->status === 'pending')
+            <div class="flex items-center gap-2 mb-3">
+                <span class="text-[11px] bg-warning-transparent text-warning border border-warning px-2 py-0.5 rounded inline-flex items-center gap-1">
+                    <i class="ph ph-clock"></i> {{ __('Awaiting approval') }}
+                </span>
+                <span class="text-[12px] text-default">{{ __('Submitted') }} {{ $approval->submitted_at?->diffForHumans() }}</span>
+            </div>
+            @if ($canApprove)
+                <div class="flex items-center gap-2">
+                    <form method="POST" action="{{ route('app.accounting.invoices.approval.approve', $invoice) }}">
+                        @csrf
+                        <button type="submit" class="btn-sm bg-success text-white border border-success hover:bg-success/90 cursor-pointer inline-flex items-center gap-1">
+                            <i class="ph ph-check"></i> {{ __('Approve') }}
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('app.accounting.invoices.approval.reject', $invoice) }}">
+                        @csrf
+                        <button type="submit" class="btn-sm bg-white border border-danger text-danger hover:bg-danger hover:text-white cursor-pointer inline-flex items-center gap-1">
+                            <i class="ph ph-x"></i> {{ __('Reject') }}
+                        </button>
+                    </form>
+                </div>
+            @endif
+        @elseif ($approval->status === 'approved')
+            <span class="text-[11px] bg-success-transparent text-success border border-success px-2 py-0.5 rounded inline-flex items-center gap-1">
+                <i class="ph ph-check-circle"></i> {{ __('Approved') }} · {{ $approval->decided_at?->diffForHumans() }}
+            </span>
+        @elseif ($approval->status === 'rejected')
+            <span class="text-[11px] bg-danger-transparent text-danger border border-danger px-2 py-0.5 rounded inline-flex items-center gap-1">
+                <i class="ph ph-x-circle"></i> {{ __('Rejected') }} · {{ $approval->decided_at?->diffForHumans() }}
+            </span>
+        @endif
+    </div>
+@endif
+
+@if ($canPost)
     <div class="flex items-center gap-2 mt-4">
         <form method="POST" action="{{ route('app.accounting.purchase-invoices.post', $invoice) }}">
             @csrf

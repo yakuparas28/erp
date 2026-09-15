@@ -2,6 +2,8 @@
 
 namespace Modules\Accounting\Services;
 
+use App\Models\Approval\ApprovalWorkflow;
+use App\Models\Approval\ApprovalWorkflowStep;
 use App\Models\Tenant;
 use Modules\Accounting\Models\ChartOfAccount;
 use Modules\Accounting\Models\Currency;
@@ -63,6 +65,8 @@ class AccountingDefaultsService
             );
         }
 
+        $this->provisionInvoiceApprovalWorkflow($tenant);
+
         foreach (self::CURRENCIES as $currency) {
             Currency::withoutGlobalScopes()->firstOrCreate(
                 ['tenant_id' => $tenant->id, 'code' => $currency['code']],
@@ -80,5 +84,24 @@ class AccountingDefaultsService
     {
         return ChartOfAccount::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)->where('code', $code)->firstOrFail();
+    }
+
+    /**
+     * Fatura onay iş akışını yaratır (tek adım: Tenant Admin).
+     * Tenant Admin'in her zaman var olduğu garanti olduğu için güvenli
+     * bir default. Kullanıcı kendi çok adımlı workflow'unu eklerse bu
+     * kaydı düzenleyebilir. `is_active` = false ise servis onay istemez.
+     */
+    public function provisionInvoiceApprovalWorkflow(Tenant $tenant): void
+    {
+        $workflow = ApprovalWorkflow::withoutGlobalScopes()->firstOrCreate(
+            ['tenant_id' => $tenant->id, 'subject_type' => 'invoice'],
+            ['name' => 'Fatura Onayı', 'is_active' => true],
+        );
+
+        ApprovalWorkflowStep::firstOrCreate(
+            ['approval_workflow_id' => $workflow->id, 'sequence' => 1],
+            ['approver_type' => 'role', 'approver_value' => 'Tenant Admin'],
+        );
     }
 }

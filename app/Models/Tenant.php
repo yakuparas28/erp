@@ -21,7 +21,15 @@ class Tenant extends Model
         'email',
         'phone',
         'address',
+        'invoice_approval_threshold',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'invoice_approval_threshold' => 'decimal:4',
+        ];
+    }
 
     /** @var list<string>|null */
     private ?array $activeModuleKeysCache = null;

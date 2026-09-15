@@ -440,6 +440,13 @@
                                     </a>
                                 </li>
                             @endcan
+                            @if (auth()->user()?->hasRole('Tenant Admin'))
+                                <li>
+                                    <a href="{{ route('app.accounting.settings.edit') }}" class="{{ request()->routeIs('app.accounting.settings.*') ? 'active' : '' }}">
+                                        <i class="ph-duotone ph-gear"></i><span>{{ __('Accounting Settings') }}</span>
+                                    </a>
+                                </li>
+                            @endif
                                 </ul>
                             </li>
                         @endif
