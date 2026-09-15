@@ -12,6 +12,18 @@
     $showRoute = ($routePrefix ?? 'purchase') === 'sales'
         ? 'app.accounting.sales-invoices.show'
         : 'app.accounting.purchase-invoices.show';
+    $matchBadge = fn (?string $m) => match ($m) {
+        'matched' => 'bg-success-transparent text-success',
+        'mismatch' => 'bg-danger-transparent text-danger',
+        'pending' => 'bg-warning-transparent text-warning',
+        default => null,
+    };
+    $matchLabel = fn (?string $m) => match ($m) {
+        'matched' => __('3-way OK'),
+        'mismatch' => __('Mismatch'),
+        'pending' => __('Awaiting receipt'),
+        default => null,
+    };
 @endphp
 <div class="bg-white border border-border-color rounded-md p-4 mb-4">
     <div class="flex items-center justify-between mb-3">
@@ -46,6 +58,11 @@
                             <span class="text-[11px] {{ $badge($inv->status) }} px-2 py-0.5 rounded">
                                 {{ __('invoice-status.'.$inv->status) }}
                             </span>
+                            @if (($routePrefix ?? 'purchase') === 'purchase' && $matchBadge($inv->matching_status))
+                                <span class="text-[11px] {{ $matchBadge($inv->matching_status) }} px-2 py-0.5 rounded ml-1">
+                                    {{ $matchLabel($inv->matching_status) }}
+                                </span>
+                            @endif
                         </td>
                     </tr>
                 @endforeach

@@ -16,6 +16,14 @@ class Invoice extends Model
     /** @use HasFactory<InvoiceFactory> */
     use BelongsToTenant, HasFactory;
 
+    public const MATCH_NOT_APPLICABLE = 'not_applicable';
+
+    public const MATCH_PENDING = 'pending';
+
+    public const MATCH_MATCHED = 'matched';
+
+    public const MATCH_MISMATCH = 'mismatch';
+
     protected $fillable = [
         'tenant_id',
         'partner_id',
@@ -23,6 +31,7 @@ class Invoice extends Model
         'source_type',
         'source_id',
         'status',
+        'matching_status',
         'currency_id',
         'exchange_rate_used',
         'e_invoice_type',

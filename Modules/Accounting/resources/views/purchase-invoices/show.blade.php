@@ -28,6 +28,40 @@
     <div class="bg-danger-transparent text-danger border border-danger rounded-md px-4 py-3 text-sm mb-4">{{ $message }}</div>
 @enderror
 
+@if ($invoice->source_type === 'purchase_order' && $invoice->matching_status !== 'not_applicable')
+    @php
+        $mBadge = match ($invoice->matching_status) {
+            'matched' => ['bg-success-transparent text-success border-success', 'ph-check-circle', __('3-way match OK')],
+            'mismatch' => ['bg-danger-transparent text-danger border-danger', 'ph-warning-circle', __('3-way match mismatch')],
+            default => ['bg-warning-transparent text-warning border-warning', 'ph-clock', __('Awaiting goods receipt')],
+        };
+    @endphp
+    <div class="bg-white border border-border-color rounded-md p-4 mb-4">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-base font-bold text-title inline-flex items-center gap-2">
+                <i class="ph ph-scales"></i> {{ __('Three-way Matching') }}
+            </h2>
+            <span class="text-[11px] {{ $mBadge[0] }} border px-2 py-0.5 rounded inline-flex items-center gap-1">
+                <i class="ph {{ $mBadge[1] }}"></i> {{ $mBadge[2] }}
+            </span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="bg-light rounded-md p-3">
+                <div class="text-[11px] uppercase text-default mb-1">{{ __('Purchase Order') }}</div>
+                <div class="text-title font-semibold">{{ number_format((float) $matchingBreakdown['po_amount'], 2) }}</div>
+            </div>
+            <div class="bg-light rounded-md p-3">
+                <div class="text-[11px] uppercase text-default mb-1">{{ __('Received (× PO unit price)') }}</div>
+                <div class="text-title font-semibold">{{ number_format((float) $matchingBreakdown['received_amount'], 2) }}</div>
+            </div>
+            <div class="bg-light rounded-md p-3">
+                <div class="text-[11px] uppercase text-default mb-1">{{ __('Invoice Subtotal') }}</div>
+                <div class="text-title font-semibold">{{ number_format((float) $matchingBreakdown['invoice_amount'], 2) }}</div>
+            </div>
+        </div>
+    </div>
+@endif
+
 @if ($invoice->status === 'draft')
     <div class="bg-white border border-border-color rounded-md p-4 mb-4">
         <h2 class="text-base font-bold text-title mb-3">{{ __('Add Line') }}</h2>

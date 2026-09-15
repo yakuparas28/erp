@@ -21,6 +21,7 @@ class InvoiceService
     public function __construct(
         private readonly JournalEntryService $journalEntries,
         private readonly ExchangeRateService $exchangeRates,
+        private readonly InvoiceMatchingService $matching,
     ) {}
 
     public function post(Invoice $invoice, User $poster): void
@@ -31,6 +32,7 @@ class InvoiceService
         $this->journalEntries->postForInvoice($invoice);
 
         $invoice->update(['status' => 'posted']);
+        $this->matching->evaluate($invoice);
     }
 
     public function create(int $tenantId, int $partnerId, string $type, Model $source, ?int $currencyId = null): Invoice
@@ -68,6 +70,8 @@ class InvoiceService
         ]);
         $line->tenant_id = $invoice->tenant_id;
         $line->save();
+
+        $this->matching->evaluate($invoice->fresh());
 
         return $line;
     }

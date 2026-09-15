@@ -11,6 +11,7 @@ use Modules\Accounting\Models\Currency;
 use Modules\Accounting\Models\Invoice;
 use Modules\Accounting\Models\TaxRate;
 use Modules\Accounting\Services\EInvoiceService;
+use Modules\Accounting\Services\InvoiceMatchingService;
 use Modules\Accounting\Services\InvoiceService;
 use Modules\Purchase\Models\PurchaseOrder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -60,7 +61,7 @@ class PurchaseInvoiceController extends Controller
         return redirect()->route('app.accounting.purchase-invoices.show', $invoice)->with('status', __('Draft invoice created.'));
     }
 
-    public function show(Invoice $invoice): View
+    public function show(Invoice $invoice, InvoiceMatchingService $matching): View
     {
         $invoice->load(['partner', 'currency', 'lines.product', 'lines.taxRate', 'source.lines.product']);
         $invoice->setAttribute('computed_total_tl', bcmul($invoice->total(), $invoice->exchangeRateOrOne(), 4));
@@ -68,6 +69,7 @@ class PurchaseInvoiceController extends Controller
         return view('accounting::purchase-invoices.show', [
             'invoice' => $invoice,
             'taxRates' => TaxRate::where('type', 'purchase')->orderBy('percentage')->get(),
+            'matchingBreakdown' => $matching->breakdown($invoice),
         ]);
     }
 

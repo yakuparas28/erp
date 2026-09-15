@@ -3,6 +3,8 @@
 namespace Modules\Purchase\Services;
 
 use Illuminate\Support\Facades\DB;
+use Modules\Accounting\Models\Invoice;
+use Modules\Accounting\Services\InvoiceMatchingService;
 use Modules\Purchase\Models\GoodsReceipt;
 use Modules\Purchase\Models\GoodsReceiptLine;
 use Modules\Purchase\Models\PurchaseOrderLine;
@@ -14,6 +16,10 @@ use Modules\Purchase\Models\PurchaseOrderLine;
  */
 class GoodsReceiptService
 {
+    public function __construct(
+        private readonly InvoiceMatchingService $matching,
+    ) {}
+
     public function recordReceipt(PurchaseOrderLine $line, string $qty, int $locationId, array $meta = []): GoodsReceipt
     {
         return DB::transaction(function () use ($line, $qty, $locationId, $meta) {
@@ -40,8 +46,24 @@ class GoodsReceiptService
             $receiptLine->tenant_id = $po->tenant_id;
             $receiptLine->save();
 
+            $this->reevaluateInvoicesFor($po->id, $po->tenant_id);
+
             return $receipt;
         });
+    }
+
+    /**
+     * Bir PO'ya bağlı tüm faturaların matching_status'unu yeniden hesaplar
+     * (yeni bir mal kabul geldiğinde ya da iptal edildiğinde).
+     */
+    public function reevaluateInvoicesFor(int $purchaseOrderId, int $tenantId): void
+    {
+        Invoice::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('source_type', 'purchase_order')
+            ->where('source_id', $purchaseOrderId)
+            ->get()
+            ->each(fn (Invoice $inv) => $this->matching->evaluate($inv));
     }
 
     public function totalReceivedForLine(int $lineId): string
