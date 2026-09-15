@@ -25,6 +25,7 @@ class ExpenseApprovalController extends Controller
 
     public function approve(Expense $expense): RedirectResponse
     {
+        $this->authorize('approve', $expense);
         $this->service->approve($expense, auth()->user());
 
         return back()->with('status', __('Expense approved.'));
@@ -32,6 +33,7 @@ class ExpenseApprovalController extends Controller
 
     public function refuse(RefuseExpenseRequest $request, Expense $expense): RedirectResponse
     {
+        $this->authorize('refuse', $expense);
         $this->service->refuse($expense, auth()->user(), (string) $request->validated()['refuse_reason']);
 
         return back()->with('status', __('Expense refused.'));
@@ -39,11 +41,7 @@ class ExpenseApprovalController extends Controller
 
     public function post(Expense $expense): RedirectResponse
     {
-        // Belt-and-suspenders: route zaten `permission:post expense` altında
-        // ama controller'da da explicit tuttum ki routes yeniden düzenlenirse
-        // yetki kaybolmasın.
-        abort_unless(auth()->user()?->can('post expense'), 403);
-
+        $this->authorize('post', $expense);
         $this->service->postToAccounting($expense);
 
         return back()->with('status', __('Expense posted to accounting journal.'));

@@ -68,9 +68,7 @@ class ExpenseController extends Controller
 
     public function update(StoreExpenseRequest $request, Expense $expense): RedirectResponse
     {
-        $employee = Employee::where('user_id', auth()->id())->first();
-        abort_unless($employee !== null && $expense->employee_id === $employee->id, 403);
-        abort_unless($expense->isEditable(), 422, __('Only draft or refused expenses can be edited.'));
+        $this->authorize('update', $expense);
 
         $data = $request->validated();
         $category = ExpenseCategory::findOrFail($data['expense_category_id']);
@@ -99,9 +97,7 @@ class ExpenseController extends Controller
 
     public function submit(Expense $expense): RedirectResponse
     {
-        $employee = Employee::where('user_id', auth()->id())->first();
-        abort_unless($employee !== null && $expense->employee_id === $employee->id, 403);
-
+        $this->authorize('submit', $expense);
         $this->service->submit($expense);
 
         return back()->with('status', __('Expense submitted for approval.'));
@@ -109,10 +105,7 @@ class ExpenseController extends Controller
 
     public function destroy(Expense $expense): RedirectResponse
     {
-        $employee = Employee::where('user_id', auth()->id())->first();
-        abort_unless($employee !== null && $expense->employee_id === $employee->id, 403);
-        abort_unless($expense->status === Expense::STATUS_DRAFT, 422, __('Only draft expenses can be deleted.'));
-
+        $this->authorize('delete', $expense);
         $expense->delete();
 
         return back()->with('status', __('Expense deleted.'));

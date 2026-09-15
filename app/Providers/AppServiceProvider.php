@@ -15,6 +15,12 @@ use App\Models\Tenant;
 use App\Models\TenantModuleActivation;
 use App\Models\TenantSubscription;
 use App\Models\User;
+use App\Policies\EmployeePolicy;
+use App\Policies\ExpensePolicy;
+use App\Policies\PartnerPolicy;
+use App\Policies\PurchaseOrderPolicy;
+use App\Policies\ReservationPolicy;
+use App\Policies\SalesOrderPolicy;
 use App\Services\Approval\ApprovalService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -43,6 +49,7 @@ use Modules\Hr\Models\LeaveRequest;
 use Modules\Hr\Models\LeaveType;
 use Modules\Inventory\Models\InventoryAdjustment;
 use Modules\Inventory\Models\Location;
+use Modules\Inventory\Models\Partner;
 use Modules\Inventory\Models\Product;
 use Modules\Inventory\Models\ProductLot;
 use Modules\Inventory\Models\RouteRule;
@@ -75,12 +82,30 @@ class AppServiceProvider extends ServiceProvider
         $this->configureMorphMap();
         $this->registerBladeDirectives();
         $this->registerGates();
+        $this->registerPolicies();
         ApprovalService::bootDefaultResolvers();
 
         // Non-production'da lazy loading her yerde exception atar — böylece
         // N+1 gizli kalmaz; test suite'inde de yakalanır. Production'da tolerans
         // gösterilir ki tek bir kaçak lazy load 500 hatası vermesin.
         Model::preventLazyLoading(! app()->isProduction());
+    }
+
+    /**
+     * Model-based policy'ler — controller'daki `abort_unless($x->owner_id === auth()->id())`
+     * gibi dağınık kuralları tek yerde toplar. Kullanım:
+     *   $this->authorize('update', $expense);   // controller
+     *
+     *   @can('update', $expense)                // blade
+     */
+    private function registerPolicies(): void
+    {
+        Gate::policy(Expense::class, ExpensePolicy::class);
+        Gate::policy(Reservation::class, ReservationPolicy::class);
+        Gate::policy(PurchaseOrder::class, PurchaseOrderPolicy::class);
+        Gate::policy(SalesOrder::class, SalesOrderPolicy::class);
+        Gate::policy(Employee::class, EmployeePolicy::class);
+        Gate::policy(Partner::class, PartnerPolicy::class);
     }
 
     /**
