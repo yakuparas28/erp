@@ -517,6 +517,11 @@
                                                 <i class="ph-duotone ph-money"></i><span>{{ __('Payroll') }}</span>
                                             </a>
                                         </li>
+                                        <li>
+                                            <a href="{{ route('app.hr.salary-advances.index') }}" class="{{ request()->routeIs('app.hr.salary-advances.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-hand-coins"></i><span>{{ __('Salary Advances') }}</span>
+                                            </a>
+                                        </li>
                                     @endif
                                     @can('manage departments')
                                         <li>

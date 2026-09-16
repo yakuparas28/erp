@@ -51,6 +51,7 @@ class PayrollService
     public function __construct(
         private readonly JournalEntryService $journalEntries,
         private readonly AccountingDefaultsService $defaults,
+        private readonly SalaryAdvanceService $advances,
     ) {}
 
     public function openOrGetPeriod(int $tenantId, int $year, int $month, User $creator): PayrollPeriod
@@ -102,10 +103,17 @@ class PayrollService
             foreach ($employees as $emp) {
                 $breakdown = $this->compute((string) $emp->gross_salary);
 
+                // Avans mahsubu — outstanding toplam net'i geçemez.
+                $outstanding = $this->advances->outstandingTotal($emp->id);
+                $advanceCap = bccomp($outstanding, $breakdown['net_salary'], 4) > 0
+                    ? $breakdown['net_salary']
+                    : $outstanding;
+
                 $slip = new Payslip(array_merge([
                     'payroll_period_id' => $period->id,
                     'employee_id' => $emp->id,
                     'status' => Payslip::STATUS_CALCULATED,
+                    'advance_deducted' => $advanceCap,
                 ], $breakdown));
                 $slip->tenant_id = $period->tenant_id;
                 $slip->save();
@@ -234,7 +242,11 @@ class PayrollService
     }
 
     /**
-     * Tek personele net ödeme: dr 335, cr banka/kasa hesabı.
+     * Tek personele net ödeme. Avans mahsubu varsa:
+     *   dr 335 (net toplam)
+     *   cr 196 (mahsup edilen avans)
+     *   cr banka/kasa (kalan nakit)
+     * Avans yoksa cr 196 satırı yazılmaz — mevcut davranış korunur.
      */
     public function paySlip(Payslip $slip, int $journalId): Payslip
     {
@@ -253,15 +265,27 @@ class PayrollService
                 ? ChartOfAccount::withoutGlobalScopes()->findOrFail($journal->chart_of_account_id)
                 : $this->defaults->accountByCode($slip->tenant_id, $journal->type === 'cash' ? '100' : '102');
 
+            $advanceDeducted = (string) $slip->advance_deducted;
+            $cashPayable = bcsub((string) $slip->net_salary, $advanceDeducted, 4);
+            $hasAdvance = bccomp($advanceDeducted, '0', 4) > 0;
+
+            $lines = [
+                ['account_id' => $acc335->id, 'debit' => $slip->net_salary, 'credit' => '0.0000'],
+            ];
+            if ($hasAdvance) {
+                $acc196 = $this->defaults->accountByCode($slip->tenant_id, '196');
+                $lines[] = ['account_id' => $acc196->id, 'debit' => '0.0000', 'credit' => $advanceDeducted];
+            }
+            if (bccomp($cashPayable, '0', 4) > 0) {
+                $lines[] = ['account_id' => $bankAccount->id, 'debit' => '0.0000', 'credit' => $cashPayable];
+            }
+
             $this->journalEntries->write(
                 tenantId: $slip->tenant_id,
                 journalType: $journal->type,
                 entryDate: now()->toDateString(),
                 reference: $slip,
-                lines: [
-                    ['account_id' => $acc335->id, 'debit' => $slip->net_salary, 'credit' => '0.0000'],
-                    ['account_id' => $bankAccount->id, 'debit' => '0.0000', 'credit' => $slip->net_salary],
-                ],
+                lines: $lines,
             );
 
             $slip->update([
@@ -269,6 +293,25 @@ class PayrollService
                 'paid_at' => now()->toDateString(),
                 'paid_from_journal_id' => $journal->id,
             ]);
+
+            // Mahsup edilen avansları FIFO ile deducted işaretle
+            if ($hasAdvance) {
+                $remaining = $advanceDeducted;
+                $idsToMark = [];
+                foreach ($this->advances->outstandingList($slip->employee_id) as $adv) {
+                    if (bccomp($remaining, '0', 4) <= 0) {
+                        break;
+                    }
+                    // Kısmi mahsup destekli değil (avans > net cap edilmişti,
+                    // sadece tam mahsup edilenler işaretlenir). Kısmi mahsup
+                    // gerekirse ileride avans split edilebilir.
+                    if (bccomp((string) $adv->amount, $remaining, 4) <= 0) {
+                        $idsToMark[] = $adv->id;
+                        $remaining = bcsub($remaining, (string) $adv->amount, 4);
+                    }
+                }
+                $this->advances->markDeducted($idsToMark, $slip->id);
+            }
 
             return $slip->fresh();
         });

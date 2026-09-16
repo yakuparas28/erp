@@ -54,6 +54,7 @@ use Modules\Hr\Models\LeaveRequest;
 use Modules\Hr\Models\LeaveType;
 use Modules\Hr\Models\PayrollPeriod;
 use Modules\Hr\Models\Payslip;
+use Modules\Hr\Models\SalaryAdvance;
 use Modules\Inventory\Models\InventoryAdjustment;
 use Modules\Inventory\Models\Location;
 use Modules\Inventory\Models\Partner;
@@ -178,6 +179,7 @@ class AppServiceProvider extends ServiceProvider
             'bank_statement_line' => BankStatementLine::class,
             'payroll_period' => PayrollPeriod::class,
             'payslip' => Payslip::class,
+            'salary_advance' => SalaryAdvance::class,
             'approval_workflow' => ApprovalWorkflow::class,
             'approval_workflow_step' => ApprovalWorkflowStep::class,
             'approval' => Approval::class,

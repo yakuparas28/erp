@@ -85,6 +85,8 @@
                     <th class="text-right py-2 border-b border-border-color">{{ __('Income Tax') }}</th>
                     <th class="text-right py-2 border-b border-border-color">{{ __('Stamp') }}</th>
                     <th class="text-right py-2 border-b border-border-color">{{ __('Net') }}</th>
+                    <th class="text-right py-2 border-b border-border-color">{{ __('Advance') }}</th>
+                    <th class="text-right py-2 border-b border-border-color">{{ __('Cash Payable') }}</th>
                     <th class="text-right py-2 border-b border-border-color">{{ __('Employer Cost') }}</th>
                     <th class="text-left py-2 border-b border-border-color">{{ __('Status') }}</th>
                     <th class="py-2 border-b border-border-color"></th>
@@ -110,6 +112,10 @@
                         <td class="py-2 text-right text-default">{{ number_format((float) $slip->income_tax, 2, ',', '.') }}</td>
                         <td class="py-2 text-right text-default">{{ number_format((float) $slip->stamp_tax, 2, ',', '.') }}</td>
                         <td class="py-2 text-right font-semibold text-success">{{ number_format((float) $slip->net_salary, 2, ',', '.') }}</td>
+                        <td class="py-2 text-right text-warning">
+                            {{ bccomp((string) $slip->advance_deducted, '0', 4) > 0 ? '−'.number_format((float) $slip->advance_deducted, 2, ',', '.') : '—' }}
+                        </td>
+                        <td class="py-2 text-right font-bold text-primary">{{ number_format((float) $slip->cashPayable(), 2, ',', '.') }}</td>
                         <td class="py-2 text-right text-danger">{{ number_format((float) $slip->total_employer_cost, 2, ',', '.') }}</td>
                         <td class="py-2">
                             <span class="text-[11px] px-2 py-0.5 rounded {{ $slip->status === 'paid' ? 'bg-success-transparent text-success' : 'bg-warning-transparent text-warning' }}">
@@ -139,7 +145,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="9" class="py-6 text-center text-default">{{ __('No payslips generated yet. Click Calculate above.') }}</td></tr>
+                    <tr><td colspan="11" class="py-6 text-center text-default">{{ __('No payslips generated yet. Click Calculate above.') }}</td></tr>
                 @endforelse
             </tbody>
         </table>

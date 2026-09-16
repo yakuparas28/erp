@@ -10,6 +10,7 @@ use Modules\Hr\Http\Controllers\LeaveConfigController;
 use Modules\Hr\Http\Controllers\LeaveRequestController;
 use Modules\Hr\Http\Controllers\LeaveTypeController;
 use Modules\Hr\Http\Controllers\PayrollController;
+use Modules\Hr\Http\Controllers\SalaryAdvanceController;
 
 Route::middleware(['auth:web', 'module:hr'])->prefix('app/hr')->name('app.hr.')->group(function (): void {
     Route::middleware('permission:manage employees,web')->group(function (): void {
@@ -87,5 +88,8 @@ Route::middleware(['auth:web', 'module:hr'])->prefix('app/hr')->name('app.hr.')-
         Route::post('/payroll/{period}/generate', [PayrollController::class, 'generate'])->name('payroll.generate');
         Route::post('/payroll/{period}/post', [PayrollController::class, 'post'])->name('payroll.post');
         Route::post('/payroll/payslips/{slip}/pay', [PayrollController::class, 'pay'])->name('payroll.payslips.pay');
+
+        Route::get('/salary-advances', [SalaryAdvanceController::class, 'index'])->name('salary-advances.index');
+        Route::post('/salary-advances', [SalaryAdvanceController::class, 'store'])->name('salary-advances.store');
     });
 });
