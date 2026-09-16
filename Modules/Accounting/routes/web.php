@@ -117,5 +117,6 @@ Route::middleware(['auth:web', 'module:accounting'])->prefix('app/accounting')->
         Route::post('/cash-bank-accounts', [CashBankAccountController::class, 'store'])->name('cash-bank-accounts.store');
         Route::patch('/cash-bank-accounts/{journal}', [CashBankAccountController::class, 'update'])->name('cash-bank-accounts.update');
         Route::delete('/cash-bank-accounts/{journal}', [CashBankAccountController::class, 'destroy'])->name('cash-bank-accounts.destroy');
+        Route::get('/cash-bank-accounts/{journal}/statement', [CashBankAccountController::class, 'statement'])->name('cash-bank-accounts.statement');
     });
 });

@@ -32,6 +32,7 @@ use Modules\Accounting\Models\BankStatementLine;
 use Modules\Accounting\Models\CardPayment;
 use Modules\Accounting\Models\CheckAndNote;
 use Modules\Accounting\Models\Invoice;
+use Modules\Accounting\Models\Journal;
 use Modules\Accounting\Models\Payment;
 use Modules\Accounting\Models\PosTerminal;
 use Modules\Expenses\Models\Expense;
@@ -172,6 +173,7 @@ class AppServiceProvider extends ServiceProvider
             'sales_order' => SalesOrder::class,
             'invoice' => Invoice::class,
             'payment' => Payment::class,
+            'journal' => Journal::class,
             'check_and_note' => CheckAndNote::class,
             'pos_terminal' => PosTerminal::class,
             'card_payment' => CardPayment::class,

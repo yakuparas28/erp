@@ -43,7 +43,9 @@
                             {{ $account->type === 'cash' ? __('Cash') : __('Bank') }}
                         </span>
                     </td>
-                    <td class="py-2 font-medium text-gray-900">{{ $account->name }}</td>
+                    <td class="py-2 font-medium">
+                        <a href="{{ route('app.accounting.cash-bank-accounts.statement', $account) }}" class="text-primary hover:underline">{{ $account->name }}</a>
+                    </td>
                     <td class="py-2 text-default font-mono">{{ $account->code ?: '—' }}</td>
                     <td class="py-2 text-default">
                         @if ($account->type === 'bank')

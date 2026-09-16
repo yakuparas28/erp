@@ -11,6 +11,7 @@ use Modules\Accounting\Models\ChartOfAccount;
 use Modules\Accounting\Models\Currency;
 use Modules\Accounting\Models\Journal;
 use Modules\Accounting\Models\Payment;
+use Modules\Accounting\Services\AccountStatementService;
 
 /**
  * Kasa & Banka hesapları — journals tablosundan `cash`/`bank` tipli
@@ -19,6 +20,20 @@ use Modules\Accounting\Models\Payment;
  */
 class CashBankAccountController extends Controller
 {
+    public function statement(Journal $journal, Request $request, AccountStatementService $statements): View
+    {
+        abort_unless($journal->isCashOrBank(), 404);
+        $from = $request->query('from') ?: now()->startOfMonth()->toDateString();
+        $to = $request->query('to') ?: now()->endOfMonth()->toDateString();
+
+        return view('accounting::cash-bank-accounts.statement', [
+            'journal' => $journal->load(['currency', 'chartOfAccount']),
+            'statement' => $statements->build($journal, $from, $to),
+            'from' => $from,
+            'to' => $to,
+        ]);
+    }
+
     public function index(Request $request): View
     {
         return view('accounting::cash-bank-accounts.index', [

@@ -17,7 +17,7 @@
         @php $totalBalance = '0'; @endphp
         @forelse ($balances as $row)
             @php $totalBalance = bcadd($totalBalance, (string) $row['balance'], 4); @endphp
-            <div class="bg-white border border-border-color rounded-md p-3">
+            <a href="{{ route('app.accounting.cash-bank-accounts.statement', $row['journal']) }}" class="bg-white border border-border-color rounded-md p-3 hover:bg-light hover:border-primary cursor-pointer block">
                 <div class="flex items-center gap-1 text-[11px] text-default">
                     <span class="{{ $row['journal']->type === 'cash' ? 'text-info' : 'text-warning' }}">
                         <i class="ph ph-{{ $row['journal']->type === 'cash' ? 'money' : 'bank' }}"></i>
@@ -27,7 +27,7 @@
                 <div class="text-lg font-bold text-gray-900 mt-1">
                     {{ number_format((float) $row['balance'], 2, ',', '.') }}
                 </div>
-            </div>
+            </a>
         @empty
             <div class="col-span-full text-[12px] text-default">
                 {{ __('No cash or bank accounts defined yet.') }}
