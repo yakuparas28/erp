@@ -77,4 +77,24 @@
             <label for="act-{{ $employee->id }}" class="text-sm text-gray-900">{{ __('Active') }}</label>
         </div>
     @endif
+
+    <div class="col-span-full pt-4 mt-2 border-t border-border-color">
+        <div class="text-[11px] uppercase text-default font-semibold mb-2">{{ __('Payroll') }}</div>
+    </div>
+    <div>
+        <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Gross Salary') }}</label>
+        <input type="number" step="0.01" min="0" name="gross_salary" value="{{ old('gross_salary', $employee?->gross_salary) }}" placeholder="0.00" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0 text-right font-mono">
+        <p class="text-[11px] text-default mt-1">{{ __('Empty = not on payroll') }}</p>
+    </div>
+    <div>
+        <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('IBAN (for salary payment)') }}</label>
+        <input type="text" name="iban" value="{{ old('iban', $employee?->iban) }}" maxlength="34" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0 font-mono">
+    </div>
+    <div>
+        <label class="block text-sm font-semibold text-gray-900 mb-1">{{ __('Expense Type') }}</label>
+        <select name="salary_expense_type" class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+            <option value="admin" @selected(($employee?->salary_expense_type ?? 'admin') === 'admin')>{{ __('Admin (770)') }}</option>
+            <option value="direct_labor" @selected($employee?->salary_expense_type === 'direct_labor')>{{ __('Direct Labor (720)') }}</option>
+        </select>
+    </div>
 </div>

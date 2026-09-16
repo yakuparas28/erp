@@ -21,6 +21,7 @@ class Employee extends Model
         'hire_date', 'birth_date', 'termination_date',
         'national_id', 'phone', 'mobile',
         'is_active', 'annual_leave_balance', 'second_level_approval_required', 'notes',
+        'gross_salary', 'iban', 'salary_expense_type',
     ];
 
     protected function casts(): array
@@ -32,6 +33,7 @@ class Employee extends Model
             'is_active' => 'boolean',
             'second_level_approval_required' => 'boolean',
             'annual_leave_balance' => 'decimal:2',
+            'gross_salary' => 'decimal:4',
         ];
     }
 

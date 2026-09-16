@@ -152,6 +152,9 @@ class EmployeeController extends Controller
             'annual_leave_balance' => ['nullable', 'numeric', 'min:0'],
             'second_level_approval_required' => ['sometimes', 'boolean'],
             'temp_password' => ['required', 'string', 'min:8', 'max:64'],
+            'gross_salary' => ['nullable', 'numeric', 'min:0'],
+            'iban' => ['nullable', 'string', 'max:34'],
+            'salary_expense_type' => ['nullable', Rule::in(['direct_labor', 'admin'])],
         ]);
     }
 
@@ -182,6 +185,9 @@ class EmployeeController extends Controller
             'second_level_approval_required' => ['sometimes', 'boolean'],
             'is_active' => ['sometimes', 'boolean'],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'gross_salary' => ['nullable', 'numeric', 'min:0'],
+            'iban' => ['nullable', 'string', 'max:34'],
+            'salary_expense_type' => ['nullable', Rule::in(['direct_labor', 'admin'])],
         ]);
     }
 }

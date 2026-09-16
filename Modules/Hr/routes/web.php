@@ -9,6 +9,7 @@ use Modules\Hr\Http\Controllers\LeaveBalanceController;
 use Modules\Hr\Http\Controllers\LeaveConfigController;
 use Modules\Hr\Http\Controllers\LeaveRequestController;
 use Modules\Hr\Http\Controllers\LeaveTypeController;
+use Modules\Hr\Http\Controllers\PayrollController;
 
 Route::middleware(['auth:web', 'module:hr'])->prefix('app/hr')->name('app.hr.')->group(function (): void {
     Route::middleware('permission:manage employees,web')->group(function (): void {
@@ -75,5 +76,16 @@ Route::middleware(['auth:web', 'module:hr'])->prefix('app/hr')->name('app.hr.')-
         Route::post('/consumption-rules', [ConsumptionRuleController::class, 'store'])->name('consumption-rules.store');
         Route::patch('/consumption-rules/{consumptionRule}', [ConsumptionRuleController::class, 'update'])->name('consumption-rules.update');
         Route::delete('/consumption-rules/{consumptionRule}', [ConsumptionRuleController::class, 'destroy'])->name('consumption-rules.destroy');
+    });
+
+    // Bordro: finansal etkisi olduğu için sadece Tenant Admin (Seviye 1 basit
+    // bordro; Seviye 2/3 tanıtılırsa "manage payroll" permission'ı ayrılabilir).
+    Route::middleware('role:Tenant Admin')->group(function (): void {
+        Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
+        Route::post('/payroll', [PayrollController::class, 'store'])->name('payroll.store');
+        Route::get('/payroll/{period}', [PayrollController::class, 'show'])->name('payroll.show');
+        Route::post('/payroll/{period}/generate', [PayrollController::class, 'generate'])->name('payroll.generate');
+        Route::post('/payroll/{period}/post', [PayrollController::class, 'post'])->name('payroll.post');
+        Route::post('/payroll/payslips/{slip}/pay', [PayrollController::class, 'pay'])->name('payroll.payslips.pay');
     });
 });

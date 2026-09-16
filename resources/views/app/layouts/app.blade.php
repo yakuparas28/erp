@@ -511,6 +511,13 @@
                                             </a>
                                         </li>
                                     @endcan
+                                    @if (auth()->user()?->hasRole('Tenant Admin'))
+                                        <li>
+                                            <a href="{{ route('app.hr.payroll.index') }}" class="{{ request()->routeIs('app.hr.payroll.*') ? 'active' : '' }}">
+                                                <i class="ph-duotone ph-money"></i><span>{{ __('Payroll') }}</span>
+                                            </a>
+                                        </li>
+                                    @endif
                                     @can('manage departments')
                                         <li>
                                             <a href="{{ route('app.hr.departments.index') }}" class="{{ request()->routeIs('app.hr.departments.*') ? 'active' : '' }}">
