@@ -79,27 +79,9 @@
                     <i class="ph ph-file-arrow-down"></i> {{ __('Bank Transfer CSV') }}
                 </a>
 
-                <details class="relative inline-block">
-                    <summary class="btn-sm bg-success text-white border border-success hover:bg-success/90 cursor-pointer inline-flex items-center gap-2 list-none">
-                        <i class="ph ph-money"></i> {{ __('Pay All (:n)', ['n' => $unpaidCount]) }}
-                    </summary>
-                    <div class="absolute right-0 mt-1 bg-white border border-border-color rounded-md shadow-lg p-3 z-10" style="width:280px;">
-                        <form method="POST" action="{{ route('app.hr.payroll.pay-all', $period) }}" class="space-y-2"
-                              onsubmit="return confirm('{{ __(':n payslips will be paid in a single journal entry. Continue?', ['n' => $unpaidCount]) }}')">
-                            @csrf
-                            <label class="text-[11px] text-default block">{{ __('Pay all from') }}</label>
-                            <select name="journal_id" required class="w-full px-2 py-1 text-[12px] border border-border-color rounded-md bg-white">
-                                @foreach ($journals as $j)
-                                    <option value="{{ $j->id }}">{{ $j->name }} ({{ __(ucfirst($j->type)) }})</option>
-                                @endforeach
-                            </select>
-                            <button type="submit" class="btn-sm bg-success text-white text-[11px] w-full">{{ __('Confirm Batch Payment') }}</button>
-                        </form>
-                        <p class="text-[10px] text-default mt-2">
-                            {{ __('Use this after you have sent the bank transfer file to the bank.') }}
-                        </p>
-                    </div>
-                </details>
+                <button type="button" data-pay-open-batch class="btn-sm bg-success text-white border border-success hover:bg-success/90 cursor-pointer inline-flex items-center gap-2">
+                    <i class="ph ph-money"></i> {{ __('Pay All (:n)', ['n' => $unpaidCount]) }}
+                </button>
             </div>
         @endif
     @endif
@@ -155,21 +137,14 @@
                         </td>
                         <td class="py-2 text-right">
                             @if ($period->status === 'posted' && $slip->status === 'calculated')
-                                <details class="inline-block relative">
-                                    <summary class="text-primary text-[12px] hover:underline cursor-pointer list-none">{{ __('Pay') }}</summary>
-                                    <div class="absolute right-0 mt-1 bg-white border border-border-color rounded-md shadow-lg p-3 z-10" style="width:260px;">
-                                        <form method="POST" action="{{ route('app.hr.payroll.payslips.pay', $slip) }}" class="space-y-2">
-                                            @csrf
-                                            <label class="text-[11px] text-default block">{{ __('Pay from') }}</label>
-                                            <select name="journal_id" required class="w-full px-2 py-1 text-[12px] border border-border-color rounded-md bg-white">
-                                                @foreach ($journals as $j)
-                                                    <option value="{{ $j->id }}">{{ $j->name }} ({{ __(ucfirst($j->type)) }})</option>
-                                                @endforeach
-                                            </select>
-                                            <button type="submit" class="btn-sm bg-success text-white text-[11px] w-full">{{ __('Confirm Payment') }}</button>
-                                        </form>
-                                    </div>
-                                </details>
+                                <button type="button"
+                                        data-pay-open-slip
+                                        data-slip-id="{{ $slip->id }}"
+                                        data-slip-name="{{ $slip->employee->first_name }} {{ $slip->employee->last_name }}"
+                                        data-slip-amount="{{ number_format((float) $slip->cashPayable(), 2, ',', '.') }}"
+                                        class="text-primary text-[12px] hover:underline cursor-pointer">
+                                    {{ __('Pay') }}
+                                </button>
                             @elseif ($slip->status === 'paid')
                                 <span class="text-[11px] text-default">{{ optional($slip->paid_at)->format('d.m.Y') }}</span>
                             @endif
@@ -182,4 +157,102 @@
         </table>
     </div>
 </div>
+
+{{-- Toplu ödeme modalı --}}
+<div id="pay-batch-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" role="dialog">
+    <div class="bg-white rounded-md shadow-xl w-full" style="max-width: min(480px, calc(100vw - 32px));">
+        <form method="POST" action="{{ route('app.hr.payroll.pay-all', $period) }}"
+              onsubmit="return confirm('{{ __(':n payslips will be paid in a single journal entry. Continue?', ['n' => $period->payslips->where('status', 'calculated')->count()]) }}')">
+            @csrf
+            <div class="flex items-center justify-between border-b border-border-color px-4 py-3">
+                <h2 class="text-base font-bold text-title inline-flex items-center gap-2">
+                    <i class="ph ph-money"></i> {{ __('Pay All Payslips') }}
+                </h2>
+                <button type="button" data-pay-batch-close class="text-default hover:text-gray-900 cursor-pointer"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            <div class="p-4 space-y-3">
+                <p class="text-[12px] text-default mb-0">
+                    {{ __(':n payslips will be paid in a single journal entry from the selected account.', ['n' => $period->payslips->where('status', 'calculated')->count()]) }}
+                </p>
+                <div>
+                    <label class="text-[12px] text-default block mb-1">{{ __('Pay all from') }} *</label>
+                    <select name="journal_id" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                        @foreach ($journals as $j)
+                            <option value="{{ $j->id }}">{{ $j->name }} ({{ __(ucfirst($j->type)) }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                <p class="text-[11px] text-default">
+                    {{ __('Use this after you have sent the bank transfer file to the bank.') }}
+                </p>
+            </div>
+            <div class="border-t border-border-color px-4 py-3 flex items-center justify-end gap-2">
+                <button type="button" data-pay-batch-close class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light cursor-pointer">{{ __('Cancel') }}</button>
+                <button type="submit" class="btn-sm bg-success text-white border border-success hover:bg-success/90 cursor-pointer inline-flex items-center gap-2">
+                    <i class="ph ph-check"></i> {{ __('Confirm Batch Payment') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{{-- Tek personel ödeme modalı --}}
+<div id="pay-slip-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4" role="dialog">
+    <div class="bg-white rounded-md shadow-xl w-full" style="max-width: min(440px, calc(100vw - 32px));">
+        <form id="pay-slip-form" method="POST">
+            @csrf
+            <div class="flex items-center justify-between border-b border-border-color px-4 py-3">
+                <h2 class="text-base font-bold text-title inline-flex items-center gap-2">
+                    <i class="ph ph-money"></i> <span id="pay-slip-title">{{ __('Pay Payslip') }}</span>
+                </h2>
+                <button type="button" data-pay-slip-close class="text-default hover:text-gray-900 cursor-pointer"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            <div class="p-4 space-y-3">
+                <div class="bg-light rounded-md p-3 text-sm">
+                    <div class="text-default text-[11px] uppercase">{{ __('Cash Payable') }}</div>
+                    <div id="pay-slip-amount" class="text-xl font-bold text-primary">—</div>
+                </div>
+                <div>
+                    <label class="text-[12px] text-default block mb-1">{{ __('Pay from') }} *</label>
+                    <select name="journal_id" required class="w-full px-3 py-2 text-sm border border-border-color rounded-md bg-white focus:outline-none focus:ring-0">
+                        @foreach ($journals as $j)
+                            <option value="{{ $j->id }}">{{ $j->name }} ({{ __(ucfirst($j->type)) }})</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+            <div class="border-t border-border-color px-4 py-3 flex items-center justify-end gap-2">
+                <button type="button" data-pay-slip-close class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light cursor-pointer">{{ __('Cancel') }}</button>
+                <button type="submit" class="btn-sm bg-success text-white border border-success hover:bg-success/90 cursor-pointer inline-flex items-center gap-2">
+                    <i class="ph ph-check"></i> {{ __('Confirm Payment') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    const batchModal = document.getElementById('pay-batch-modal');
+    const slipModal = document.getElementById('pay-slip-modal');
+    const slipForm = document.getElementById('pay-slip-form');
+    const slipTemplate = @json(url('/app/hr/payroll/payslips')) + '/{id}/pay';
+
+    const show = (el) => { el.classList.remove('hidden'); el.classList.add('flex'); };
+    const hide = (el) => { el.classList.remove('flex'); el.classList.add('hidden'); };
+
+    document.querySelectorAll('[data-pay-open-batch]').forEach((b) => b.addEventListener('click', () => show(batchModal)));
+    document.querySelectorAll('[data-pay-batch-close]').forEach((b) => b.addEventListener('click', () => hide(batchModal)));
+    batchModal.addEventListener('click', (e) => { if (e.target === batchModal) hide(batchModal); });
+
+    document.querySelectorAll('[data-pay-open-slip]').forEach((b) => b.addEventListener('click', () => {
+        slipForm.action = slipTemplate.replace('{id}', b.dataset.slipId);
+        document.getElementById('pay-slip-title').textContent = @json(__('Pay')) + ' — ' + b.dataset.slipName;
+        document.getElementById('pay-slip-amount').textContent = b.dataset.slipAmount;
+        show(slipModal);
+    }));
+    document.querySelectorAll('[data-pay-slip-close]').forEach((b) => b.addEventListener('click', () => hide(slipModal)));
+    slipModal.addEventListener('click', (e) => { if (e.target === slipModal) hide(slipModal); });
+})();
+</script>
 @endsection
