@@ -71,6 +71,37 @@
         @endif
     @else
         <span class="text-[12px] text-success">✓ {{ __('This period has been posted to the general journal.') }}</span>
+
+        @php $unpaidCount = $period->payslips->where('status', 'calculated')->count(); @endphp
+        @if ($unpaidCount > 0)
+            <div class="border-l border-border-color pl-3 ml-2 flex flex-wrap items-center gap-2">
+                <a href="{{ route('app.hr.payroll.bank-transfer-file', $period) }}" class="btn-sm bg-white border border-border-color text-gray-900 hover:bg-light cursor-pointer inline-flex items-center gap-2">
+                    <i class="ph ph-file-arrow-down"></i> {{ __('Bank Transfer CSV') }}
+                </a>
+
+                <details class="relative inline-block">
+                    <summary class="btn-sm bg-success text-white border border-success hover:bg-success/90 cursor-pointer inline-flex items-center gap-2 list-none">
+                        <i class="ph ph-money"></i> {{ __('Pay All (:n)', ['n' => $unpaidCount]) }}
+                    </summary>
+                    <div class="absolute right-0 mt-1 bg-white border border-border-color rounded-md shadow-lg p-3 z-10" style="width:280px;">
+                        <form method="POST" action="{{ route('app.hr.payroll.pay-all', $period) }}" class="space-y-2"
+                              onsubmit="return confirm('{{ __(':n payslips will be paid in a single journal entry. Continue?', ['n' => $unpaidCount]) }}')">
+                            @csrf
+                            <label class="text-[11px] text-default block">{{ __('Pay all from') }}</label>
+                            <select name="journal_id" required class="w-full px-2 py-1 text-[12px] border border-border-color rounded-md bg-white">
+                                @foreach ($journals as $j)
+                                    <option value="{{ $j->id }}">{{ $j->name }} ({{ __(ucfirst($j->type)) }})</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="btn-sm bg-success text-white text-[11px] w-full">{{ __('Confirm Batch Payment') }}</button>
+                        </form>
+                        <p class="text-[10px] text-default mt-2">
+                            {{ __('Use this after you have sent the bank transfer file to the bank.') }}
+                        </p>
+                    </div>
+                </details>
+            </div>
+        @endif
     @endif
 </div>
 

@@ -88,6 +88,8 @@ Route::middleware(['auth:web', 'module:hr'])->prefix('app/hr')->name('app.hr.')-
         Route::post('/payroll/{period}/generate', [PayrollController::class, 'generate'])->name('payroll.generate');
         Route::post('/payroll/{period}/post', [PayrollController::class, 'post'])->name('payroll.post');
         Route::post('/payroll/payslips/{slip}/pay', [PayrollController::class, 'pay'])->name('payroll.payslips.pay');
+        Route::post('/payroll/{period}/pay-all', [PayrollController::class, 'payAll'])->name('payroll.pay-all');
+        Route::get('/payroll/{period}/bank-transfer-file', [PayrollController::class, 'bankTransferFile'])->name('payroll.bank-transfer-file');
 
         Route::get('/salary-advances', [SalaryAdvanceController::class, 'index'])->name('salary-advances.index');
         Route::post('/salary-advances', [SalaryAdvanceController::class, 'store'])->name('salary-advances.store');

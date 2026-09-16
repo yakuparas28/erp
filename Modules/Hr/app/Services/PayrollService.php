@@ -317,6 +317,96 @@ class PayrollService
         });
     }
 
+    /**
+     * Bir dönemdeki tüm ödenmemiş bordroları TEK JE'de öde. Toplam net
+     * 335'e borç, toplam avans 196'ya alacak, kalan nakit banka/kasaya
+     * alacak. Her payslip ayrı ayrı `paid` işaretlenir; avanslar FIFO ile
+     * mahsup edilmiş sayılır.
+     *
+     * @return int ödenen payslip sayısı
+     */
+    public function payAll(PayrollPeriod $period, int $journalId): int
+    {
+        abort_unless($period->status === PayrollPeriod::STATUS_POSTED, 422, __('Only posted periods can be paid in batch.'));
+
+        $journal = Journal::withoutGlobalScopes()->findOrFail($journalId);
+        abort_unless(
+            in_array($journal->type, ['cash', 'bank'], true) && $journal->tenant_id === $period->tenant_id,
+            422,
+            __('Invalid journal.'),
+        );
+
+        $unpaid = $period->payslips()->where('status', Payslip::STATUS_CALCULATED)->get();
+        if ($unpaid->isEmpty()) {
+            return 0;
+        }
+
+        return DB::transaction(function () use ($period, $journal, $unpaid) {
+            $bankAccount = $journal->chart_of_account_id !== null
+                ? ChartOfAccount::withoutGlobalScopes()->findOrFail($journal->chart_of_account_id)
+                : $this->defaults->accountByCode($period->tenant_id, $journal->type === 'cash' ? '100' : '102');
+
+            $acc335 = $this->defaults->accountByCode($period->tenant_id, '335');
+            $acc196 = $this->defaults->accountByCode($period->tenant_id, '196');
+
+            $totalNet = '0.0000';
+            $totalAdvance = '0.0000';
+            $totalCash = '0.0000';
+            foreach ($unpaid as $slip) {
+                $totalNet = bcadd($totalNet, (string) $slip->net_salary, 4);
+                $totalAdvance = bcadd($totalAdvance, (string) $slip->advance_deducted, 4);
+                $totalCash = bcadd($totalCash, $slip->cashPayable(), 4);
+            }
+
+            $lines = [
+                ['account_id' => $acc335->id, 'debit' => $totalNet, 'credit' => '0.0000'],
+            ];
+            if (bccomp($totalAdvance, '0', 4) > 0) {
+                $lines[] = ['account_id' => $acc196->id, 'debit' => '0.0000', 'credit' => $totalAdvance];
+            }
+            if (bccomp($totalCash, '0', 4) > 0) {
+                $lines[] = ['account_id' => $bankAccount->id, 'debit' => '0.0000', 'credit' => $totalCash];
+            }
+
+            $this->journalEntries->write(
+                tenantId: $period->tenant_id,
+                journalType: $journal->type,
+                entryDate: now()->toDateString(),
+                reference: $period,
+                lines: $lines,
+            );
+
+            // Her payslip'i tek tek işaretle + avanslarını FIFO mahsup et
+            $count = 0;
+            foreach ($unpaid as $slip) {
+                $slip->update([
+                    'status' => Payslip::STATUS_PAID,
+                    'paid_at' => now()->toDateString(),
+                    'paid_from_journal_id' => $journal->id,
+                ]);
+
+                if (bccomp((string) $slip->advance_deducted, '0', 4) > 0) {
+                    $remaining = (string) $slip->advance_deducted;
+                    $idsToMark = [];
+                    foreach ($this->advances->outstandingList($slip->employee_id) as $adv) {
+                        if (bccomp($remaining, '0', 4) <= 0) {
+                            break;
+                        }
+                        if (bccomp((string) $adv->amount, $remaining, 4) <= 0) {
+                            $idsToMark[] = $adv->id;
+                            $remaining = bcsub($remaining, (string) $adv->amount, 4);
+                        }
+                    }
+                    $this->advances->markDeducted($idsToMark, $slip->id);
+                }
+
+                $count++;
+            }
+
+            return $count;
+        });
+    }
+
     private function pct(string $base, string $rate): string
     {
         return bcdiv(bcmul($base, $rate, 6), '100', 4);
